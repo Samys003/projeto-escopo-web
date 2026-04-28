@@ -1,17 +1,22 @@
-import LogoImg from "./assets/logo(1).svg";
-import Cadastro from "./cadastro";
+import { Link } from "react-router-dom";
+import LogoImg from "../assets/logo(1).svg";
 
 function Login() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white px-6 py-12">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <img src={LogoImg} className="w-64 h-auto" alt="Escopo" />
+          <img
+            src={LogoImg}
+            className="w-32 md:w-44 lg:w-64 h-auto"
+            alt="Escopo"
+          />
         </div>
 
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
+        <h2 className="text-2xl font-bold text-center !text-gray-900 mb-8">
           Login
-        </h1>
+        </h2>
 
         <form className="space-y-6">
           <div>
@@ -37,28 +42,29 @@ function Login() {
           </div>
 
           <div className="text-right">
-            <a
-              href="#"
+            <Link
+              to="/Senha"
+              href="/Senha"
               className="text-purple-600 hover:text-purple-700 text-sm font-medium transition"
             >
               Esqueceu a senha?
-            </a>
+            </Link>
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              className="flex-1 py-3 bg-white border-2 border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition"
-              link="/cadastro"
+          <div className="flex flex-col md:flex-row gap-4 pt-4">
+            <Link
+              to="/cadastro"
+              className="flex-1 py-3 bg-white border-2 border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition text-center"
             >
               Cadastre-se
-            </button>
-            <button
+            </Link>
+            <Link
               type="submit"
+              to="/Dashboard"
               className="flex-1 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition"
             >
               Entrar
-            </button>
+            </Link>
           </div>
         </form>
       </div>

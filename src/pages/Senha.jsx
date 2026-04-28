@@ -1,4 +1,5 @@
-import LogoImg from "./assets/logo(1).svg";
+import LogoImg from "../assets/logo(1).svg";
+import { Link } from "react-router-dom";
 
 function Senha() {
   return (
@@ -52,22 +53,24 @@ function Senha() {
               ))}
             </div>
 
-            <button
+            <Link
               type="submit"
+              to="/Redefinir"
               className="w-full py-3 mt-2 rounded-[16px] bg-purple-600 text-white text-base font-semibold hover:bg-purple-700 transition"
             >
               Confirmar
-            </button>
+            </Link>
           </form>
         </div>
 
-        <button
+        <Link
           type="button"
+          to="/Login"
           className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-[16px] text-purple-600 font-semibold hover:bg-gray-50 transition"
         >
           <span>Voltar</span>
           <span className="text-xl">↩︎</span>
-        </button>
+        </Link>
       </div>
     </div>
   );

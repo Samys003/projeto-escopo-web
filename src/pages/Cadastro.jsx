@@ -1,4 +1,5 @@
-import LogoImg from "./assets/logo(1).svg";
+import LogoImg from "../assets/logo(1).svg";
+import { Link } from "react-router-dom";
 
 function Cadastro() {
   return (
@@ -43,31 +44,23 @@ function Cadastro() {
             />
           </div>
 
-          <div className="text-right">
-            <a
-              href="#"
-              className="text-purple-600 hover:text-purple-700 text-sm font-medium transition"
-            >
-              Esqueceu a senha?
-            </a>
-          </div>
-
           <div className="flex gap-4 pt-4">
-            <button
+            <Link
               type="submit"
               className="flex-1 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition"
-              Link="/Login"
+              to="/Login"
             >
               Cadastre-se
-            </button>
+            </Link>
           </div>
-          <button
+          <Link
             type="button"
+            to="/Login"
             className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-[16px] text-purple-600 font-semibold hover:bg-gray-50 transition"
           >
             <span>Voltar</span>
             <span className="text-xl">↩︎</span>
-          </button>
+          </Link>
         </form>
       </div>
     </div>
