@@ -9,7 +9,7 @@ function Cadastro() {
           <img src={LogoImg} className="w-64 h-auto" alt="Escopo" />
         </div>
 
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
+        <h1 className="text-3xl font-bold text-center text-gray-900! mb-8">
           Cadastro
         </h1>
 

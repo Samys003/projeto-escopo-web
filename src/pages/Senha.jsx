@@ -10,7 +10,7 @@ function Senha() {
         </div>
 
         <div className="rounded-[32px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
-          <h1 className="text-3xl font-semibold text-center text-black mb-4">
+          <h1 className="text-3xl font-semibold text-center text-black! mb-4">
             Redefinir Senha
           </h1>
 
@@ -42,13 +42,13 @@ function Senha() {
               </button>
             </div>
 
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center gap-2 ">
               {Array.from({ length: 5 }).map((_, index) => (
                 <input
                   key={index}
                   type="text"
                   maxLength="1"
-                  className="w-14 h-14 text-center text-xl font-semibold border-2 border-black rounded-xl focus:border-purple-600 focus:outline-none"
+                  className="w-14  h-14 text-center text-xl font-semibold border-2 border-black rounded-xl focus:border-purple-600 focus:outline-none"
                 />
               ))}
             </div>

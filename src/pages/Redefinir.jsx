@@ -10,18 +10,18 @@ function Redefinir() {
           <img src={LogoImg} className="w-64 h-auto" alt="Escopo" />
         </div>
 
-        <a className="text-3xl font-bold text-center text-gray-900 mb-10">
+        <h1 className="text-3xl font-bold text-center text-gray-900! mb-10">
           Redefinir Senha
-        </a>
+        </h1>
 
         <form className="space-y-6">
           <div>
             <label className="block text-gray-800 font-medium mb-2">
-              Senha
+              Nova Senha
             </label>
             <input
               type="password"
-              placeholder="Digite sua senha"
+              placeholder="Digite sua nova senha"
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-gray-700 placeholder-gray-400 transition"
             />
           </div>
@@ -32,7 +32,7 @@ function Redefinir() {
             </label>
             <input
               type="password"
-              placeholder="Digite novamente sua senha"
+              placeholder="Digite novamente sua nova senha"
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-gray-700 placeholder-gray-400 transition"
             />
           </div>

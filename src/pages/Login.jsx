@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import LogoImg from "../assets/logo(1).svg";
+import Carrossel from "../components/carrossel";
 
 function Login() {
   return (
@@ -14,9 +15,9 @@ function Login() {
           />
         </div>
 
-        <h2 className="text-2xl font-bold text-center !text-gray-900 mb-8">
+        <h1 className="text-2xl font-bold text-center text-gray-900! mb-8">
           Login
-        </h2>
+        </h1>
 
         <form className="space-y-6">
           <div>
@@ -26,7 +27,7 @@ function Login() {
             <input
               type="email"
               placeholder="Digite seu email"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-gray-700 placeholder-gray-400 transition"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:var(--colorbase] text-gray-700 placeholder-gray-400 transition"
             />
           </div>
 
@@ -67,6 +68,7 @@ function Login() {
             </Link>
           </div>
         </form>
+        <Carrossel />
       </div>
     </div>
   );
