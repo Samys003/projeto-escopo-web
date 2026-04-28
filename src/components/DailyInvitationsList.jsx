@@ -1,5 +1,5 @@
 import ParagraphLarge from "./Typography/ParagraphLarge";
-import Invitation from "./Invitation";
+// import Invite from "./Invite";
 
 function DailyInvitationsList(){
     return (

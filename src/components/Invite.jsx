@@ -1,6 +1,6 @@
 import ParagraphMedium from "./Typography/ParagraphMedium"
 
-function Invitation(){
+function Invite(){
     return(
         <div className="bg-white py-[16px] px-4 shadow-(--external-shadow) rounded-xl">
             <ParagraphMedium>Usuário 3 te convidou para Projeto 2</ParagraphMedium>
@@ -8,4 +8,4 @@ function Invitation(){
     )
 }
 
-export default Invitation
+export default Invite
