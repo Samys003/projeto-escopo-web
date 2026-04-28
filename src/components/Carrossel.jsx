@@ -2,8 +2,13 @@ import React, { useState } from "react";
 import slide1 from "../assets/Slide1.png";
 import slide2 from "../assets/Slide2.png";
 import slide3 from "../assets/Slide3.png";
+import slide1mobile from "../assets/Slide1Mobile.png";
+import slide2mobile from "../assets/Slide2Mobile.png";
+import slide3mobile from "../assets/Slide3Mobile.png";
+
 const Carrossel = () => {
   const slides = [slide1, slide2, slide3];
+  const slidesMobiles = [slide1mobile, slide2mobile, slide3mobile];
   const [current, setCurrent] = useState(0);
 
   const prevSlide = () => {
