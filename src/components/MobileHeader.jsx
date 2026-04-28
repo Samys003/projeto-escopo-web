@@ -1,12 +1,12 @@
 import logotipoMobile from '../assets/logotipo-mobile.svg'
-import iconMenu from '../assets/icon-menu.svg'
+import iconMenu from '../assets/icons/icon-menu.svg'
 
-function PageHeader(){
+function MobileHeader(){
     return(
-        <header className="px-[16px] bg-[var(--color-base)] flex place-content-between">
+        <header className="px-4 bg-(--color-base) flex place-content-between">
             <img src={logotipoMobile} alt="" />
             <img src={iconMenu} alt="" />
         </header>
     )
 }
-export default PageHeader;
+export default MobileHeader;
