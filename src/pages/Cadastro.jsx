@@ -1,8 +1,34 @@
 import LogoImg from "../assets/logo(1).svg";
-import { Link } from "react-router-dom";
-import Background from "../assets/BackgroundDesktop.svg";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { register as registerApi } from "../services/api";
 
 function Cadastro() {
+  const navigate = useNavigate();
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await registerApi({ nome, email, senha });
+      navigate("/Login");
+    } catch (err) {
+      setError(
+        err.message ||
+          "Erro ao cadastrar. Verifique os dados e tente novamente.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white px-6 py-12">
       <div className="w-full max-w-md">
@@ -14,15 +40,25 @@ function Cadastro() {
             Cadastro
           </h1>
 
-          <form className="space-y-6">
+          {error && (
+            <p className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-gray-800 font-medium mb-2">
                 Nome
               </label>
               <input
+                name="nome"
                 type="text"
+                value={nome}
+                onChange={(event) => setNome(event.target.value)}
                 placeholder="Digite seu nome"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
+                required
               />
             </div>
             <div>
@@ -30,9 +66,13 @@ function Cadastro() {
                 E-mail
               </label>
               <input
+                name="email"
                 type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="Digite seu email"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
+                required
               />
             </div>
 
@@ -41,23 +81,26 @@ function Cadastro() {
                 Senha
               </label>
               <input
+                name="senha"
                 type="password"
+                value={senha}
+                onChange={(event) => setSenha(event.target.value)}
                 placeholder="Digite sua senha"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
+                required
               />
             </div>
 
             <div className="flex gap-4 pt-4">
-              <Link
+              <button
                 type="submit"
-                className="flex-1 py-3 bg-[#552ba9] text-white font-semibold rounded-lg hover:bg-[#42257c] transition"
-                to="/Login"
+                disabled={loading}
+                className="flex-1 py-3 bg-[#552ba9] text-white font-semibold rounded-lg hover:bg-[#42257c] transition disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Cadastre-se
-              </Link>
+                {loading ? "Cadastrando..." : "Cadastre-se"}
+              </button>
             </div>
             <Link
-              type="button"
               to="/Login"
               className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-[#552ba9] font-semibold hover:bg-gray-50 transition"
             >
