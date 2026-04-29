@@ -9,7 +9,7 @@ function Redefinir() {
         <div className="flex justify-center mb-8">
           <img src={LogoImg} className="w-64 h-auto" alt="Escopo" />
         </div>
-        <div className="rounded-[32px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
+        <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
           <h1 className="text-3xl font-bold text-center text-gray-900! mb-10">
             Redefinir Senha
           </h1>
@@ -22,7 +22,7 @@ function Redefinir() {
               <input
                 type="password"
                 placeholder="Digite sua nova senha"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-gray-700 placeholder-gray-400 transition"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
               />
             </div>
 
@@ -33,14 +33,14 @@ function Redefinir() {
               <input
                 type="password"
                 placeholder="Digite novamente sua nova senha"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-gray-700 placeholder-gray-400 transition"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
               />
             </div>
 
             <div className="flex gap-4 pt-4">
               <Link
                 type="button"
-                className="flex-1 py-3 bg-white border-2 border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition"
+                className="flex-1 py-3 bg-white border-2 border-[#552ba9] text-[#552ba9] font-semibold rounded-lg hover:bg-purple-50 transition"
                 to="/cadastro"
               >
                 Cadastre-se
@@ -48,7 +48,7 @@ function Redefinir() {
               <Link
                 type="submit"
                 to="/Login"
-                className="flex-1 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition"
+                className="flex-1 py-3 bg-[#552ba9] text-white font-semibold rounded-lg hover:bg-[#42257c] transition"
               >
                 Entrar
               </Link>
@@ -56,7 +56,7 @@ function Redefinir() {
             <Link
               type="button"
               to="/Senha"
-              className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-[16px] text-purple-600 font-semibold hover:bg-gray-50 transition"
+              className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-[#552ba9] font-semibold hover:bg-gray-50 transition"
             >
               <span>Voltar</span>
               <span className="text-xl">↩︎</span>
