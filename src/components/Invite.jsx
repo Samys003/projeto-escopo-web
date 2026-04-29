@@ -1,9 +1,11 @@
 import ParagraphMedium from "./Typography/ParagraphMedium"
 
-function Invite(){
+function Invite(props){
+    const convite = props.convite
+    console.log(convite)
     return(
         <div className="bg-white py-[16px] px-4 shadow-(--external-shadow) rounded-xl">
-            <ParagraphMedium>Usuário 3 te convidou para Projeto 2</ParagraphMedium>
+            <ParagraphMedium>{convite.nome_remetente} te convidou para participar do(a) {convite.nome_projeto}.</ParagraphMedium>
         </div>
     )
 }
