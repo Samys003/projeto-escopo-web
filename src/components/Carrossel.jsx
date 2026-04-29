@@ -36,7 +36,7 @@ const Carrossel = () => {
   const displayedSlides = isMobile ? slidesMobiles : slides;
 
   return (
-    <div className="relative overflow-hidden w-full h-72 sm:h-80 mt-6 rounded-[28px] shadow-lg">
+    <div className="relative overflow-hidden w-full h-full sm:h-80 mt-6 md:mt-0 rounded-[28px] shadow-lg">
       <div
         className="flex transition-transform duration-700 ease-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
@@ -46,7 +46,7 @@ const Carrossel = () => {
             key={index}
             src={src}
             alt={`Slide ${index + 1}`}
-            className="w-full h-72 sm:h-80 object-cover shrink-0"
+            className="w-full h-full sm:h-full object-cover shrink-0"
           />
         ))}
       </div>
