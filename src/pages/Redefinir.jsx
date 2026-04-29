@@ -39,13 +39,6 @@ function Redefinir() {
 
             <div className="flex gap-4 pt-4">
               <Link
-                type="button"
-                className="flex-1 py-3 bg-white border-2 border-[#552ba9] text-[#552ba9] font-semibold rounded-lg hover:bg-purple-50 transition"
-                to="/cadastro"
-              >
-                Cadastre-se
-              </Link>
-              <Link
                 type="submit"
                 to="/Login"
                 className="flex-1 py-3 bg-[#552ba9] text-white font-semibold rounded-lg hover:bg-[#42257c] transition"
