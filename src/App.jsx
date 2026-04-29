@@ -1,6 +1,11 @@
+import ProjectDetails from "./pages/ProjectDetails"
+
 function App() {
   return (
-    <h1>Hello world!</h1>
+    <div>
+    <ProjectDetails/>
+   
+    </div>
   )
 }
 
