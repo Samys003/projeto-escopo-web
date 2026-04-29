@@ -26,8 +26,8 @@ return (
         <main className="flex flex-col gap-[12px] px-[16px] py-[12px]">
             <Title2 className="text-[var(--cinza-700)]">Continue de onde parou</Title2>
             <QuickAccessListHorizontal documentos={documentos}></QuickAccessListHorizontal>
+            
             <Title2 className="text-[var(--cinza-700)]">Convites</Title2>
-
             <InviteList convites = {convites}></InviteList>
         </main>
     </div>
