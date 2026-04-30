@@ -1,7 +1,7 @@
-function Title2(props){
+function Title3(props){
     return(
-        <h3 className= {`text-5 font-inter ${props.className} font-semibold`}> {props.children}</h3>
+        <h3 className= {`text-xl font-inter ${props.className} font-semibold`}> {props.children}</h3>
     )
 }
 
-export default Title2;
+export default Title3;
