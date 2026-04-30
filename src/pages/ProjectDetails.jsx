@@ -4,8 +4,13 @@ import { SquarePen } from "lucide-react";
 import Title2 from "../components/Typography/Title2";
 import ParagraphMedium from "../components/Typography/ParagraphMedium";
 
-const [Project] = [
-    {
+
+
+
+
+function ProjectDetails (){
+    const project = {
+    
     id: 1,
     titulo: "Meu Projeto",
     descricao: "Descrição do projeto",
@@ -13,23 +18,37 @@ const [Project] = [
     data_criacao: "2026-04-14T10:00:00Z",
     ultima_atualizacao: "2026-04-14T12:00:00Z",
     nome_responsavel: "Nathan"
+    
     }
-]
 
+    const documentos = {
+        
+    }
 
-
-function ProjectDetails (props){
     return (
         <div>
         <MobileHeader/>
-        <div className="flex gap-2 p-2">
+        <div className="flex items-center gap-2 p-2">
         <Title2 className="text-2xl" >
-
+            {project.titulo}
         </Title2>
          <IconButton icon={<SquarePen/>}/>
          </div>
-         <div className="p-2">
-            <ParagraphMedium>Status:</ParagraphMedium>
+         <div className="flex flex-col p-2 gap-2">
+            <div className="">
+            <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
+            </div>
+            <div>
+            <ParagraphMedium>Descrição: {project.descricao} </ParagraphMedium>
+            </div>
+            <div>
+            <ParagraphMedium>Data de Criação: {new Date(project.data_criacao).toLocaleDateString()}</ParagraphMedium>
+            <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
+            <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
+            </div>
+            <div>
+                
+            </div>
          </div>
         </div>
     )
