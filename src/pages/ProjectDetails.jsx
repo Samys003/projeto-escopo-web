@@ -51,15 +51,24 @@ function ProjectDetails() {
             }
         ]
 
-    const [currentTab, setCurrentTab] = useState("Documentos")
+    const [currentTab, setCurrentTab] = useState([
+
+        {
+            nome: "Documentos",
+            active: true
+        },
+        {
+            nome: "Registros",
+            active: false
+        },
+        {
+            nome: "Reuniões",
+            active: false
+        },
+
+    ])
 
 
-
-    function tabs() {
-
-
-
-    }
 
     return (
         <div className="w-full">
@@ -82,7 +91,7 @@ function ProjectDetails() {
                     <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
                     <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
                 </div>
-                <ComponentMenu currentTab={currentTab} ></ComponentMenu>
+                <ComponentMenu currentTab={currentTab}></ComponentMenu>
             </div>
         </div>
     )
