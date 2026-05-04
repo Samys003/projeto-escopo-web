@@ -4,6 +4,7 @@ import { SquarePen } from "lucide-react";
 import Title2 from "../components/Typography/Title2";
 import ParagraphMedium from "../components/Typography/ParagraphMedium";
 import MenuButton from "../components/MenuButton";
+import ComponentMenu from "../components/ComponentMenu";
 
 
 
@@ -50,7 +51,15 @@ function ProjectDetails() {
             }
         ]
 
+    const [currentTab, setCurrentTab] = useState("Documentos")
 
+
+
+    function tabs() {
+
+
+
+    }
 
     return (
         <div className="w-full">
@@ -73,7 +82,7 @@ function ProjectDetails() {
                     <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
                     <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
                 </div>
-                <MenuButton></MenuButton>
+                <ComponentMenu currentTab={currentTab} ></ComponentMenu>
             </div>
         </div>
     )
