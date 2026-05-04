@@ -3,13 +3,13 @@ import ProjectDetails from "./pages/ProjectDetails"
 function App() {
   return (
     <div>
-    <ProjectDetails/>
-    <Dashboard/>
+      <ProjectDetails />
+
     </div>
 
 
   )
- 
+
 }
 
 export default App

@@ -3,53 +3,78 @@ import IconButton from "../components/IconButton";
 import { SquarePen } from "lucide-react";
 import Title2 from "../components/Typography/Title2";
 import ParagraphMedium from "../components/Typography/ParagraphMedium";
+import MenuButton from "../components/MenuButton";
 
 
 
 
 
-function ProjectDetails (){
+function ProjectDetails() {
     const project = {
-    
-    id: 1,
-    titulo: "Meu Projeto",
-    descricao: "Descrição do projeto",
-    status: true,
-    data_criacao: "2026-04-14T10:00:00Z",
-    ultima_atualizacao: "2026-04-14T12:00:00Z",
-    nome_responsavel: "Nathan"
-    
+
+        id: 1,
+        titulo: "Meu Projeto",
+        descricao: "Descrição do projeto",
+        status: true,
+        data_criacao: "2026-04-14T10:00:00Z",
+        ultima_atualizacao: "2026-04-14T12:00:00Z",
+        nome_responsavel: "Nathan"
+
     }
 
-    const documentos = {
-        
-    }
+    const documentos =
+        [
+            {
+                "id": 1,
+                "nome": "Requisitos",
+                "documentos": [
+                    {
+                        "id": 1,
+                        "titulo": "Documento de Requisitos",
+                        "quantidade_versoes": 3,
+                        "ultima_alteracao": "2026-04-14"
+                    },
+                    {
+                        "id": 2,
+                        "titulo": "Documento de Requisitos",
+                        "quantidade_versoes": 3,
+                        "ultima_alteracao": "2026-04-14"
+                    },
+                    {
+                        "id": 3,
+                        "titulo": "Documento de Requisitos",
+                        "quantidade_versoes": 3,
+                        "ultima_alteracao": "2026-04-14"
+                    }
+                ]
+            }
+        ]
+
+
 
     return (
-        <div>
-        <MobileHeader/>
-        <div className="flex items-center gap-2 p-2">
-        <Title2 className="text-2xl" >
-            {project.titulo}
-        </Title2>
-         <IconButton icon={<SquarePen/>}/>
-         </div>
-         <div className="flex flex-col p-2 gap-2">
-            <div className="">
-            <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
+        <div className="w-full">
+            <MobileHeader />
+            <div className="w-full flex items-center gap-2 pl-2.5 pt-2">
+                <Title2 className="text-2xl" >
+                    {project.titulo}
+                </Title2>
+                <IconButton icon={<SquarePen />} />
             </div>
-            <div>
-            <ParagraphMedium>Descrição: {project.descricao} </ParagraphMedium>
+            <div className="w-full flex flex-col  gap-2 pl-2.5 pt-2">
+                <div className="">
+                    <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
+                </div>
+                <div>
+                    <ParagraphMedium>Descrição: {project.descricao} </ParagraphMedium>
+                </div>
+                <div>
+                    <ParagraphMedium>Data de Criação: {new Date(project.data_criacao).toLocaleDateString()}</ParagraphMedium>
+                    <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
+                    <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
+                </div>
+                <MenuButton></MenuButton>
             </div>
-            <div>
-            <ParagraphMedium>Data de Criação: {new Date(project.data_criacao).toLocaleDateString()}</ParagraphMedium>
-            <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
-            <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
-            </div>
-            <div>
-                
-            </div>
-         </div>
         </div>
     )
 }
