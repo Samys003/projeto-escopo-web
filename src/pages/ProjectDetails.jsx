@@ -5,6 +5,7 @@ import Title2 from "../components/Typography/Title2";
 import ParagraphMedium from "../components/Typography/ParagraphMedium";
 import MenuButton from "../components/MenuButton";
 import ComponentMenu from "../components/ComponentMenu";
+import { useState } from "react";
 
 
 
@@ -54,20 +55,32 @@ function ProjectDetails() {
     const [currentTab, setCurrentTab] = useState([
 
         {
+            id: 1,
             nome: "Documentos",
             active: true
         },
         {
+            id: 2,
             nome: "Registros",
             active: false
         },
         {
+            id: 3,
             nome: "Reuniões",
             active: false
         },
 
+
     ])
 
+    function selectionMenu(selectionId) {
+        const selection = currentTab.map((tab) => {
+
+            if (tab.id == selectionId) {
+                return { ...tab, active: tab.active = false }
+            }
+        })
+    }
 
 
     return (
