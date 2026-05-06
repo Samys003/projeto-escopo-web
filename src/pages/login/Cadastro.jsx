@@ -1,7 +1,7 @@
 import LogoImg from "../assets/logo(1).svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { register as registerApi } from "../services/api";
+import { register as registerApi } from "../../services/api";
 
 function Cadastro() {
   const navigate = useNavigate();

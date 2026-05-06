@@ -52,25 +52,26 @@ function Senha() {
                 />
               ))}
             </div>
+            <div className="flex justify-center gap-2 pt-4">
+              <Link
+                type="submit"
+                to="/Redefinir"
+                className=" py-3 mt-2 rounded-2xl bg-[#552ba9] text-white text-base font-semibold hover:bg-[#42257c] transition"
+              >
+                Confirmar
+              </Link>
+            </div>
 
             <Link
-              type="submit"
-              to="/Redefinir"
-              className="w-full py-3 mt-2 rounded-2xl bg-[#552ba9] text-white text-base font-semibold hover:bg-[#42257c] transition"
+              type="button"
+              to="/Login"
+              className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-[#552ba9] font-semibold hover:bg-gray-50 transition"
             >
-              Confirmar
+              <span>Voltar</span>
+              <span className="text-xl">↩︎</span>
             </Link>
           </form>
         </div>
-
-        <Link
-          type="button"
-          to="/Login"
-          className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-[#552ba9] font-semibold hover:bg-gray-50 transition"
-        >
-          <span>Voltar</span>
-          <span className="text-xl">↩︎</span>
-        </Link>
       </div>
     </div>
   );

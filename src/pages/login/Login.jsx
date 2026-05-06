@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import LogoImg from "../assets/logo(1).svg";
-import Carrossel from "../components/Carrossel";
-import { login as loginApi } from "../services/api";
+import Carrossel from "../../components/Carrossel";
+import { login as loginApi } from "../../services/api";
 
 function Login() {
   const navigate = useNavigate();

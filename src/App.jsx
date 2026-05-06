@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Cadastro from "./pages/Cadastro";
-import Senha from "./pages/Senha";
-import Redefinir from "./pages/Redefinir";
+import Login from "./pages/login/Login";
+import Cadastro from "./pages/login/Cadastro";
+import Senha from "./pages/login/Senha";
+import Redefinir from "./pages/login/Redefinir";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
