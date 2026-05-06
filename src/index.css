@@ -13,6 +13,9 @@
   --cinza-600: #4B5563;
   --cinza-500: #6B7280;
   --cinza-300: #D1D5DB;
+   --fundo: #fafafa;
+  --color-dark: #42257c;
+  --color-variant: #7645d787;
   /* Sombra */
   --external-shadow: 0 0 8px rgba(0,0,0,0.25);
 
