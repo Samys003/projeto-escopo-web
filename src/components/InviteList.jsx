@@ -1,5 +1,6 @@
 import Invite from "./Invite"
 import ParagraphLarge from "./Typography/ParagraphLarge";
+import { formatDate } from "../utils/formatters";
 
 function InviteList(props) {
 
@@ -21,14 +22,14 @@ function InviteList(props) {
 
     return (
         <div className="flex flex-col gap-[10px]">
-            {Object.entries(convitesOrdenados).map(([data, convitesDia]) => {
-                <ParagraphLarge className="text-(--cinza-700)">{data}</ParagraphLarge>
-                convitesDia.map((convite) => {
+            {Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
+                <div key={data} className="flex flex-col gap-[10px]">
+                    <ParagraphLarge className="text-(--cinza-700)">{formatDate(data)}</ParagraphLarge>
+                {convitesDia.map((convite) => (
                     <Invite convite={convite}></Invite>
-                }
-                )
-            }
-            )}
+                ))}
+                </div>
+            ))}
         </div>
     )
 
