@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ParagraphMedium from "./Typography/ParagraphMedium";
+import ParagraphMedium from "../../../components/Typography/ParagraphMedium";
 
 
 function ComponentMenu({ currentTab, selectionMenu }) {
@@ -9,7 +9,7 @@ function ComponentMenu({ currentTab, selectionMenu }) {
             {currentTab.map((tab) => (
                 <button key={tab.id}
                     onClick={() => selectionMenu(tab.id)}
-                    className={`pl-4 pr-4 pb-1 pt-1 rounded-[18px] ${tab.active ? "bg-(--roxo-light) text-(--roxo-dark)" : "bg-(--cinza-200) text-(--cinza-700)"}`}>
+                    className={`pl-3 pr-3 pb-1 pt-1 rounded-[18px] ${tab.active ? "bg-(--roxo-light) text-(--roxo-dark)" : "bg-(--cinza-200) text-(--cinza-700)"}`}>
                     <ParagraphMedium>{tab.nome}</ParagraphMedium>
                 </button>
             ))}

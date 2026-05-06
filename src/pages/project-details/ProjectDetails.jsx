@@ -1,10 +1,10 @@
-import MobileHeader from "../components/MobileHeader";
-import IconButton from "../components/IconButton";
+import MobileHeader from "../../components/MobileHeader";
+import IconButton from "../../components/IconButton";
 import { SquarePen } from "lucide-react";
-import Title2 from "../components/Typography/Title2";
-import ParagraphMedium from "../components/Typography/ParagraphMedium";
+import Title2 from "../../components/Typography/Title2";
+import ParagraphMedium from "../../components/Typography/ParagraphMedium";
 import MenuButton from "../components/MenuButton";
-import ComponentMenu from "../components/ComponentMenu";
+import ComponentMenu from "./components/ComponentMenu";
 import { useState } from "react";
 
 
