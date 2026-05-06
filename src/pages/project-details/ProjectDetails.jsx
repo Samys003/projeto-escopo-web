@@ -91,9 +91,7 @@ function ProjectDetails() {
                 <Title2 className="text-2xl" >
                     {project.titulo}
                 </Title2>
-                <button>
-                    <IconButton icon={<SquarePen />} />
-                </button>
+                <IconButton icon={<SquarePen />} />
             </div>
             <div className="w-full flex flex-col  gap-2 p-4 ">
                 <div className="">
