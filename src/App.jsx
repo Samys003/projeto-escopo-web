@@ -1,9 +1,15 @@
-import Dashboard from "./pages/dashboard/Dashboard"
+import ProjectDetails from "./pages/ProjectDetails"
 
 function App() {
   return (
-    <Dashboard></Dashboard>
+    <div>
+      <ProjectDetails />
+
+    </div>
+
+
   )
+
 }
 
 export default App
