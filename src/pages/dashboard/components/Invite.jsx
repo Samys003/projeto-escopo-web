@@ -13,5 +13,4 @@ function Invite(props){
         </div>
     )
 }
-
 export default Invite
