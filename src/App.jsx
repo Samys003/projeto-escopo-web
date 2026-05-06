@@ -1,4 +1,4 @@
-import ProjectDetails from "./pages/ProjectDetails"
+import ProjectDetails from "./pages/project-details/ProjectDetails"
 
 function App() {
   return (
