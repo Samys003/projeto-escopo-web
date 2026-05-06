@@ -7,7 +7,7 @@ function QuickAccessListHorizontal(props){
         <div className="overflow-x-auto border-b border-(--cinza-500) pb-3">
             <div className="flex gap-[10px] w-max">
                 {documentos.map((documento) =>(
-                    <DocumentQuickAccess documento = {documento}></DocumentQuickAccess>
+                    <DocumentQuickAccess key={documento.id} documento = {documento}></DocumentQuickAccess>
                 ))}
             </div>
         </div>

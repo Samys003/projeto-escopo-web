@@ -1,8 +1,7 @@
-import MobileHeader from "../components/MobileHeader.jsx";
-import Title2 from "../components/Typography/Title2.jsx";
-import QuickAccessListHorizontal from "../components/QuickAccessListHorizontal.jsx";
-// import DailyInvitationsList from "../components/DailyInvitationsList.jsx";
-import InviteList from "../components/InviteList.jsx";
+import MobileHeader from "../../components/MobileHeader.jsx";
+import Title2 from "../../components/Typography/Title2.jsx";
+import QuickAccessListHorizontal from "./components/QuickAccessListHorizontal.jsx";
+import InviteList from "./components/InviteList.jsx";
 
 function Dashboard() {
     const documentos = [
