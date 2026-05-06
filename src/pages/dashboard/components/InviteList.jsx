@@ -1,6 +1,7 @@
 import Invite from "./Invite"
-import ParagraphLarge from "./Typography/ParagraphLarge";
-import { formatDate } from "../utils/formatters";
+import ParagraphLarge from "../../../components/Typography/ParagraphLarge";
+// import { formatDate } from "../utils/formatters";
+import { formatDate } from "../../../utils/formatters";
 
 function InviteList(props) {
 

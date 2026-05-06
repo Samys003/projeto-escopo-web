@@ -1,7 +1,7 @@
-import iconFolder from '../assets/icons/icon-folder.svg'
+import iconFolder from '../../../assets/icons/icon-folder.svg'
 import { ChevronRightIcon } from 'lucide-react'
-import Title4 from './Typography/Title4'
-import ParagraphMedium from './Typography/ParagraphMedium'
+import Title4 from '../../../components/Typography/Title4'
+import ParagraphMedium from '../../../components/Typography/ParagraphMedium'
 
 function DocumentQuickAccess(props) {
     const documento = props.documento
