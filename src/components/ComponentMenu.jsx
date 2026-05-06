@@ -2,15 +2,17 @@ import { useState } from "react";
 import ParagraphMedium from "./Typography/ParagraphMedium";
 
 
-function ComponentMenu(props) {
+function ComponentMenu({ currentTab, selectionMenu }) {
 
     return (
-        <div>{props.currentTab.map((tab, index) => {
-            <button key={index} onClick={() => { }} className="bg-(--roxo-light) text-(--roxo-dark) pl-4 pr-4 pb-1 pt-1 rounded-[18px]">
-                <ParagraphMedium>{tab.nome}</ParagraphMedium>
-            </button>
-
-        })}
+        <div className=" flex items-center justify-between">
+            {currentTab.map((tab) => (
+                <button key={tab.id}
+                    onClick={() => selectionMenu(tab.id)}
+                    className={`pl-4 pr-4 pb-1 pt-1 rounded-[18px] ${tab.active ? "bg-(--roxo-light) text-(--roxo-dark)" : "bg-(--cinza-200) text-(--cinza-700)"}`}>
+                    <ParagraphMedium>{tab.nome}</ParagraphMedium>
+                </button>
+            ))}
 
         </div>
     )

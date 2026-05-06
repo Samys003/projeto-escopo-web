@@ -75,11 +75,13 @@ function ProjectDetails() {
 
     function selectionMenu(selectionId) {
         const selection = currentTab.map((tab) => {
+            return {
+                ...tab,
+                active: tab.id === selectionId
 
-            if (tab.id == selectionId) {
-                return { ...tab, active: tab.active = false }
             }
         })
+        setCurrentTab(selection)
     }
 
 
@@ -90,9 +92,11 @@ function ProjectDetails() {
                 <Title2 className="text-2xl" >
                     {project.titulo}
                 </Title2>
-                <IconButton icon={<SquarePen />} />
+                <button>
+                    <IconButton icon={<SquarePen />} />
+                </button>
             </div>
-            <div className="w-full flex flex-col  gap-2 pl-2.5 pt-2">
+            <div className="w-full flex flex-col  gap-2 p-4 ">
                 <div className="">
                     <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
                 </div>
@@ -104,7 +108,7 @@ function ProjectDetails() {
                     <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
                     <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
                 </div>
-                <ComponentMenu currentTab={currentTab}></ComponentMenu>
+                <ComponentMenu currentTab={currentTab} selectionMenu={selectionMenu}></ComponentMenu>
             </div>
         </div>
     )
