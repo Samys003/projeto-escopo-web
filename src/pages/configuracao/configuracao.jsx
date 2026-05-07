@@ -19,9 +19,6 @@ function Configuracao() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [editingNome, setEditingNome] = useState(false);
-    const [nomeTemp, setNomeTemp] = useState('');
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [fotoPreview, setFotoPreview] = useState(null);
 
     useEffect(() => {
@@ -76,6 +73,74 @@ function Configuracao() {
             setSaving(false);
         }
     };
+    const handleFotoChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setSaving(true);
+            setError('');
+            setSuccess('');
+
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+                try {
+                    await updateUserProfilePicture({ foto_perfil: base64String });
+
+                    const usuarioAtualizado = { ...usuario, foto_perfil: base64String };
+                    setUsuario(usuarioAtualizado);
+                    setFotoPreview(base64String);
+                    localStorage.setItem('authUser', JSON.stringify(usuarioAtualizado));
+
+                    setSuccess('Foto de perfil atualizada com sucesso!');
+                    setTimeout(() => setSuccess(''), 3000);
+                } catch (err) {
+                    setError(err.message || 'Erro ao atualizar foto de perfil');
+                } finally {
+                    setSaving(false);
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (err) {
+            setError('Erro ao processar imagem');
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        try {
+            setSaving(true);
+            setError('');
+
+            await deleteUserAccount();
+
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
+
+            navigate('/');
+        } catch (err) {
+            setError(err.message || 'Erro ao deletar conta');
+            setSaving(false);
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        navigate('/');
+    };
+
+    if (loading) {
+        return (
+            <div className="bg-[#f8f8f8] min-h-screen">
+                <MobileHeader />
+                <main className="flex items-center justify-center px-4 py-12">
+                    <p className="text-gray-600">Carregando...</p>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#f8f8f8] min-h-screen">
@@ -95,6 +160,74 @@ function Configuracao() {
                 )}
 
                 <section className="mb-8">
+                    <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+                        <div className="flex justify-center mb-6">
+                            <div className="relative">
+                                <div className="w-24 h-24 rounded-full border-4 border[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
+                                    {fotoPreview ? (
+                                        <img
+                                            src={fotoPreview}
+                                            alt="Foto de perfil"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-4xl text-gray-400"></div>
+                                    )}
+                                </div>
+                                <label
+                                    htmlFor="foto-input"
+                                    className="absolute bottom-0 right-0 bg-purple-600 text-white rounded-full p-2 cursor-pointer hover:bg-purple-700 transition-colors shadow-md"
+                                >
+                                    <Camera size={16} />
+                                </label>
+                                <input
+                                    id="foto-input"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFotoChange}
+                                    disabled={saving}
+                                    className="hidden"
+                                />
+                            </div>
+                        </div>
+
+                        {editingNome ? (
+                            <div className="mb-4">
+                                <input
+                                    type="text"
+                                    value={nomeTemp}
+                                    onChange={(e) => setNomeTemp(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-lg border-2 border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    disabled={saving}
+                                />
+                                <div className="flex gap-2 mt-3 justify-center">
+                                    <button
+                                        onClick={handleNomeSave}
+                                        disabled={saving}
+                                        className="px-6 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                                    >
+                                        {saving ? 'Salvando...' : 'Salvar'}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setEditingNome(false);
+                                            setNomeTemp(usuario.nome || '');
+                                        }}
+                                        disabled={saving}
+                                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mb-4">
+                                <Title3 className="text-gray-900 mb-2">
+                                    {usuario?.nome || 'Usuário'}
+                                </Title3>
+                            </div>
+                        )}
+                    </div>
                     <div className="bg-white rounded-2xl shadow-sm p-6">
                         <div className="mb-4">
                             <ParagraphMedium className="text-gray-700 font-medium mb-2">
@@ -106,6 +239,21 @@ function Configuracao() {
                                 disabled
                                 className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
                             />
+                            <ParagraphMedium className="text-gray-700 font-medium mb-2">
+                                Senha
+                            </ParagraphMedium>
+                            <input
+                                type="password"
+                                value={usuario?.senha || ''}
+                                disabled
+                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
+                            />
+                            <button
+                                onClick={() => setEditingNome(true)}
+                                className="text-[var(--color-base)] text-sm font-medium hover:text-purple-700 transition-colors"
+                            >
+                                Editar
+                            </button>
                         </div>
                     </div>
                 </section>
