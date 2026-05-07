@@ -257,6 +257,15 @@ function Configuracao() {
                                 Alterar
                             </button>
                         </div>
+
+                        <div className="mt-5 mb-5">
+                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
+                                Plano Atual
+                            </ParagraphMedium>
+                            <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-4">
+                                {'Free'} {'Fazer Upgrade'}
+                            </div>
+                        </div>
                     </div>
                     <section className="mb-8">
                         <button
