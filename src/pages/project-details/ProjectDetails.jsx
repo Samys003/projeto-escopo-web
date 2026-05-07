@@ -3,9 +3,10 @@ import IconButton from "../../components/IconButton";
 import { SquarePen, FolderPlus } from "lucide-react";
 import Title2 from "../../components/Typography/Title2";
 import ParagraphMedium from "../../components/Typography/ParagraphMedium";
+import ParagraphSmall from "../../components/Typography/ParagraphSmall"
 import ComponentMenu from "./components/ComponentMenu";
 import { useState } from "react";
-import Documents from "./components/documents";
+import Documents from "./components/Documents";
 
 
 
@@ -24,54 +25,54 @@ function ProjectDetails() {
 
     }
 
-    const documentos =
+    const exibirDocumento =
         [
             {
-                "id": 1,
-                "nome": "Requisitos",
-                "documentos": [
+                id: 1,
+                nome: "Requisitos",
+                documentos: [
                     {
-                        "id": 1,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 1,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     },
                     {
-                        "id": 2,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 2,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     },
                     {
-                        "id": 3,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 3,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     }
                 ]
             },
 
             {
-                "id": 2,
-                "nome": "RNF",
-                "documentos": [
+                id: 2,
+                nome: "RNF",
+                documentos: [
                     {
-                        "id": 1,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 1,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     },
                     {
-                        "id": 2,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 2,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     },
                     {
-                        "id": 3,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 3,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     }
                 ]
             }
@@ -79,37 +80,15 @@ function ProjectDetails() {
 
 
 
-    const [currentTab, setCurrentTab] = useState([
+    const [currentTab, setCurrentTab] = useState("Documentos")
 
-        {
-            id: 1,
-            nome: "Documentos",
-            active: true
-        },
-        {
-            id: 2,
-            nome: "Registros",
-            active: false
-        },
-        {
-            id: 3,
-            nome: "Reuniões",
-            active: false
-        },
+    const tabs = [
+        "Documentos",
+        "Registros",
+        "Reuniões"
+    ]
 
 
-    ])
-
-    function selectionMenu(selectionId) {
-        const selection = currentTab.map((tab) => {
-            return {
-                ...tab,
-                active: tab.id === selectionId
-
-            }
-        })
-        setCurrentTab(selection)
-    }
 
 
     return (
@@ -134,15 +113,31 @@ function ProjectDetails() {
                         <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
                         <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
                     </div>
-                    <ComponentMenu currentTab={currentTab} selectionMenu={selectionMenu}></ComponentMenu>
+                    <ComponentMenu currentTab={currentTab} setCurrentTab={setCurrentTab} tabs={tabs}></ComponentMenu>
                 </div>
-                <div className="flex flex-col w-full items-center gap-4  pt-3.5">
-                    <IconButton className="w-40" icon={<FolderPlus />}>Nova Categoria</IconButton>
-                    <Documents></Documents>
-                </div>
-            </div>
-        </div>
+                {currentTab === "Documentos" && (
+                    <div className="flex flex-col w-full items-center gap-4 pt-5 ">
+                        <IconButton className="w-40 gap-2" icon={<FolderPlus />}>Nova Categoria</IconButton>
+                        <Documents exibirDocumento={exibirDocumento} ></Documents>
+                    </div>
+                )}
+                {currentTab === "Registros" && (
+                    <div className="pt-4">
+                        <button>
+                            <ParagraphSmall className="border border-(--cinza-300) bg-(--cinza-100) text-(--cinza-500) w-30 h-7.5 flex items-center justify-center rounded-xl">+ Novo Registro</ParagraphSmall>
+                        </button>
+                    </div>
+                )}
+                {currentTab === "Reuniões" && (
+                    <div></div>
+                )}
+
+            </div >
+        </div >
     )
 }
+
+
+
 
 export default ProjectDetails;

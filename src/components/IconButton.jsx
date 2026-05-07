@@ -1,11 +1,10 @@
-import { Children } from "react";
 import ParagraphMedium from "./Typography/ParagraphMedium";
 
-function IconButton(props) {
+function IconButton({ onClick, icon, children, className = "" }) {
     return (
-        <button onClick={props.onClick} className={`flex gap-2 items-center bg-(--color-base) text-white p-2 rounded-md ${props.className}`}>
-            {props.icon}
-            <ParagraphMedium className="font-medium">{props.children}</ParagraphMedium>
+        <button onClick={onClick} className={`flex items-center justify-center bg-(--color-base) text-white p-2 rounded-md ${className}`}>
+            {icon}
+            <ParagraphMedium className="font-medium">{children}</ParagraphMedium>
         </button>
     )
 }
