@@ -20,6 +20,9 @@ function Configuracao() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [fotoPreview, setFotoPreview] = useState(null);
+    const [editingNome, setEditingNome] = useState(false);
+    const [nomeTemp, setNomeTemp] = useState('');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -160,10 +163,10 @@ function Configuracao() {
                 )}
 
                 <section className="mb-8">
-                    <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+                    <div className=" text-center">
                         <div className="flex justify-center mb-6">
                             <div className="relative">
-                                <div className="w-24 h-24 rounded-full border-4 border[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
+                                <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
                                     {fotoPreview ? (
                                         <img
                                             src={fotoPreview}
@@ -176,7 +179,7 @@ function Configuracao() {
                                 </div>
                                 <label
                                     htmlFor="foto-input"
-                                    className="absolute bottom-0 right-0 bg-purple-600 text-white rounded-full p-2 cursor-pointer hover:bg-purple-700 transition-colors shadow-md"
+                                    className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-base)] transition-colors shadow-md"
                                 >
                                     <Camera size={16} />
                                 </label>
@@ -197,14 +200,14 @@ function Configuracao() {
                                     type="text"
                                     value={nomeTemp}
                                     onChange={(e) => setNomeTemp(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border-2 border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-full px-4 py-2 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                     disabled={saving}
                                 />
                                 <div className="flex gap-2 mt-3 justify-center">
                                     <button
                                         onClick={handleNomeSave}
                                         disabled={saving}
-                                        className="px-6 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                                        className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-base-hover)] disabled:opacity-50 transition-colors"
                                     >
                                         {saving ? 'Salvando...' : 'Salvar'}
                                     </button>
@@ -227,19 +230,18 @@ function Configuracao() {
                                 </Title3>
                             </div>
                         )}
-                    </div>
-                    <div className="bg-white rounded-2xl shadow-sm p-6">
+
                         <div className="mb-4">
-                            <ParagraphMedium className="text-gray-700 font-medium mb-2">
+                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
                                 E-mail
                             </ParagraphMedium>
                             <input
                                 type="email"
                                 value={usuario?.email || ''}
                                 disabled
-                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
+                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
                             />
-                            <ParagraphMedium className="text-gray-700 font-medium mb-2">
+                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
                                 Senha
                             </ParagraphMedium>
                             <input
@@ -249,10 +251,10 @@ function Configuracao() {
                                 className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
                             />
                             <button
-                                onClick={() => setEditingNome(true)}
-                                className="text-[var(--color-base)] text-sm font-medium hover:text-purple-700 transition-colors"
+                                onClick={() => setEditingSenha(true)}
+                                className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
                             >
-                                Editar
+                                Alterar
                             </button>
                         </div>
                     </div>
@@ -260,13 +262,12 @@ function Configuracao() {
                         {!showDeleteConfirm ? (
                             <button
                                 onClick={() => setShowDeleteConfirm(true)}
-                                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors"
+                                className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-base-hover)] transition-colors"
                             >
-                                <Trash2 size={18} />
                                 Deletar Conta
                             </button>
                         ) : (
-                            <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-red-200">
+                            <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-[var(--color-variant)]">
                                 <p className="text-gray-700 mb-4 text-center">
                                     Tem certeza que deseja deletar sua conta?.
                                 </p>
@@ -274,14 +275,14 @@ function Configuracao() {
                                     <button
                                         onClick={() => setShowDeleteConfirm(false)}
                                         disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-[var(--cinza-300)] disabled:opacity-50 transition-colors"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         onClick={handleDeleteAccount}
                                         disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                                        className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-variant)] disabled:opacity-50 transition-colors"
                                     >
                                         {saving ? 'Deletando...' : 'Deletar'}
                                     </button>

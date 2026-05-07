@@ -84,7 +84,7 @@ function Cadastro() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 py-3 bg-[#552ba9] text-white font-semibold rounded-lg hover:bg-[#42257c] transition disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex-1 py-3 bg-var(--color-base) text-white font-semibold rounded-lg hover:bg-var(--color-dark) transition disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loading ? 'Cadastrando...' : 'Cadastre-se'}
                             </button>
