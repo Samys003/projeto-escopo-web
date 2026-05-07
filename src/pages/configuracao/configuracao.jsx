@@ -207,7 +207,7 @@ function Configuracao() {
                                     <button
                                         onClick={handleNomeSave}
                                         disabled={saving}
-                                        className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-base-hover)] disabled:opacity-50 transition-colors"
+                                        className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
                                     >
                                         {saving ? 'Salvando...' : 'Salvar'}
                                     </button>
@@ -251,7 +251,7 @@ function Configuracao() {
                                 className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
                             />
                             <button
-                                onClick={() => setEditingSenha(true)}
+                                onClick={() => setEditingNome(true)}
                                 className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
                             >
                                 Alterar

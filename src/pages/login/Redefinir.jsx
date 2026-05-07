@@ -37,11 +37,11 @@ function Redefinir() {
                             />
                         </div>
 
-                        <div className="flex gap-4 pt-4">
+                        <div className="flex justify-center gap-2 pt-4 text-center">
                             <Link
                                 type="submit"
                                 to="/Login"
-                                className="flex-1 py-3 bg-[#552ba9] text-white items-center font-semibold rounded-lg hover:bg-[#42257c] transition"
+                                className=" py-3 w-20 mt-2 rounded-2xl bg-[#552ba9] text-white text-base font-semibold hover:bg-[#42257c] transition"
                             >
                                 Entrar
                             </Link>

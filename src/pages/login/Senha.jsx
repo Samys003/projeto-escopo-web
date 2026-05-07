@@ -52,11 +52,11 @@ function Senha() {
                                 />
                             ))}
                         </div>
-                        <div className="flex justify-center gap-2 pt-4">
+                        <div className="flex justify-center gap-2 pt-4 text-center">
                             <Link
                                 type="submit"
                                 to="/Redefinir"
-                                className=" py-3 mt-2 rounded-2xl bg-[#552ba9] text-white text-base font-semibold hover:bg-[#42257c] transition"
+                                className=" py-3 w-30 mt-2 rounded-2xl bg-[#552ba9] text-white text-base font-semibold hover:bg-[#42257c] transition"
                             >
                                 Confirmar
                             </Link>
