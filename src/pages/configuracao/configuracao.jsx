@@ -259,6 +259,14 @@ function Configuracao() {
                         </div>
                     </div>
                     <section className="mb-8">
+                        <button
+                            onClick={handleLogout}
+                            className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-base-hover)] transition-colors gap-2 flex items-center justify-center mb-4 mt-4"
+                        >
+                            <LogOut size={16} />
+                            Sair
+                        </button>
+
                         {!showDeleteConfirm ? (
                             <button
                                 onClick={() => setShowDeleteConfirm(true)}
