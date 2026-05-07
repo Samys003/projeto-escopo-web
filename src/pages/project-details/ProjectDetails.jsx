@@ -78,6 +78,25 @@ function ProjectDetails() {
             }
         ]
 
+    const registros = [
+
+        {
+            "id": 1,
+            "titulo": "Registro de Reunião",
+            "conteudo": "Conteúdo do registro",
+            "atualizado_em": "2026-04-14T10:00:00Z",
+            "criado_em": "2026-04-14T10:00:00Z"
+        },
+        {
+            "id": 1,
+            "titulo": "Registro de Reunião",
+            "conteudo": "Conteúdo do registro",
+            "atualizado_em": "2026-04-14T10:00:00Z",
+            "criado_em": "2026-04-14T10:00:00Z"
+        }
+
+
+    ]
 
 
     const [currentTab, setCurrentTab] = useState("Documentos")
@@ -87,6 +106,7 @@ function ProjectDetails() {
         "Registros",
         "Reuniões"
     ]
+
 
 
 
