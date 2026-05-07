@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // import Cadastro from "./pages/login/Cadastro";
 // import Senha from "./pages/login/Senha";
 // import Redefinir from "./pages/login/Redefinir";
-// import Dashboard from "./pages/Dashboard";
+// import Dashboard from "./pages/dashboard/Dashboard";
 import  ProjectCreator from "./pages/project-creator/ProjectCreator"
 
 function App() {
@@ -16,10 +16,11 @@ function App() {
     //     <Route path="/Login" element={<Login />} />
     //     <Route path="/Redefinir" element={<Redefinir />} />
     //     <Route path="/dashboard" element={<Dashboard />} />
+    //     <Route path="/project-creator" element={<ProjectCreator />} />
     //   </Routes>
     // </Router>
 
-    <ProjectCreator> </ProjectCreator>
+    <ProjectCreator></ProjectCreator>
 
 
   );

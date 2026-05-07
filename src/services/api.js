@@ -40,3 +40,15 @@ export async function register({ nome, email, senha }) {
   });
   return parseResponse(response);
 }
+
+export async function searchUserByEmail(email){
+  const response = await fetch(`${API_URL}/api/v1/usuario/email/${email}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id, nome, senha, email}),
+  });
+  return parseResponse(response)
+
+}
