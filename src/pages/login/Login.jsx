@@ -3,6 +3,8 @@ import { useState } from 'react';
 import LogoImg from '../../assets/logo(1).svg';
 import Carrossel from './components/Carrossel';
 import { login as loginApi } from '../../services/api';
+import Title2 from '../../components/Typography/Title2.jsx';
+import Title1 from '../../components/Typography/Title1.jsx';
 
 function Login() {
     const navigate = useNavigate();
@@ -46,16 +48,20 @@ function Login() {
                 <div className="flex flex-col md:flex-row items-stretch gap-8">
                     <div className="w-full md:w-[45%]">
                         <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8 h-full">
-                            <h1 className="text-2xl font-bold text-center text-gray-900! mb-8">
+                            {/* <h1 className="text-2xl font-bold text-center text-gray-900! mb-8">
                                 Login
-                            </h1>
-
+                            </h1> */}
+                            <Title1 className="text-xl font-bold text-center text-[var(--color-base)] mb-8">
+                                Transforme ideias em requisitos bem definidos.
+                            </Title1>
+                            <Title2 className="text-2xl font-bold text-center text-gray-900! mb-8">
+                                Login
+                            </Title2>
                             {error && (
                                 <p className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
                                     {error}
                                 </p>
                             )}
-
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div>
                                     <label className="block text-gray-800 font-medium mb-2">

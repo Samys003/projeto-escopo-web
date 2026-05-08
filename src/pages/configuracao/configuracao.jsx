@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, LogOut, Trash2 } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader.jsx';
-import ParagraphLarge from '../../components/Typography/ParagraphLarge.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import Title3 from '../../components/Typography/Title3.jsx';
+import Title2 from '../../components/Typography/Title2.jsx';
+import Title1 from '../../components/Typography/Title1.jsx';
+import Planos from './components/planos.jsx';
 import {
     updateUserName,
     updateUserProfilePicture,
     deleteUserAccount,
     getUserByEmail,
 } from '../../services/api.js';
+import Title4 from '../../components/Typography/Title4.jsx';
 
 function Configuracao() {
     const navigate = useNavigate();
@@ -22,6 +25,7 @@ function Configuracao() {
     const [fotoPreview, setFotoPreview] = useState(null);
     const [editingNome, setEditingNome] = useState(false);
     const [nomeTemp, setNomeTemp] = useState('');
+    const [showPlanos, setShowPlanos] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
@@ -258,12 +262,24 @@ function Configuracao() {
                             </button>
                         </div>
 
-                        <div className="mt-5 mb-5">
-                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                Plano Atual
-                            </ParagraphMedium>
-                            <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-4">
-                                {'Free'} {'Fazer Upgrade'}
+                        <div className="mt-5 mb-5 align-left">
+                            <Title1 className="text-gray-700 font-medium align-left text-left">
+                                Plano Atual:
+                            </Title1>
+                            <div className="rounded-[32px] bg-[var(--cinza-200)]  p-5">
+                                <div className="flex flex-col gap-4">
+                                    <div>
+                                        <Title4 className="text-[var(--color-variant)] text-left">
+                                            Free
+                                        </Title4>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowPlanos(true)}
+                                        className="text-[var(--color-base)] font-semibold hover:text-[var(--color-base-hover)] transition-colors text-right"
+                                    >
+                                        Fazer Upgrade
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -308,6 +324,8 @@ function Configuracao() {
                         )}
                     </section>
                 </section>
+
+                {showPlanos && <Planos onClose={() => setShowPlanos(false)} />}
             </main>
         </div>
     );
