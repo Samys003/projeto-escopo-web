@@ -7,6 +7,8 @@ import ParagraphSmall from "../../components/Typography/ParagraphSmall"
 import ComponentMenu from "./components/ComponentMenu";
 import { useState } from "react";
 import Documents from "./components/Documents";
+import ButtonRegistrer from "./components/ButtonRegister";
+import Register from "./components/Register";
 
 
 
@@ -81,22 +83,54 @@ function ProjectDetails() {
     const registros = [
 
         {
-            "id": 1,
-            "titulo": "Registro de Reunião",
-            "conteudo": "Conteúdo do registro",
-            "atualizado_em": "2026-04-14T10:00:00Z",
-            "criado_em": "2026-04-14T10:00:00Z"
+            id: 1,
+            titulo: "Registro de Reunião",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-04-14T10:00:00Z",
+            criado_em: "2026-05-14T10:00:00Z"
         },
         {
-            "id": 1,
-            "titulo": "Registro de Reunião",
-            "conteudo": "Conteúdo do registro",
-            "atualizado_em": "2026-04-14T10:00:00Z",
-            "criado_em": "2026-04-14T10:00:00Z"
+            id: 2,
+            titulo: "Registro de Reunião 2",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-05-11T10:00:00Z",
+            criado_em: "2026-04-14T10:00:00Z"
+        },
+        {
+            id: 3,
+            titulo: "Registro de Reunião 3",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-06-12T10:00:00Z",
+            criado_em: "2026-03-14T10:00:00Z"
         }
 
 
+
     ]
+
+    // const formatRegistros = registros.reduce((acc, registro) => {
+    //     const data = new Date(registro.criado_em)
+    //     const month = data.toLocaleDateString("pt-BR", {
+    //         month: "long"
+    //     })
+
+    //     const mes = {
+    //         id: data.getMonth() + 1,
+    //         month: month,
+    //         year: data.getFullYear()
+    //     }
+
+    //     if (!acc[mes.id]) {
+    //         acc[mes.id] = []
+    //     }
+
+    //     acc[mes.id].push(registro)
+
+    //     return acc
+
+    // }, {})
+
+
 
 
     const [currentTab, setCurrentTab] = useState("Documentos")
@@ -143,9 +177,8 @@ function ProjectDetails() {
                 )}
                 {currentTab === "Registros" && (
                     <div className="pt-4">
-                        <button>
-                            <ParagraphSmall className="border border-(--cinza-300) bg-(--cinza-100) text-(--cinza-500) w-30 h-7.5 flex items-center justify-center rounded-xl">+ Novo Registro</ParagraphSmall>
-                        </button>
+                        <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+
                     </div>
                 )}
                 {currentTab === "Reuniões" && (
