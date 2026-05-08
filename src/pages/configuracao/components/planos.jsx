@@ -35,7 +35,7 @@ function Planos({ onClose }) {
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 rounded-full bg-[#f5f3ff] p-2 text-[var(--color-base)] hover:bg-[#ede9fe] transition-colors"
+                    className="absolute right-4 top-4 rounded-full bg-[#f5f3ff] p-2 text-[var(--color-base)] hover:bg-[#2d00f5] transition-colors"
                     aria-label="Fechar"
                 >
                     ×
@@ -48,7 +48,7 @@ function Planos({ onClose }) {
                                 key={plan.name}
                                 className={`rounded-[28px] ${
                                     index === 0
-                                        ? 'border-[#ede9ff] bg-[#faf5ff]'
+                                        ? 'border-[#ede9ff] bg-[#ffffff]'
                                         : 'border-[#e5e7eb] bg-white'
                                 }`}
                             >
