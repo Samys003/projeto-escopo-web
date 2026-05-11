@@ -1,10 +1,16 @@
 import MobileHeader from "../../components/MobileHeader";
 import IconButton from "../../components/IconButton";
-import { SquarePen } from "lucide-react";
+import { SquarePen, FolderPlus } from "lucide-react";
 import Title2 from "../../components/Typography/Title2";
 import ParagraphMedium from "../../components/Typography/ParagraphMedium";
 import ComponentMenu from "./components/ComponentMenu";
 import { useState } from "react";
+import Documents from "./components/Documents";
+import ButtonRegistrer from "./components/ButtonRegister";
+import Register from "./components/Register";
+import Meeting from "./components/Meeting";
+import PopUp from "./components/PopUp";
+
 
 
 
@@ -23,94 +29,267 @@ function ProjectDetails() {
 
     }
 
-    const documentos =
+    const exibirDocumento =
         [
             {
-                "id": 1,
-                "nome": "Requisitos",
-                "documentos": [
+                id: 1,
+                nome: "Requisitos",
+                documentos: [
                     {
-                        "id": 1,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 1,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     },
                     {
-                        "id": 2,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 2,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     },
                     {
-                        "id": 3,
-                        "titulo": "Documento de Requisitos",
-                        "quantidade_versoes": 3,
-                        "ultima_alteracao": "2026-04-14"
+                        id: 3,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
+                    }
+                ]
+            },
+
+            {
+                id: 2,
+                nome: "RNF",
+                documentos: [
+                    {
+                        id: 1,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
+                    },
+                    {
+                        id: 2,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
+                    },
+                    {
+                        id: 3,
+                        titulo: "Documento de Requisitos",
+                        quantidade_versoes: 3,
+                        ultima_alteracao: "2026-04-14"
                     }
                 ]
             }
         ]
 
-    const [currentTab, setCurrentTab] = useState([
+    const registros = [
 
         {
             id: 1,
-            nome: "Documentos",
-            active: true
+            titulo: "Registro de Reunião",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-04-14T10:00:00Z",
+            criado_em: "2026-05-14T10:00:00Z"
         },
         {
             id: 2,
-            nome: "Registros",
-            active: false
+            titulo: "Registro de Reunião 2",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-05-11T10:00:00Z",
+            criado_em: "2026-04-14T10:00:00Z"
         },
         {
             id: 3,
-            nome: "Reuniões",
-            active: false
+            titulo: "Registro de Reunião 3",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-06-12T10:00:00Z",
+            criado_em: "2026-03-14T10:00:00Z"
+        },
+        {
+            id: 4,
+            titulo: "Registro de Reunião 4",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-05-12T10:00:00Z",
+            criado_em: "2026-04-14T10:00:00Z"
+        }
+
+
+
+    ]
+
+    const formatRegistros = registros.reduce((acc, registro) => {
+
+        const data = new Date(registro.criado_em)
+
+        const ano = data.getFullYear()
+
+        const mes = data.toLocaleDateString("pt-BR", {
+            month: "long"
+        })
+
+        const mesFormatado =
+            mes.charAt(0).toUpperCase() + mes.slice(1)
+
+        //cria o ano
+        if (!acc[ano]) {
+            acc[ano] = {}
+        }
+
+        //cria o mes
+        if (!acc[ano][mesFormatado]) {
+            acc[ano][mesFormatado] = []
+        }
+
+        //adicionando os registros
+        acc[ano][mesFormatado].push(registro)
+
+        return acc
+
+    }, {})
+
+    const reunioes = [
+        {
+            "id": 1,
+            "titulo": "Reunião de Planejamento",
+            "criado_em": "2026-05-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+        {
+            "id": 2,
+            "titulo": "Reunião de Requisitos",
+            "criado_em": "2026-03-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
         },
 
+        {
+            "id": 3,
+            "titulo": "Reunião de alinhamentos",
+            "criado_em": "2026-04-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+        {
+            "id": 4,
+            "titulo": "Reunião de alinhamentos 2",
+            "criado_em": "2026-04-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+    ]
 
-    ])
+    const formatReunioes = reunioes.reduce((acc, reuniao) => {
 
-    function selectionMenu(selectionId) {
-        const selection = currentTab.map((tab) => {
-            return {
-                ...tab,
-                active: tab.id === selectionId
+        const data = new Date(reuniao.criado_em)
 
-            }
+        const ano = data.getFullYear()
+
+        const mes = data.toLocaleDateString("pt-BR", {
+            month: "long"
         })
-        setCurrentTab(selection)
-    }
+
+        const mesFormatado =
+            mes.charAt(0).toUpperCase() + mes.slice(1)
+
+        //cria o ano
+        if (!acc[ano]) {
+            acc[ano] = {}
+        }
+
+        //cria o mes
+        if (!acc[ano][mesFormatado]) {
+            acc[ano][mesFormatado] = []
+        }
+
+        //adicionando os registros
+        acc[ano][mesFormatado].push(reuniao)
+
+        return acc
+
+    }, {})
+
+
+    const [currentTab, setCurrentTab] = useState("Documentos")
+
+    const tabs = [
+        "Documentos",
+        "Registros",
+        "Reuniões"
+    ]
+
+
+
+
+    const [openModal, setOpenModal] = useState(false)
+
+
 
 
     return (
         <div className="w-full">
             <MobileHeader />
-            <div className="w-full flex items-center gap-2 pl-2.5 pt-2">
-                <Title2 className="text-2xl" >
-                    {project.titulo}
-                </Title2>
-                <button>
+            <div className="w-full flex flex-col p-4" >
+                <div className="w-full flex items-center gap-2 ">
+                    <Title2 className="text-2xl" >
+                        {project.titulo}
+                    </Title2>
                     <IconButton icon={<SquarePen />} />
-                </button>
-            </div>
-            <div className="w-full flex flex-col  gap-2 p-4 ">
-                <div className="">
-                    <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
                 </div>
-                <div>
-                    <ParagraphMedium>Descrição: {project.descricao} </ParagraphMedium>
+                <div className="w-full flex flex-col  gap-2">
+                    <div className="">
+                        <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
+                    </div>
+                    <div>
+                        <ParagraphMedium>Descrição: {project.descricao} </ParagraphMedium>
+                    </div>
+                    <div>
+                        <ParagraphMedium>Data de Criação: {new Date(project.data_criacao).toLocaleDateString()}</ParagraphMedium>
+                        <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
+                        <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
+                    </div>
+                    <ComponentMenu currentTab={currentTab} setCurrentTab={setCurrentTab} tabs={tabs}></ComponentMenu>
                 </div>
-                <div>
-                    <ParagraphMedium>Data de Criação: {new Date(project.data_criacao).toLocaleDateString()}</ParagraphMedium>
-                    <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
-                    <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
-                </div>
-                <ComponentMenu currentTab={currentTab} selectionMenu={selectionMenu}></ComponentMenu>
-            </div>
-        </div>
+                {currentTab === "Documentos" && (
+                    <div className="flex flex-col w-full items-center gap-4 pt-5 ">
+                        <IconButton
+                            onClick={() => setOpenModal(true)}
+                            className="w-40 gap-2"
+                            icon={<FolderPlus />}>Nova Categoria
+                        </IconButton>
+                        {openModal && (
+                            <PopUp onClose={() => setOpenModal(false)} />
+                        )}
+                        <Documents exibirDocumento={exibirDocumento}></Documents>
+                    </div>
+                )}
+                {currentTab === "Registros" && (
+                    <div className="pt-4">
+                        <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+                        <Register formatRegistros={formatRegistros}></Register>
+                    </div>
+                )}
+                {currentTab === "Reuniões" && (
+                    <div className="pt-4">
+                        <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
+                        <Meeting formatReunioes={formatReunioes}></Meeting>
+                    </div>
+                )}
+
+            </div >
+        </div >
     )
 }
+
+
+
 
 export default ProjectDetails;

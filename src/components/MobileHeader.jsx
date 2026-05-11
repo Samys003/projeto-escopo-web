@@ -1,30 +1,27 @@
-import logotipoMobile from '../assets/logotipo-mobile.svg'
+import logotipoMobile from '../assets/logotipo-mobile.svg';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Title3 from './Typography/Title3';
 
-function MobileHeader(){
-
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
+function MobileHeader() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     const itensMenu = [
         { id: 1, nome: 'Dashboard', path: '/dashboard' },
         { id: 2, nome: 'Novo Projeto', path: '/novo-projeto' },
         { id: 3, nome: 'Lista de projetos', path: '/projetos' },
         { id: 4, nome: 'Notificações', path: '/notificacoes' },
-        { id: 5, nome: 'Configurações', path: '/configuracoes' }
-    ]
+        { id: 5, nome: 'Configurações', path: '/configuracao' },
+    ];
 
     return (
         <div className="relative">
-
             <header className="px-4 bg-(--color-base) flex place-content-between relative z-50">
                 <img src={logotipoMobile} alt="" />
                 <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                    {isMenuOpen
-                        ? <X className='text-white' />
-                        : <Menu className='text-white' />
-                    }
+                    {isMenuOpen ? <X className="text-white" /> : <Menu className="text-white" />}
                 </button>
             </header>
 
@@ -38,14 +35,18 @@ function MobileHeader(){
                 `}
             >
                 {itensMenu.map((item) => (
-                    <Title3 key={item.id} className='text-white'>
-                        {item.nome}
-                    </Title3>
+                    <Link
+                        key={item.id}
+                        to={item.path}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="hover:opacity-70 transition-opacity"
+                    >
+                        <Title3 className="text-white">{item.nome}</Title3>
+                    </Link>
                 ))}
             </div>
-
         </div>
-    )
+    );
 }
 
 export default MobileHeader;
