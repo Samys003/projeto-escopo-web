@@ -9,7 +9,7 @@ function Documents({ exibirDocumento }) {
         <div className="w-full flex flex-col gap-3">
             {exibirDocumento.map((doc) => {
                 return (
-                    <div className=" w-full flex flex-col gap-1 ">
+                    <div key={doc.id} className=" w-full flex flex-col gap-1 ">
                         <div className="w-full flex justify-between">
                             <Title2 key={doc.id}>{doc.nome}</Title2>
                             <IconButton className="bg-transparent" icon={<Trash2 className="text-(--color-base)"></Trash2>}></IconButton>

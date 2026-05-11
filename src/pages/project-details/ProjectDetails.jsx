@@ -9,6 +9,7 @@ import { useState } from "react";
 import Documents from "./components/Documents";
 import ButtonRegistrer from "./components/ButtonRegister";
 import Register from "./components/Register";
+import Meeting from "./components/Meeting";
 
 
 
@@ -102,35 +103,114 @@ function ProjectDetails() {
             conteudo: "Conteúdo do registro",
             atualizado_em: "2026-06-12T10:00:00Z",
             criado_em: "2026-03-14T10:00:00Z"
+        },
+        {
+            id: 4,
+            titulo: "Registro de Reunião 4",
+            conteudo: "Conteúdo do registro",
+            atualizado_em: "2026-05-12T10:00:00Z",
+            criado_em: "2026-04-14T10:00:00Z"
         }
 
 
 
     ]
 
-    // const formatRegistros = registros.reduce((acc, registro) => {
-    //     const data = new Date(registro.criado_em)
-    //     const month = data.toLocaleDateString("pt-BR", {
-    //         month: "long"
-    //     })
+    const formatRegistros = registros.reduce((acc, registro) => {
 
-    //     const mes = {
-    //         id: data.getMonth() + 1,
-    //         month: month,
-    //         year: data.getFullYear()
-    //     }
+        const data = new Date(registro.criado_em)
 
-    //     if (!acc[mes.id]) {
-    //         acc[mes.id] = []
-    //     }
+        const ano = data.getFullYear()
 
-    //     acc[mes.id].push(registro)
+        const mes = data.toLocaleDateString("pt-BR", {
+            month: "long"
+        })
 
-    //     return acc
+        const mesFormatado =
+            mes.charAt(0).toUpperCase() + mes.slice(1)
 
-    // }, {})
+        //cria o ano
+        if (!acc[ano]) {
+            acc[ano] = {}
+        }
 
+        //cria o mes
+        if (!acc[ano][mesFormatado]) {
+            acc[ano][mesFormatado] = []
+        }
 
+        //adicionando os registros
+        acc[ano][mesFormatado].push(registro)
+
+        return acc
+
+    }, {})
+
+    const reunioes = [
+        {
+            "titulo": "Reunião de Planejamento",
+            "criado_em": "2026-05-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+        {
+            "titulo": "Reunião de Requisitos",
+            "criado_em": "2026-03-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+
+        {
+            "titulo": "Reunião de alinhamentos",
+            "criado_em": "2026-04-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+        {
+            "titulo": "Reunião de alinhamentos 2",
+            "criado_em": "2026-04-14T10:00:00Z",
+            "foto_usuarios": [
+                "https://ui-avatars.com/api/?name=Samara",
+                "https://ui-avatars.com/api/?name=Samara"
+            ]
+        },
+    ]
+
+    const formatReunioes = reunioes.reduce((acc, reuniao) => {
+
+        const data = new Date(reuniao.criado_em)
+
+        const ano = data.getFullYear()
+
+        const mes = data.toLocaleDateString("pt-BR", {
+            month: "long"
+        })
+
+        const mesFormatado =
+            mes.charAt(0).toUpperCase() + mes.slice(1)
+
+        //cria o ano
+        if (!acc[ano]) {
+            acc[ano] = {}
+        }
+
+        //cria o mes
+        if (!acc[ano][mesFormatado]) {
+            acc[ano][mesFormatado] = []
+        }
+
+        //adicionando os registros
+        acc[ano][mesFormatado].push(reuniao)
+
+        return acc
+
+    }, {})
 
 
     const [currentTab, setCurrentTab] = useState("Documentos")
@@ -178,11 +258,14 @@ function ProjectDetails() {
                 {currentTab === "Registros" && (
                     <div className="pt-4">
                         <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
-
+                        <Register formatRegistros={formatRegistros}></Register>
                     </div>
                 )}
                 {currentTab === "Reuniões" && (
-                    <div></div>
+                    <div className="pt-4">
+                        <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
+                        <Meeting formatReunioes={formatReunioes}></Meeting>
+                    </div>
                 )}
 
             </div >
