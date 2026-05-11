@@ -3,7 +3,7 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium.jsx'
 import Title3 from '../../../components/Typography/Title3.jsx';
 import Title2 from '../../../components/Typography/Title2.jsx';
 
-const plans = [
+export const plans = [
     {
         name: 'Free',
         price: '$0',
@@ -31,11 +31,11 @@ const plans = [
 function Planos({ onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
-            <div className="relative w-full max-w-md overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] border border-[#e5e7eb]">
+            <div className="relative w-full max-h-[80vh] max-w-md overflow-y-auto rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] border border-[#e5e7eb]">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 rounded-full bg-[#f5f3ff] p-2 text-[var(--color-base)] hover:bg-[#ffffff] transition-colors"
+                    className="absolute right-4 top-4 rounded-full bg-[var(--cinza-100)] p-1 text-[var(--color-base)] hover:bg-[var(--color-variant)] transition-colors"
                     aria-label="Fechar"
                 >
                     ×
@@ -48,7 +48,7 @@ function Planos({ onClose }) {
                                 key={plan.name}
                                 className={`rounded-[28px] ${
                                     index === 0
-                                        ? 'border-[#ede9ff] bg-[#ffffff]'
+                                        ? 'border-[#ede9ff] bg-[var(--cinza-100)]'
                                         : 'border-[#e5e7eb] bg-white'
                                 }`}
                             >

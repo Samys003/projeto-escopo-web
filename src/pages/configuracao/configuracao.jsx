@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, LogOut, Trash2 } from 'lucide-react';
+import { Camera, LogOut, Pen, PenLine, Trash2 } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import Title3 from '../../components/Typography/Title3.jsx';
@@ -234,7 +234,7 @@ function Configuracao() {
                                 </div>
                                 <label
                                     htmlFor="foto-input"
-                                    className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-base)] transition-colors shadow-md"
+                                    className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-dark)] transition-colors shadow-md"
                                 >
                                     <Camera size={16} />
                                 </label>
@@ -283,6 +283,11 @@ function Configuracao() {
                                 <Title3 className="text-gray-900 mb-2">
                                     {usuario?.nome || 'Usuário'}
                                 </Title3>
+                                <label
+                                    htmlFor="nome-input"
+                                    onClick={() => setEditingNome(true)}
+                                    className=" "
+                                ></label>
                             </div>
                         )}
 
@@ -355,18 +360,26 @@ function Configuracao() {
                                         disabled
                                         className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
                                     />
-                                    <button
+                                    <label
+                                        htmlFor="password-input"
                                         onClick={() => setEditingPassword(true)}
-                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                        className=" text-[var(--color-base)] p-3 cursor-pointer hover:bg-[var(--color-dark)] transition-colors absolute right-3 top-1/2 transform -translate-y-1/2"
+                                    >
+                                        <PenLine size={10} />
+                                    </label>
+
+                                    {/* <button
+                                        onClick={() => setEditingPassword(true)}
+                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
                                     >
                                         Alterar Senha
                                     </button>
                                     <button
                                         onClick={() => setEditingNome(true)}
-                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
                                     >
                                         Alterar Nome
-                                    </button>
+                                    </button> */}
                                 </>
                             )}
                         </div>
@@ -376,18 +389,18 @@ function Configuracao() {
                                 Plano Atual:
                             </Title1>
                             <div className="rounded-[32px] bg-[var(--cinza-200)]  p-5">
-                                <div className="flex flex-col gap-4">
+                                <div className="flex flex-col   ">
                                     <div>
-                                        <Title4 className="text-[var(--color-variant)] text-left">
-                                            Free
+                                        <Title4 className="text-[var(--color-variant)]">
+                                            {Planos[usuario?.plano_atual]?.nome || 'Free'}
                                         </Title4>
+                                        <button
+                                            onClick={() => setShowPlanos(true)}
+                                            className="text-[var(--color-base)] font-semibold hover:text-[var(--color-dark)] transition-colors right text-right"
+                                        >
+                                            Fazer Upgrade
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => setShowPlanos(true)}
-                                        className="text-[var(--color-base)] font-semibold hover:text-[var(--color-base-hover)] transition-colors text-right"
-                                    >
-                                        Fazer Upgrade
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -395,7 +408,7 @@ function Configuracao() {
                     <section className="mb-8">
                         <button
                             onClick={handleLogout}
-                            className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-base-hover)] transition-colors gap-2 flex items-center justify-center mb-4 mt-4"
+                            className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-dark)] transition-colors gap-2 flex items-center justify-center mb-4 mt-4"
                         >
                             <LogOut size={16} />
                             Sair
@@ -404,7 +417,7 @@ function Configuracao() {
                         {!showDeleteConfirm ? (
                             <button
                                 onClick={() => setShowDeleteConfirm(true)}
-                                className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-base-hover)] transition-colors"
+                                className="text-[var(--color-base)] text-sm font-medium hover:text-red-700 transition-colors"
                             >
                                 Deletar Conta
                             </button>
@@ -424,7 +437,7 @@ function Configuracao() {
                                     <button
                                         onClick={handleDeleteAccount}
                                         disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-variant)] disabled:opacity-50 transition-colors"
+                                        className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
                                     >
                                         {saving ? 'Deletando...' : 'Deletar'}
                                     </button>
