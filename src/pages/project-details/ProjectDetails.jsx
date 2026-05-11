@@ -3,13 +3,14 @@ import IconButton from "../../components/IconButton";
 import { SquarePen, FolderPlus } from "lucide-react";
 import Title2 from "../../components/Typography/Title2";
 import ParagraphMedium from "../../components/Typography/ParagraphMedium";
-import ParagraphSmall from "../../components/Typography/ParagraphSmall"
 import ComponentMenu from "./components/ComponentMenu";
 import { useState } from "react";
 import Documents from "./components/Documents";
 import ButtonRegistrer from "./components/ButtonRegister";
 import Register from "./components/Register";
 import Meeting from "./components/Meeting";
+import PopUp from "./components/PopUp";
+
 
 
 
@@ -148,6 +149,7 @@ function ProjectDetails() {
 
     const reunioes = [
         {
+            "id": 1,
             "titulo": "Reunião de Planejamento",
             "criado_em": "2026-05-14T10:00:00Z",
             "foto_usuarios": [
@@ -156,6 +158,7 @@ function ProjectDetails() {
             ]
         },
         {
+            "id": 2,
             "titulo": "Reunião de Requisitos",
             "criado_em": "2026-03-14T10:00:00Z",
             "foto_usuarios": [
@@ -165,6 +168,7 @@ function ProjectDetails() {
         },
 
         {
+            "id": 3,
             "titulo": "Reunião de alinhamentos",
             "criado_em": "2026-04-14T10:00:00Z",
             "foto_usuarios": [
@@ -173,6 +177,7 @@ function ProjectDetails() {
             ]
         },
         {
+            "id": 4,
             "titulo": "Reunião de alinhamentos 2",
             "criado_em": "2026-04-14T10:00:00Z",
             "foto_usuarios": [
@@ -224,6 +229,10 @@ function ProjectDetails() {
 
 
 
+    const [openModal, setOpenModal] = useState(false)
+
+
+
 
     return (
         <div className="w-full">
@@ -251,8 +260,15 @@ function ProjectDetails() {
                 </div>
                 {currentTab === "Documentos" && (
                     <div className="flex flex-col w-full items-center gap-4 pt-5 ">
-                        <IconButton className="w-40 gap-2" icon={<FolderPlus />}>Nova Categoria</IconButton>
-                        <Documents exibirDocumento={exibirDocumento} ></Documents>
+                        <IconButton
+                            onClick={() => setOpenModal(true)}
+                            className="w-40 gap-2"
+                            icon={<FolderPlus />}>Nova Categoria
+                        </IconButton>
+                        {openModal && (
+                            <PopUp onClose={() => setOpenModal(false)} />
+                        )}
+                        <Documents exibirDocumento={exibirDocumento}></Documents>
                     </div>
                 )}
                 {currentTab === "Registros" && (

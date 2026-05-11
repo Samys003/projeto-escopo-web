@@ -18,7 +18,7 @@ function Documents({ exibirDocumento }) {
                             {doc.documentos.slice(0, 2).map((subdoc) => {
                                 return (
                                     <div className="flex justify-evenly w-full">
-                                        <div className="">
+                                        <div className="" key={subdoc.id}>
                                             <ParagraphLarge>{subdoc.titulo}</ParagraphLarge>
                                             <ParagraphLarge className="text-(--cinza-500)">Ultima Alteração: {new Date(subdoc.ultima_alteracao).toLocaleDateString()}</ParagraphLarge>
                                         </div>

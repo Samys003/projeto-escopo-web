@@ -16,7 +16,7 @@ function Meeting({ formatReunioes }) {
                             </div>
                             {reunioes.map((reuniao) => (
                                 <div className="flex border border-(--cinza-300) justify-between rounded-xl p-3 mb-3">
-                                    <div key={reuniao} className="">
+                                    <div key={reuniao.id} className="">
                                         <ParagraphMedium>{reuniao.titulo}</ParagraphMedium>
                                         <div className="flex -space-x-4">
                                             {reuniao.foto_usuarios.map((foto, index) => (
