@@ -35,7 +35,7 @@ function Planos({ onClose }) {
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 rounded-full bg-[#f5f3ff] p-2 text-[var(--color-base)] hover:bg-[#2d00f5] transition-colors"
+                    className="absolute right-4 top-4 rounded-full bg-[#f5f3ff] p-2 text-[var(--color-base)] hover:bg-[#ffffff] transition-colors"
                     aria-label="Fechar"
                 >
                     ×

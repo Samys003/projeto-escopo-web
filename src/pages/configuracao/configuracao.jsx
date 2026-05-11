@@ -12,6 +12,7 @@ import {
     updateUserProfilePicture,
     deleteUserAccount,
     getUserByEmail,
+    updatePassword,
 } from '../../services/api.js';
 import Title4 from '../../components/Typography/Title4.jsx';
 
@@ -24,7 +25,11 @@ function Configuracao() {
     const [success, setSuccess] = useState('');
     const [fotoPreview, setFotoPreview] = useState(null);
     const [editingNome, setEditingNome] = useState(false);
+    const [editingPassword, setEditingPassword] = useState(false);
     const [nomeTemp, setNomeTemp] = useState('');
+    const [senhaAtual, setSenhaAtual] = useState('');
+    const [senhaNova, setSenhaNova] = useState('');
+    const [senhaNovaConfirm, setSenhaNovaConfirm] = useState('');
     const [showPlanos, setShowPlanos] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -76,6 +81,52 @@ function Configuracao() {
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
             setError(err.message || 'Erro ao atualizar nome');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handlePasswordSave = async () => {
+        if (!senhaAtual.trim()) {
+            setError('Senha atual é obrigatória');
+            return;
+        }
+
+        if (!senhaNova.trim()) {
+            setError('Nova senha é obrigatória');
+            return;
+        }
+
+        if (senhaNova.length < 8) {
+            setError('A nova senha deve ter no mínimo 8 caracteres');
+            return;
+        }
+
+        if (senhaNova !== senhaNovaConfirm) {
+            setError('As senhas não coincidem');
+            return;
+        }
+
+        if (senhaAtual === senhaNova) {
+            setError('A nova senha deve ser diferente da senha atual');
+            return;
+        }
+
+        try {
+            setSaving(true);
+            setError('');
+            setSuccess('');
+
+            await updatePassword({ senha_atual: senhaAtual, senha_nova: senhaNova });
+
+            setEditingPassword(false);
+            setSenhaAtual('');
+            setSenhaNova('');
+            setSenhaNovaConfirm('');
+            setSuccess('Senha atualizada com sucesso!');
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (err) {
+            setError(err.message || 'Erro ao atualizar senha');
         } finally {
             setSaving(false);
         }
@@ -248,18 +299,76 @@ function Configuracao() {
                             <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
                                 Senha
                             </ParagraphMedium>
-                            <input
-                                type="password"
-                                value={usuario?.senha || ''}
-                                disabled
-                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
-                            />
-                            <button
-                                onClick={() => setEditingNome(true)}
-                                className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
-                            >
-                                Alterar
-                            </button>
+                            {editingPassword ? (
+                                <div className="space-y-3">
+                                    <input
+                                        type="password"
+                                        placeholder="Senha atual"
+                                        value={senhaAtual}
+                                        onChange={(e) => setSenhaAtual(e.target.value)}
+                                        disabled={saving}
+                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Nova senha"
+                                        value={senhaNova}
+                                        onChange={(e) => setSenhaNova(e.target.value)}
+                                        disabled={saving}
+                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Confirmar nova senha"
+                                        value={senhaNovaConfirm}
+                                        onChange={(e) => setSenhaNovaConfirm(e.target.value)}
+                                        disabled={saving}
+                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                    />
+                                    <div className="flex gap-2 mt-3">
+                                        <button
+                                            onClick={handlePasswordSave}
+                                            disabled={saving}
+                                            className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
+                                        >
+                                            {saving ? 'Salvando...' : 'Salvar'}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setEditingPassword(false);
+                                                setSenhaAtual('');
+                                                setSenhaNova('');
+                                                setSenhaNovaConfirm('');
+                                            }}
+                                            disabled={saving}
+                                            className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <input
+                                        type="password"
+                                        value="••••••••"
+                                        disabled
+                                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
+                                    />
+                                    <button
+                                        onClick={() => setEditingPassword(true)}
+                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                    >
+                                        Alterar Senha
+                                    </button>
+                                    <button
+                                        onClick={() => setEditingNome(true)}
+                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                    >
+                                        Alterar Nome
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         <div className="mt-5 mb-5 align-left">

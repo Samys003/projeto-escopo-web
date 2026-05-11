@@ -80,3 +80,12 @@ export async function getUserByEmail(email) {
     });
     return parseResponse(response);
 }
+
+export async function updatePassword({ senha_atual, senha_nova }) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/senha`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ senha_atual, senha_nova }),
+    });
+    return parseResponse(response);
+}
