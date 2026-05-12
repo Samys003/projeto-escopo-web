@@ -90,20 +90,19 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     return parseResponse(response);
 }
 
-export async function searchUserByEmail(email){
-  const response = await fetch(`${API_URL}/api/v1/usuario/email/${email}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id, nome, senha, email}),
-  });
-  return parseResponse(response)
-
+export async function searchUserByEmail(email) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/email/${email}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, nome, senha, email }),
+    });
+    return parseResponse(response);
 }
 
-export async function getDashboard(){
-        const response = await fetch(`${API_URL}/api/v1/dashboard/`, {
+export async function getDashboard() {
+    const response = await fetch(`${API_URL}/api/v1/dashboard/`, {
         method: 'GET',
         headers: getAuthHeaders(),
     });
@@ -115,6 +114,14 @@ export async function createProject({ titulo, descricao, integrantes }) {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ titulo, descricao, integrantes }),
+    });
+    return parseResponse(response);
+}
+
+export async function getProjects() {
+    const response = await fetch(`${API_URL}/api/v1/projetos/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
     });
     return parseResponse(response);
 }

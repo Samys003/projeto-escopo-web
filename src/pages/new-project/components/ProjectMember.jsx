@@ -16,7 +16,7 @@ function ProjectMember({ integrante, isOwner = false, onClose }) {
                     className="w-8 h-8 rounded-full"
                 />
                 <div>
-                    <ParagraphMedium>{integrante.nome}</ParagraphMedium>
+                    <ParagraphMedium className="truncate">{integrante.nome}</ParagraphMedium>
 
                     {isOwner && (
                         <ParagraphMedium className="text-(--cinza-500)">
