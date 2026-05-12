@@ -279,15 +279,18 @@ function Configuracao() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="mb-4">
+                            <div className="mb-4 relative">
                                 <Title3 className="text-gray-900 mb-2">
                                     {usuario?.nome || 'Usuário'}
                                 </Title3>
                                 <label
                                     htmlFor="nome-input"
                                     onClick={() => setEditingNome(true)}
-                                    className=" "
-                                ></label>
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
+                                    style={{ transform: 'translate(-99%, -1%)' }}
+                                >
+                                    <PenLine size={16} />
+                                </label>
                             </div>
                         )}
 
@@ -353,7 +356,7 @@ function Configuracao() {
                                     </div>
                                 </div>
                             ) : (
-                                <>
+                                <div className="relative">
                                     <input
                                         type="password"
                                         value="••••••••"
@@ -363,9 +366,10 @@ function Configuracao() {
                                     <label
                                         htmlFor="password-input"
                                         onClick={() => setEditingPassword(true)}
-                                        className=" text-[var(--color-base)] p-3 cursor-pointer hover:bg-[var(--color-dark)] transition-colors absolute right-3 top-1/2 transform -translate-y-1/2"
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
+                                        style={{ transform: 'translateY(-50%)' }}
                                     >
-                                        <PenLine size={10} />
+                                        <PenLine size={16} />
                                     </label>
 
                                     {/* <button
@@ -380,7 +384,7 @@ function Configuracao() {
                                     >
                                         Alterar Nome
                                     </button> */}
-                                </>
+                                </div>
                             )}
                         </div>
 
@@ -388,9 +392,9 @@ function Configuracao() {
                             <Title1 className="text-gray-700 font-medium align-left text-left">
                                 Plano Atual:
                             </Title1>
-                            <div className="rounded-[32px] bg-[var(--cinza-200)]  p-5">
+                            <div className="rounded-[5px] bg-[var(--cinza-200)]  p-3">
                                 <div className="flex flex-col   ">
-                                    <div>
+                                    <div className="flex items-center justify-between">
                                         <Title4 className="text-[var(--color-variant)]">
                                             {Planos[usuario?.plano_atual]?.nome || 'Free'}
                                         </Title4>
