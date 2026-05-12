@@ -29,7 +29,8 @@ function ProjectDetails() {
 
     }
 
-    const exibirDocumento =
+    const [categoria, setCategoria] = useState(
+
         [
             {
                 id: 1,
@@ -82,6 +83,8 @@ function ProjectDetails() {
             }
         ]
 
+    )
+
     const registros = [
 
         {
@@ -112,8 +115,6 @@ function ProjectDetails() {
             atualizado_em: "2026-05-12T10:00:00Z",
             criado_em: "2026-04-14T10:00:00Z"
         }
-
-
 
     ]
 
@@ -230,8 +231,7 @@ function ProjectDetails() {
 
 
     const [openModal, setOpenModal] = useState(false)
-
-
+    const [nomeCategoria, setNomeCategoria] = useState("")
 
 
     return (
@@ -266,9 +266,9 @@ function ProjectDetails() {
                             icon={<FolderPlus />}>Nova Categoria
                         </IconButton>
                         {openModal && (
-                            <PopUp onClose={() => setOpenModal(false)} />
+                            <PopUp nomeCategoria={nomeCategoria} setNomeCategoria={setNomeCategoria} onClose={() => setOpenModal(false)} />
                         )}
-                        <Documents exibirDocumento={exibirDocumento}></Documents>
+                        <Documents categoria={categoria}></Documents>
                     </div>
                 )}
                 {currentTab === "Registros" && (
