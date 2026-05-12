@@ -24,13 +24,13 @@ function Dashboard() {
     });
 
     return (
-        <div className="bg-[var(--fundo)]">
+        <div className="bg-(--fundo)">
             <MobileHeader></MobileHeader>
-            <main className="flex flex-col gap-[12px] px-[16px] py-[12px]">
-                <Title2 className="text-[var(--cinza-700)]">Continue de onde parou</Title2>
+            <main className="flex flex-col gap-3 px-4 py-3">
+                <Title2 className="text-(--cinza-700)">Continue de onde parou</Title2>
                 <QuickAccessListHorizontal documentos={documentos}></QuickAccessListHorizontal>
 
-                <Title2 className="text-[var(--cinza-700)]">Convites</Title2>
+                <Title2 className="text-(--cinza-700)">Convites</Title2>
                 <InviteList convites={convites}></InviteList>
             </main>
         </div>
