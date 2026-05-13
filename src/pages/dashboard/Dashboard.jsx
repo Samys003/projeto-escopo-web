@@ -1,10 +1,13 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
-import Title2 from '../../components/Typography/Title2.jsx';
-import QuickAccessListHorizontal from './components/QuickAccessListHorizontal.jsx';
-import InviteList from './components/InviteList.jsx';
-// import { getDashboard } from '../../services/api.js';
 import { getDashboard } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
+
+import Title2 from '../../components/Typography/Title2.jsx';
+import ParagraphLarge from '../../components/Typography/ParagraphLarge';
+import { formatDate } from '../../utils/formatters';
+
+import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
+import Invite from './components/Invite';
 
 function Dashboard() {
     const [documentos, setDocumentos] = useState([]);
@@ -24,15 +27,50 @@ function Dashboard() {
         loadDashboard();
     });
 
+    //TODO: Criar uma função model, ordenar por data também pode ser utilizado em notificações
+    const convitesOrdenados = [];
+    convites.forEach((convite) => {
+        const dia = convite.criado_em.split(' ')[0];
+
+        if (!convitesOrdenados[dia]) {
+            //caso não exista uma data correspondente no novo array, ele cria
+            convitesOrdenados[dia] = [];
+        }
+
+        //Adicionando convite a data correspondente
+        convitesOrdenados[dia].push(convite);
+    });
+
     return (
         <div className="bg-(--fundo)">
             <MobileHeader></MobileHeader>
             <main className="flex flex-col gap-3 px-4 py-3">
                 <Title2 className="text-(--cinza-700)">Continue de onde parou</Title2>
-                <QuickAccessListHorizontal documentos={documentos}></QuickAccessListHorizontal>
+
+                <div className="overflow-x-auto border-b border-(--cinza-500) pb-3">
+                    <div className="flex gap-[10px] w-max">
+                        {documentos.map((documento) => (
+                            <DocumentQuickAccess
+                                key={documento.id}
+                                documento={documento}
+                            ></DocumentQuickAccess>
+                        ))}
+                    </div>
+                </div>
 
                 <Title2 className="text-(--cinza-700)">Convites</Title2>
-                <InviteList convites={convites}></InviteList>
+                <div className="flex flex-col gap-[10px]">
+                    {Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
+                        <div key={data} className="flex flex-col gap-[10px]">
+                            <ParagraphLarge className="text-(--cinza-700)">
+                                {formatDate(data)}
+                            </ParagraphLarge>
+                            {convitesDia.map((convite) => (
+                                <Invite convite={convite}></Invite>
+                            ))}
+                        </div>
+                    ))}
+                </div>
             </main>
         </div>
     );

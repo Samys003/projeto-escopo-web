@@ -9,7 +9,8 @@ import Title4 from '../../components/Typography/Title4.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import ProjectMember from './components/ProjectMember.jsx';
 import { useEffect, useState } from 'react';
-import { createProject } from '../../services/api.js';
+// import { createProject } from '../../services/api.js';
+import { createProject } from './services/new-project-endpoints';
 
 function NewProject() {
     const [integrantes, setIntegrantes] = useState([]);
