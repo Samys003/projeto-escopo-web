@@ -2,7 +2,8 @@ import MobileHeader from '../../components/MobileHeader.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
 import QuickAccessListHorizontal from './components/QuickAccessListHorizontal.jsx';
 import InviteList from './components/InviteList.jsx';
-import { getDashboard } from '../../services/api.js';
+// import { getDashboard } from '../../services/api.js';
+import { getDashboard } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
 
 function Dashboard() {

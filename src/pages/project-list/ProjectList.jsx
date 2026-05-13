@@ -1,9 +1,7 @@
-import { ChevronRight } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader';
-import ParagraphSmall from '../../components/Typography/ParagraphSmall';
 import Title2 from '../../components/Typography/Title2';
-import Title4 from '../../components/Typography/Title4';
-import { getProjects } from '../../services/api';
+// import { getProjects } from '../../services/api';
+import { getProjects } from './services/project-list-endpoints';
 import { useEffect, useState } from 'react';
 import Project from './components/Project';
 
