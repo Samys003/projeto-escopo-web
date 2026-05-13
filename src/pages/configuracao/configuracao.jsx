@@ -204,7 +204,7 @@ function Configuracao() {
         <div className="bg-[#f8f8f8] min-h-screen">
             <MobileHeader />
 
-            <main className="px-4 py-6 sm:px-6 sm:py-8 max-w-md mx-auto">
+            <main className="px-4 py-6 sm:px-6 sm:py-8 max-w-5xl mx-auto">
                 {error && (
                     <div className="mb-4 rounded-lg bg-red-50 p-4 border border-red-200">
                         <p className="text-sm text-red-700">{error}</p>
@@ -218,198 +218,205 @@ function Configuracao() {
                 )}
 
                 <section className="mb-8">
-                    <div className=" text-center">
-                        <div className="flex justify-center mb-6">
-                            <div className="relative">
-                                <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 md: flex items-start justify-start sm:flex items-center justify-center">
-                                    {fotoPreview ? (
-                                        <img
-                                            src={fotoPreview}
-                                            alt="Foto de perfil"
-                                            className="w-full h-full object-cover"
+                    <div className="flex flex-col md:flex-row items-center gap-10">
+                        <div className="md:w-1/3 flex justify-center">
+                            <div className="text-center">
+                                <div className="flex justify-center mb-6">
+                                    <div className="relative">
+                                        <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
+                                            {fotoPreview ? (
+                                                <img
+                                                    src={fotoPreview}
+                                                    alt="Foto de perfil"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="text-4xl text-gray-400"></div>
+                                            )}
+                                        </div>
+                                        <label
+                                            htmlFor="foto-input"
+                                            className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-dark)] transition-colors shadow-md"
+                                        >
+                                            <Camera size={16} />
+                                        </label>
+                                        <input
+                                            id="foto-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFotoChange}
+                                            disabled={saving}
+                                            className="hidden"
                                         />
-                                    ) : (
-                                        <div className="text-4xl text-gray-400"></div>
-                                    )}
+                                    </div>
                                 </div>
-                                <label
-                                    htmlFor="foto-input"
-                                    className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-dark)] transition-colors shadow-md"
-                                >
-                                    <Camera size={16} />
-                                </label>
-                                <input
-                                    id="foto-input"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFotoChange}
-                                    disabled={saving}
-                                    className="hidden"
-                                />
                             </div>
                         </div>
 
-                        {editingNome ? (
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    value={nomeTemp}
-                                    onChange={(e) => setNomeTemp(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    disabled={saving}
-                                />
-                                <div className="flex gap-2 mt-3 justify-center">
-                                    <button
-                                        onClick={handleNomeSave}
-                                        disabled={saving}
-                                        className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
-                                    >
-                                        {saving ? 'Salvando...' : 'Salvar'}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setEditingNome(false);
-                                            setNomeTemp(usuario.nome || '');
-                                        }}
-                                        disabled={saving}
-                                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mb-4 relative">
-                                <Title3 className="text-gray-900 mb-2">
-                                    {usuario?.nome || 'Usuário'}
-                                </Title3>
-                                <label
-                                    htmlFor="nome-input"
-                                    onClick={() => setEditingNome(true)}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
-                                    style={{ transform: 'translate(-99%, -1%)' }}
-                                >
-                                    <PenLine size={16} />
-                                </label>
-                            </div>
-                        )}
-
-                        <div className="mb-4">
-                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                E-mail
-                            </ParagraphMedium>
-                            <input
-                                type="email"
-                                value={usuario?.email || ''}
-                                disabled
-                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
-                            />
-                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                Senha
-                            </ParagraphMedium>
-                            {editingPassword ? (
-                                <div className="space-y-3">
+                        <div className="md:w-2/3 space-y-6">
+                            {editingNome ? (
+                                <div className="mb-4">
                                     <input
-                                        type="password"
-                                        placeholder="Senha atual"
-                                        value={senhaAtual}
-                                        onChange={(e) => setSenhaAtual(e.target.value)}
+                                        type="text"
+                                        value={nomeTemp}
+                                        onChange={(e) => setNomeTemp(e.target.value)}
+                                        className="w-full px-4 py-2 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                         disabled={saving}
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                     />
-                                    <input
-                                        type="password"
-                                        placeholder="Nova senha"
-                                        value={senhaNova}
-                                        onChange={(e) => setSenhaNova(e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    />
-                                    <input
-                                        type="password"
-                                        placeholder="Confirmar nova senha"
-                                        value={senhaNovaConfirm}
-                                        onChange={(e) => setSenhaNovaConfirm(e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    />
-                                    <div className="flex gap-2 mt-3">
+                                    <div className="flex gap-2 mt-3 justify-center">
                                         <button
-                                            onClick={handlePasswordSave}
+                                            onClick={handleNomeSave}
                                             disabled={saving}
-                                            className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
+                                            className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
                                         >
                                             {saving ? 'Salvando...' : 'Salvar'}
                                         </button>
                                         <button
                                             onClick={() => {
-                                                setEditingPassword(false);
-                                                setSenhaAtual('');
-                                                setSenhaNova('');
-                                                setSenhaNovaConfirm('');
+                                                setEditingNome(false);
+                                                setNomeTemp(usuario.nome || '');
                                             }}
                                             disabled={saving}
-                                            className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
                                         >
                                             Cancelar
                                         </button>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="relative">
-                                    <input
-                                        type="password"
-                                        value="••••••••"
-                                        disabled
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
-                                    />
+                                <div className="mb-4 relative">
+                                    <Title3 className="text-gray-900 mb-2">
+                                        {usuario?.nome || 'Usuário'}
+                                    </Title3>
                                     <label
-                                        htmlFor="password-input"
-                                        onClick={() => setEditingPassword(true)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
-                                        style={{ transform: 'translateY(-50%)' }}
+                                        htmlFor="nome-input"
+                                        onClick={() => setEditingNome(true)}
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
+                                        style={{ transform: 'translate(-99%, -1%)' }}
                                     >
                                         <PenLine size={16} />
                                     </label>
-
-                                    {/* <button
-                                        onClick={() => setEditingPassword(true)}
-                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
-                                    >
-                                        Alterar Senha
-                                    </button>
-                                    <button
-                                        onClick={() => setEditingNome(true)}
-                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
-                                    >
-                                        Alterar Nome
-                                    </button> */}
                                 </div>
                             )}
-                        </div>
 
-                        <div className="mt-5 mb-5 align-left">
-                            <Title1 className="text-gray-700 font-medium align-left text-left">
-                                Plano Atual:
-                            </Title1>
-                            <div className="rounded-[5px] bg-[var(--cinza-200)]  p-3">
-                                <div className="flex flex-col   ">
-                                    <div className="flex items-center justify-between">
-                                        <Title4 className="text-[var(--color-variant)]">
-                                            {Planos[usuario?.plano_atual]?.nome || 'Free'}
-                                        </Title4>
-                                        <button
-                                            onClick={() => setShowPlanos(true)}
-                                            className="text-[var(--color-base)] font-semibold hover:text-[var(--color-dark)] transition-colors right text-right"
+                            <div className="mb-4">
+                                <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
+                                    E-mail
+                                </ParagraphMedium>
+                                <input
+                                    type="email"
+                                    value={usuario?.email || ''}
+                                    disabled
+                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
+                                />
+                                <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
+                                    Senha
+                                </ParagraphMedium>
+                                {editingPassword ? (
+                                    <div className="space-y-3">
+                                        <input
+                                            type="password"
+                                            placeholder="Senha atual"
+                                            value={senhaAtual}
+                                            onChange={(e) => setSenhaAtual(e.target.value)}
+                                            disabled={saving}
+                                            className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Nova senha"
+                                            value={senhaNova}
+                                            onChange={(e) => setSenhaNova(e.target.value)}
+                                            disabled={saving}
+                                            className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Confirmar nova senha"
+                                            value={senhaNovaConfirm}
+                                            onChange={(e) => setSenhaNovaConfirm(e.target.value)}
+                                            disabled={saving}
+                                            className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                        />
+                                        <div className="flex gap-2 mt-3">
+                                            <button
+                                                onClick={handlePasswordSave}
+                                                disabled={saving}
+                                                className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
+                                            >
+                                                {saving ? 'Salvando...' : 'Salvar'}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setEditingPassword(false);
+                                                    setSenhaAtual('');
+                                                    setSenhaNova('');
+                                                    setSenhaNovaConfirm('');
+                                                }}
+                                                disabled={saving}
+                                                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        <input
+                                            type="password"
+                                            value="••••••••"
+                                            disabled
+                                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
+                                        />
+                                        <label
+                                            htmlFor="password-input"
+                                            onClick={() => setEditingPassword(true)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
+                                            style={{ transform: 'translateY(-50%)' }}
                                         >
-                                            Fazer Upgrade
+                                            <PenLine size={16} />
+                                        </label>
+
+                                        {/* <button
+                                            onClick={() => setEditingPassword(true)}
+                                            className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                        >
+                                            Alterar Senha
                                         </button>
+                                        <button
+                                            onClick={() => setEditingNome(true)}
+                                            className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                        >
+                                            Alterar Nome
+                                        </button> */}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-5 mb-5 align-left">
+                                <Title1 className="text-gray-700 font-medium align-left text-left">
+                                    Plano Atual:
+                                </Title1>
+                                <div className="rounded-[5px] bg-[var(--cinza-200)] p-3">
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center justify-between">
+                                            <Title4 className="text-[var(--color-variant)]">
+                                                {Planos[usuario?.plano_atual]?.nome || 'Free'}
+                                            </Title4>
+                                            <button
+                                                onClick={() => setShowPlanos(true)}
+                                                className="text-[var(--color-base)] font-semibold hover:text-[var(--color-dark)] transition-colors right text-right"
+                                            >
+                                                Fazer Upgrade
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <section className="mb-8">
+
+                    <div className="mb-8">
                         <button
                             onClick={handleLogout}
                             className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-dark)] transition-colors gap-2 flex items-center justify-center mb-4 mt-4"
@@ -448,7 +455,7 @@ function Configuracao() {
                                 </div>
                             </div>
                         )}
-                    </section>
+                    </div>
                 </section>
 
                 {showPlanos && <Planos onClose={() => setShowPlanos(false)} />}
