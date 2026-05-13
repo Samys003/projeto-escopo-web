@@ -4,12 +4,14 @@ import { SquarePen, FolderPlus } from "lucide-react";
 import Title2 from "../../components/Typography/Title2";
 import ParagraphMedium from "../../components/Typography/ParagraphMedium";
 import ComponentMenu from "./components/ComponentMenu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Documents from "./components/Documents";
 import ButtonRegistrer from "./components/ButtonRegister";
 import Register from "./components/Register";
 import Meeting from "./components/Meeting";
 import PopUp from "./components/PopUp";
+import { useParams } from "react-router-dom";
+import { getProjectById, getProjectDocumentById } from "../../services/api";
 
 
 
@@ -17,73 +19,67 @@ import PopUp from "./components/PopUp";
 
 
 function ProjectDetails() {
-    const project = {
+    // const project = {
 
-        id: 1,
-        titulo: "Meu Projeto",
-        descricao: "Descrição do projeto",
-        status: true,
-        data_criacao: "2026-04-14T10:00:00Z",
-        ultima_atualizacao: "2026-04-14T12:00:00Z",
-        nome_responsavel: "Nathan"
+    //     id: 1,
+    //     titulo: "Meu Projeto",
+    //     descricao: "Descrição do projeto",
+    //     status: true,
+    //     data_criacao: "2026-04-14T10:00:00Z",
+    //     ultima_atualizacao: "2026-04-14T12:00:00Z",
+    //     nome_responsavel: "Nathan"
 
-    }
+    // }
 
-    const [categoria, setCategoria] = useState(
 
-        [
-            {
-                id: 1,
-                nome: "Requisitos",
-                documentos: [
-                    {
-                        id: 1,
-                        titulo: "Documento de Requisitos",
-                        quantidade_versoes: 3,
-                        ultima_alteracao: "2026-04-14"
-                    },
-                    {
-                        id: 2,
-                        titulo: "Documento de Requisitos",
-                        quantidade_versoes: 3,
-                        ultima_alteracao: "2026-04-14"
-                    },
-                    {
-                        id: 3,
-                        titulo: "Documento de Requisitos",
-                        quantidade_versoes: 3,
-                        ultima_alteracao: "2026-04-14"
-                    }
-                ]
-            },
+    const { id } = useParams()
 
-            {
-                id: 2,
-                nome: "RNF",
-                documentos: [
-                    {
-                        id: 1,
-                        titulo: "Documento de Requisitos",
-                        quantidade_versoes: 3,
-                        ultima_alteracao: "2026-04-14"
-                    },
-                    {
-                        id: 2,
-                        titulo: "Documento de Requisitos",
-                        quantidade_versoes: 3,
-                        ultima_alteracao: "2026-04-14"
-                    },
-                    {
-                        id: 3,
-                        titulo: "Documento de Requisitos",
-                        quantidade_versoes: 3,
-                        ultima_alteracao: "2026-04-14"
-                    }
-                ]
+    const [project, setProject] = useState("")
+
+    useEffect(() => {
+
+        async function carregarProjeto() {
+
+            try {
+
+                const data = await getProjectById(id)
+
+
+                setProject(data)
+
+
+            } catch (error) {
+                console.error(error)
             }
-        ]
 
-    )
+
+        }
+
+
+        carregarProjeto()
+
+    }, [id])
+
+
+
+    const [categoria, setCategoria] = useState([])
+
+    useEffect(() => {
+        async function carregarDocumentos() {
+            try {
+                const data = await getProjectDocumentById(id)
+
+                console.log(data)
+                setCategoria(data)
+
+            } catch (error) {
+                console.error(error)
+
+            }
+
+        }
+        carregarDocumentos()
+    }, [id])
 
     const registros = [
 
@@ -233,10 +229,26 @@ function ProjectDetails() {
     const [openModal, setOpenModal] = useState(false)
     const [nomeCategoria, setNomeCategoria] = useState("")
 
-    function criarCategoria(categoria) {
+    function novaCategoria() {
 
+        const ultimoId = categoria[categoria.length - 1]
 
+        const novoId = ultimoId ? ultimoId.id + 1 : 1
 
+        const categoriaObj = {
+            id: novoId,
+            nome: nomeCategoria,
+            documentos: []
+        }
+
+        setCategoria([
+            ...categoria,
+            categoriaObj
+        ])
+
+        setNomeCategoria("")
+
+        setOpenModal(false)
 
     }
 
@@ -273,7 +285,7 @@ function ProjectDetails() {
                             icon={<FolderPlus />}>Nova Categoria
                         </IconButton>
                         {openModal && (
-                            <PopUp nomeCategoria={nomeCategoria} setNomeCategoria={setNomeCategoria} onClose={() => setOpenModal(false)} />
+                            <PopUp nomeCategoria={nomeCategoria} setNomeCategoria={setNomeCategoria} novaCategoria={novaCategoria} onClose={() => setOpenModal(false)} />
                         )}
                         <Documents categoria={categoria}></Documents>
                     </div>

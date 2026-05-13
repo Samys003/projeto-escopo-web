@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+// formatacao da resposta
 async function parseResponse(response) {
     const contentType = response.headers.get('content-type') || '';
     const data = contentType.includes('application/json') ? await response.json() : null;
@@ -16,6 +17,7 @@ async function parseResponse(response) {
 
     return data;
 }
+
 
 export async function login({ email, senha }) {
     const response = await fetch(`${API_URL}/api/v1/auth/login`, {
@@ -39,6 +41,7 @@ export async function register({ nome, email, senha }) {
     return parseResponse(response);
 }
 
+// obter autenticacao
 function getAuthHeaders() {
     const token = localStorage.getItem('authToken');
     return {
@@ -47,6 +50,7 @@ function getAuthHeaders() {
     };
 }
 
+// atualizar o nome 
 export async function updateUserName({ nome }) {
     const response = await fetch(`${API_URL}/api/v1/usuario/nome`, {
         method: 'PATCH',
@@ -55,6 +59,7 @@ export async function updateUserName({ nome }) {
     });
     return parseResponse(response);
 }
+
 
 export async function updateUserProfilePicture({ foto_perfil }) {
     const response = await fetch(`${API_URL}/api/v1/usuario/foto-perfil`, {
@@ -89,3 +94,21 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     });
     return parseResponse(response);
 }
+
+
+export async function getProjectById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getProjectDocumentById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/documentacao`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+

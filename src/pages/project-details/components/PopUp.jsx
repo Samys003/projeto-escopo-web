@@ -3,7 +3,7 @@ import ParagraphMedium from "../../../components/Typography/ParagraphMedium";
 import Title4 from "../../../components/Typography/Title4";
 import { X } from "lucide-react"
 
-function PopUp({ onClose, nomeCategoria, setNomeCategoria }) {
+function PopUp({ onClose, nomeCategoria, setNomeCategoria, novaCategoria }) {
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
             <div className="p-6 w-85.5 h-45 bg-white rounded-xl  ">
@@ -28,7 +28,7 @@ function PopUp({ onClose, nomeCategoria, setNomeCategoria }) {
 
                     </div>
                     <div className="flex items-end justify-end">
-                        <IconButton onClick={() => { }}>Criar</IconButton>
+                        <IconButton onClick={novaCategoria}>Criar</IconButton>
                     </div>
                 </div>
             </div>

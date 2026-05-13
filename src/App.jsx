@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import Login from './pages/login/Login';
-// import Cadastro from './pages/login/Cadastro';
-// import Senha from './pages/login/Senha';
-// import Redefinir from './pages/login/Redefinir';
-// import Dashboard from './pages/dashboard/Dashboard';
-// import Configuracao from './pages/configuracao/configuracao';
+import Login from './pages/login/Login';
+import Cadastro from './pages/login/Cadastro';
+import Senha from './pages/login/Senha';
+import Redefinir from './pages/login/Redefinir';
+import Dashboard from './pages/dashboard/Dashboard';
+import Configuracao from './pages/configuracao/configuracao';
 import ProjectDetails from './pages/project-details/ProjectDetails'
 
 
@@ -12,14 +12,14 @@ function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<ProjectDetails />} />
-                {/* <Route path="/" element={<Login />} />
+                <Route path="/projeto/:id" element={<ProjectDetails />} />
+                <Route path="/" element={<Login />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/Senha" element={<Senha />} />
                 <Route path="/Login" element={<Login />} />
                 <Route path="/Redefinir" element={<Redefinir />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/configuracao" element={<Configuracao />} /> */}
+                <Route path="/configuracao" element={<Configuracao />} />
             </Routes>
         </Router>
     );

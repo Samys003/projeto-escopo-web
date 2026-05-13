@@ -18,8 +18,8 @@ function Documents({ categoria }) {
                         <div className="border w-full flex flex-col p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) bg-emerald-300 ">
                             {doc.documentos.map((subdoc) => {
                                 return (
-                                    <div className="flex justify-evenly w-full">
-                                        <div className="" key={subdoc.id}>
+                                    <div key={subdoc.id} className="flex justify-evenly w-full">
+                                        <div className="" >
                                             <ParagraphLarge>{subdoc.titulo}</ParagraphLarge>
                                             <ParagraphLarge className="text-(--cinza-500)">Ultima Alteração: {new Date(subdoc.ultima_alteracao).toLocaleDateString()}</ParagraphLarge>
                                         </div>
