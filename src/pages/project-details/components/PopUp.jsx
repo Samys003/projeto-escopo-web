@@ -28,9 +28,7 @@ function PopUp({ onClose, nomeCategoria, setNomeCategoria }) {
 
                     </div>
                     <div className="flex items-end justify-end">
-                        <IconButton onClick={() => {
-
-                        }}>Criar</IconButton>
+                        <IconButton onClick={() => { }}>Criar</IconButton>
                     </div>
                 </div>
             </div>

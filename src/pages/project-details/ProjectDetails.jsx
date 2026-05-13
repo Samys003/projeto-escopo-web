@@ -233,6 +233,13 @@ function ProjectDetails() {
     const [openModal, setOpenModal] = useState(false)
     const [nomeCategoria, setNomeCategoria] = useState("")
 
+    function criarCategoria(categoria) {
+
+
+
+
+    }
+
 
     return (
         <div className="w-full">
