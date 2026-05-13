@@ -1,20 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Camera, LogOut, Pen, PenLine, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Camera, LogOut, PenLine, Trash2 } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader.jsx';
-import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
-import Title3 from '../../components/Typography/Title3.jsx';
-import Title2 from '../../components/Typography/Title2.jsx';
-import Title1 from '../../components/Typography/Title1.jsx';
+import DesktopSidebar from '../../components/DesktopSidebar.jsx';
+import logotipoMobile from '../../assets/logotipo-mobile.svg';
 import Planos from './components/planos.jsx';
 import {
     updateUserName,
     updateUserProfilePicture,
     deleteUserAccount,
-    getUserByEmail,
     updatePassword,
 } from '../../services/api.js';
-import Title4 from '../../components/Typography/Title4.jsx';
+import Title3 from '../../components/Typography/Title3.jsx';
+import Title2 from '../../components/Typography/Title2.jsx';
+import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
+
+function getCurrentPlan(usuario) {
+    const planoAtual = usuario?.plano_atual;
+
+    if (typeof planoAtual === 'object' && planoAtual !== null) {
+        const planName = planoAtual.nome || planoAtual.name;
+        return (
+            plans.find((plan) => plan.name.toLowerCase() === planName?.toLowerCase()) || plans[0]
+        );
+    }
+
+    if (typeof planoAtual === 'number') {
+        return plans[planoAtual] || plans[0];
+    }
+
+    if (typeof planoAtual === 'string') {
+        const planByName = plans.find(
+            (plan) => plan.name.toLowerCase() === planoAtual.toLowerCase(),
+        );
+        const planByIndex = plans[Number(planoAtual)];
+        return planByName || planByIndex || plans[0];
+    }
+
+    return plans[0];
+}
 
 function Configuracao() {
     const navigate = useNavigate();
@@ -33,6 +57,8 @@ function Configuracao() {
     const [showPlanos, setShowPlanos] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+    const currentPlan = useMemo(() => getCurrentPlan(usuario), [usuario]);
+
     useEffect(() => {
         const loadUserData = async () => {
             try {
@@ -44,7 +70,7 @@ function Configuracao() {
                     setNomeTemp(user.nome || '');
                     setFotoPreview(user.foto_perfil || null);
                 }
-            } catch (err) {
+            } catch {
                 setError('Erro ao carregar dados do usuário');
             } finally {
                 setLoading(false);
@@ -60,7 +86,7 @@ function Configuracao() {
             return;
         }
 
-        if (nomeTemp === usuario.nome) {
+        if (nomeTemp === usuario?.nome) {
             setEditingNome(false);
             return;
         }
@@ -131,6 +157,7 @@ function Configuracao() {
             setSaving(false);
         }
     };
+
     const handleFotoChange = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -160,7 +187,7 @@ function Configuracao() {
                 }
             };
             reader.readAsDataURL(file);
-        } catch (err) {
+        } catch {
             setError('Erro ao processar imagem');
             setSaving(false);
         }
@@ -189,11 +216,21 @@ function Configuracao() {
         navigate('/');
     };
 
+    const cancelPasswordEdit = () => {
+        setEditingPassword(false);
+        setSenhaAtual('');
+        setSenhaNova('');
+        setSenhaNovaConfirm('');
+    };
+
     if (loading) {
         return (
-            <div className="bg-[#f8f8f8] min-h-screen">
-                <MobileHeader />
-                <main className="flex items-center justify-center px-4 py-12">
+            <div className="min-h-screen bg-[#f8f8f8] lg:flex">
+                <div className="lg:hidden">
+                    <MobileHeader />
+                </div>
+                <DesktopSidebar onLogout={handleLogout} />
+                <main className="flex flex-1 items-center justify-center px-4 py-12">
                     <p className="text-gray-600">Carregando...</p>
                 </main>
             </div>
@@ -201,264 +238,308 @@ function Configuracao() {
     }
 
     return (
-        <div className="bg-[#f8f8f8] min-h-screen">
-            <MobileHeader />
+        <div className="min-h-screen bg-[#f8f8f8] lg:flex">
+            <div className="lg:hidden">
+                <MobileHeader />
+            </div>
+            <DesktopSidebar onLogout={handleLogout} />
 
-            <main className="px-4 py-6 sm:px-6 sm:py-8 max-w-5xl mx-auto">
-                {error && (
-                    <div className="mb-4 rounded-lg bg-red-50 p-4 border border-red-200">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mb-4 rounded-lg bg-green-50 p-4 border border-green-200">
-                        <p className="text-sm text-green-700">{success}</p>
-                    </div>
-                )}
-
-                <section className="mb-8">
-                    <div className="flex flex-col md:flex-row items-center gap-10">
-                        <div className="md:w-1/3 flex justify-center">
-                            <div className="text-center">
-                                <div className="flex justify-center mb-6">
-                                    <div className="relative">
-                                        <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
-                                            {fotoPreview ? (
-                                                <img
-                                                    src={fotoPreview}
-                                                    alt="Foto de perfil"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="text-4xl text-gray-400"></div>
-                                            )}
-                                        </div>
-                                        <label
-                                            htmlFor="foto-input"
-                                            className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-dark)] transition-colors shadow-md"
-                                        >
-                                            <Camera size={16} />
-                                        </label>
-                                        <input
-                                            id="foto-input"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFotoChange}
-                                            disabled={saving}
-                                            className="hidden"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+            <main className="flex-1 px-5 py-8 sm:px-8 lg:px-8 lg:py-14 xl:px-20">
+                <div className="mx-auto flex w-full max-w-[1240px] flex-col">
+                    {error && (
+                        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
+                            <p className="text-sm text-red-700">{error}</p>
                         </div>
+                    )}
 
-                        <div className="md:w-2/3 space-y-6">
-                            {editingNome ? (
-                                <div className="mb-4">
-                                    <input
-                                        type="text"
-                                        value={nomeTemp}
-                                        onChange={(e) => setNomeTemp(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                        disabled={saving}
-                                    />
-                                    <div className="flex gap-2 mt-3 justify-center">
-                                        <button
-                                            onClick={handleNomeSave}
-                                            disabled={saving}
-                                            className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
-                                        >
-                                            {saving ? 'Salvando...' : 'Salvar'}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setEditingNome(false);
-                                                setNomeTemp(usuario.nome || '');
-                                            }}
-                                            disabled={saving}
-                                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                                        >
-                                            Cancelar
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="mb-4 relative">
-                                    <Title3 className="text-gray-900 mb-2">
-                                        {usuario?.nome || 'Usuário'}
-                                    </Title3>
-                                    <label
-                                        htmlFor="nome-input"
-                                        onClick={() => setEditingNome(true)}
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
-                                        style={{ transform: 'translate(-99%, -1%)' }}
-                                    >
-                                        <PenLine size={16} />
-                                    </label>
-                                </div>
-                            )}
+                    {success && (
+                        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 p-4">
+                            <p className="text-sm text-green-700">{success}</p>
+                        </div>
+                    )}
 
-                            <div className="mb-4">
-                                <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                    E-mail
-                                </ParagraphMedium>
+                    <section className="grid items-start gap-9 lg:grid-cols-[minmax(300px,470px)_minmax(240px,360px)] lg:justify-between lg:gap-8 xl:gap-24">
+                        <div className="order-1 flex flex-col items-center lg:order-2 lg:pt-16">
+                            <div className="relative">
+                                <div className="flex aspect-square w-[min(68vw,18rem)] items-center justify-center overflow-hidden rounded-full border-4 border-[var(--color-base)] bg-gray-200 sm:w-80 lg:w-[280px] xl:w-[330px]">
+                                    {fotoPreview ? (
+                                        <img
+                                            src={fotoPreview}
+                                            alt="Foto de perfil"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <Title2 className="text-5xl font-semibold text-gray-400">
+                                            {(usuario?.nome || 'U').charAt(0).toUpperCase()}
+                                        </Title2>
+                                    )}
+                                </div>
+                                <label
+                                    htmlFor="foto-input"
+                                    className="absolute bottom-3 right-3 flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[var(--color-base)] text-white shadow-md transition-colors hover:bg-[var(--color-dark)] sm:h-[60px] sm:w-[60px] lg:bottom-2 lg:right-5"
+                                    aria-label="Alterar foto"
+                                >
+                                    <Camera size={25} />
+                                </label>
                                 <input
-                                    type="email"
-                                    value={usuario?.email || ''}
-                                    disabled
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
+                                    id="foto-input"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFotoChange}
+                                    disabled={saving}
+                                    className="hidden"
                                 />
-                                <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                    Senha
-                                </ParagraphMedium>
-                                {editingPassword ? (
-                                    <div className="space-y-3">
+                            </div>
+
+                            <div className="mt-5 flex w-full  flex-col items-center lg:hidden">
+                                {editingNome ? (
+                                    <div className="w-full">
                                         <input
-                                            type="password"
-                                            placeholder="Senha atual"
-                                            value={senhaAtual}
-                                            onChange={(e) => setSenhaAtual(e.target.value)}
+                                            type="text"
+                                            value={nomeTemp}
+                                            onChange={(e) => setNomeTemp(e.target.value)}
+                                            className="w-full rounded-2xl border-2 border-[var(--color-base)] bg-white px-4 py-3 text-center text-2xl font-semibold text-gray-800 outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                             disabled={saving}
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                         />
-                                        <input
-                                            type="password"
-                                            placeholder="Nova senha"
-                                            value={senhaNova}
-                                            onChange={(e) => setSenhaNova(e.target.value)}
-                                            disabled={saving}
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                        />
-                                        <input
-                                            type="password"
-                                            placeholder="Confirmar nova senha"
-                                            value={senhaNovaConfirm}
-                                            onChange={(e) => setSenhaNovaConfirm(e.target.value)}
-                                            disabled={saving}
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                        />
-                                        <div className="flex gap-2 mt-3">
+                                        <div className="mt-3 flex gap-3">
                                             <button
-                                                onClick={handlePasswordSave}
+                                                type="button"
+                                                onClick={handleNomeSave}
                                                 disabled={saving}
-                                                className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
+                                                className="flex-1 rounded-lg bg-[var(--color-base)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
                                             >
                                                 {saving ? 'Salvando...' : 'Salvar'}
                                             </button>
                                             <button
+                                                type="button"
                                                 onClick={() => {
-                                                    setEditingPassword(false);
-                                                    setSenhaAtual('');
-                                                    setSenhaNova('');
-                                                    setSenhaNovaConfirm('');
+                                                    setEditingNome(false);
+                                                    setNomeTemp(usuario?.nome || '');
                                                 }}
                                                 disabled={saving}
-                                                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                                className="flex-1 rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-300 disabled:opacity-50"
                                             >
                                                 Cancelar
                                             </button>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="relative">
-                                        <input
-                                            type="password"
-                                            value="••••••••"
-                                            disabled
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
-                                        />
-                                        <label
-                                            htmlFor="password-input"
-                                            onClick={() => setEditingPassword(true)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-[var(--color-base)] hover:text-[var(--color-dark)] transition-colors"
-                                            style={{ transform: 'translateY(-50%)' }}
-                                        >
-                                            <PenLine size={16} />
-                                        </label>
-
-                                        {/* <button
-                                            onClick={() => setEditingPassword(true)}
-                                            className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
-                                        >
-                                            Alterar Senha
-                                        </button>
+                                    <div className="flex items-center justify-center gap-3">
+                                        <h1 className="break-words text-center text-4xl font-bold leading-tight text-[var(--cinza-700)] sm:text-5xl">
+                                            {usuario?.nome || 'Usuário'}
+                                        </h1>
                                         <button
+                                            type="button"
                                             onClick={() => setEditingNome(true)}
-                                            className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                            className="shrink-0 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
+                                            aria-label="Editar nome"
                                         >
-                                            Alterar Nome
-                                        </button> */}
+                                            <PenLine size={30} />
+                                        </button>
                                     </div>
                                 )}
                             </div>
+                        </div>
 
-                            <div className="mt-5 mb-5 align-left">
-                                <Title1 className="text-gray-700 font-medium align-left text-left">
-                                    Plano Atual:
-                                </Title1>
-                                <div className="rounded-[5px] bg-[var(--cinza-200)] p-3">
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center justify-between">
-                                            <Title4 className="text-[var(--color-variant)]">
-                                                {Planos[usuario?.plano_atual]?.nome || 'Free'}
-                                            </Title4>
-                                            <button
-                                                onClick={() => setShowPlanos(true)}
-                                                className="text-[var(--color-base)] font-semibold hover:text-[var(--color-dark)] transition-colors right text-right"
-                                            >
-                                                Fazer Upgrade
-                                            </button>
+                        <div className="order-2 w-full lg:order-1 lg:pt-24">
+                            <div className="space-y-7">
+                                <div>
+                                    <label
+                                        htmlFor="email"
+                                        className="mb-2 block text-[28px] font-semibold text-[var(--cinza-700)] lg:text-base"
+                                    >
+                                        E-mail
+                                    </label>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        value={usuario?.email || ''}
+                                        disabled
+                                        className="h-[60px] w-full rounded-2xl border-2 border-[var(--cinza-500)] bg-white px-5 text-[26px] text-black opacity-100 outline-none lg:h-14 lg:rounded-xl lg:text-base lg:text-[var(--cinza-500)]"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="password-display"
+                                        className="mb-2 block text-[28px] font-semibold text-[var(--cinza-700)] lg:text-base"
+                                    >
+                                        Senha
+                                    </label>
+                                    {editingPassword ? (
+                                        <div className="space-y-3">
+                                            <input
+                                                type="password"
+                                                placeholder="Senha atual"
+                                                value={senhaAtual}
+                                                onChange={(e) => setSenhaAtual(e.target.value)}
+                                                disabled={saving}
+                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            />
+                                            <input
+                                                type="password"
+                                                placeholder="Nova senha"
+                                                value={senhaNova}
+                                                onChange={(e) => setSenhaNova(e.target.value)}
+                                                disabled={saving}
+                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            />
+                                            <input
+                                                type="password"
+                                                placeholder="Confirmar nova senha"
+                                                value={senhaNovaConfirm}
+                                                onChange={(e) =>
+                                                    setSenhaNovaConfirm(e.target.value)
+                                                }
+                                                disabled={saving}
+                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            />
+                                            <div className="flex gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={handlePasswordSave}
+                                                    disabled={saving}
+                                                    className="flex-1 rounded-xl bg-[var(--color-base)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
+                                                >
+                                                    {saving ? 'Salvando...' : 'Salvar'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={cancelPasswordEdit}
+                                                    disabled={saving}
+                                                    className="flex-1 rounded-xl bg-gray-200 px-4 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-300 disabled:opacity-50"
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <>
+                                            <div className="relative">
+                                                <input
+                                                    id="password-display"
+                                                    type="password"
+                                                    value="************"
+                                                    disabled
+                                                    className="h-[60px] w-full rounded-2xl border-2 border-[var(--cinza-500)] bg-white px-5 pr-16 text-[26px] text-black opacity-100 outline-none lg:h-14 lg:rounded-xl lg:text-base lg:text-[var(--cinza-500)]"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingPassword(true)}
+                                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] lg:hidden"
+                                                    aria-label="Alterar senha"
+                                                >
+                                                    <PenLine size={32} />
+                                                </button>
+                                            </div>
+                                            <div className="mt-5 hidden justify-center lg:flex">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingPassword(true)}
+                                                    className="rounded-xl bg-[var(--color-base)] px-7 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)]"
+                                                >
+                                                    Alterar a senha
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="hidden justify-center lg:flex">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className="text-[var(--color-base)] transition-colors hover:text-red-700"
+                                    >
+                                        Deletar sua conta
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </section>
+
+                    <section className="mt-20 lg:hidden">
+                        <Title2 className="mb-6 text-[28px] ">Plano Atual:</Title2>
+                        <button
+                            type="button"
+                            onClick={() => setShowPlanos(true)}
+                            className="flex w-full items-center justify-between gap-4 bg-[var(--cinza-100)] px-6 py-7 text-left sm:px-10 sm:py-8"
+                        >
+                            <span className="text-[22px] text-[var(--color-variant)] sm:text-[28px]">
+                                {currentPlan.name}
+                            </span>
+                            <Title3 className="text-[22px] text-[var(--color-base)] sm:text-[28px]">
+                                Fazer Upgrade
+                            </Title3>
+                        </button>
+                    </section>
+
+                    <div className="mt-12 hidden lg:block">
+                        <Planos
+                            variant="inline"
+                            currentPlanName={currentPlan.name}
+                            onUpgrade={() => setShowPlanos(true)}
+                        />
                     </div>
 
-                    <div className="mb-8">
+                    <div className="mt-32 flex items-center justify-between gap-4 lg:hidden">
                         <button
+                            type="button"
                             onClick={handleLogout}
-                            className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-dark)] transition-colors gap-2 flex items-center justify-center mb-4 mt-4"
+                            className="flex items-center gap-1 text-[22px] font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] sm:text-[28px]"
                         >
-                            <LogOut size={16} />
+                            <LogOut size={30} />
                             Sair
                         </button>
-
-                        {!showDeleteConfirm ? (
-                            <button
-                                onClick={() => setShowDeleteConfirm(true)}
-                                className="text-[var(--color-base)] text-sm font-medium hover:text-red-700 transition-colors"
-                            >
-                                Deletar Conta
-                            </button>
-                        ) : (
-                            <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-[var(--color-variant)]">
-                                <p className="text-gray-700 mb-4 text-center">
-                                    Tem certeza que deseja deletar sua conta?.
-                                </p>
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => setShowDeleteConfirm(false)}
-                                        disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-[var(--cinza-300)] disabled:opacity-50 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={handleDeleteAccount}
-                                        disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
-                                    >
-                                        {saving ? 'Deletando...' : 'Deletar'}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="text-right text-[22px] font-medium text-[var(--color-base)] transition-colors hover:text-red-700 sm:text-[28px]"
+                        >
+                            Deletar sua conta
+                        </button>
                     </div>
-                </section>
+                </div>
 
-                {showPlanos && <Planos onClose={() => setShowPlanos(false)} />}
+                {showPlanos && (
+                    <Planos
+                        onClose={() => setShowPlanos(false)}
+                        currentPlanName={currentPlan.name}
+                    />
+                )}
+
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5">
+                        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.18)]">
+                            <div className="mb-4 flex items-center gap-3 text-[var(--color-base)]">
+                                <Trash2 size={24} />
+                                <Title2 className="text-xl font-semibold">Deletar sua conta</Title2>
+                            </div>
+                            <ParagraphMedium className="mb-6 text-gray-700">
+                                Tem certeza que deseja deletar sua conta? Essa ação não pode ser
+                                desfeita.
+                            </ParagraphMedium>
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={saving}
+                                    className="flex-1 rounded-xl bg-gray-200 px-4 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-300 disabled:opacity-50"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteAccount}
+                                    disabled={saving}
+                                    className="flex-1 rounded-xl bg-[var(--color-base)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
+                                >
+                                    {saving ? 'Deletando...' : 'Deletar'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
