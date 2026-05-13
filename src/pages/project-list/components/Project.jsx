@@ -4,7 +4,6 @@ import Title2 from '../../../components/Typography/Title2';
 import Title4 from '../../../components/Typography/Title4';
 
 function Project({ projeto }) {
-    const fotosUsuarios = projeto.foto_usuarios?.split(',');
     return (
         <div className="p-2 rounded-lg w-[180px] shadow-(--external-shadow)">
             <Title4 className="text-(--cinza-600)">{projeto.titulo}</Title4>
@@ -15,9 +14,13 @@ function Project({ projeto }) {
                 <ChevronRight className="w-6 h-6 shrink-0"></ChevronRight>
             </div>
             <div className="flex -space-x-2">
-                {fotosUsuarios.map((foto) => (
-                    <img src={foto} alt="" className="w-6 h-6 rounded-full" />
-                ))}
+                {projeto.foto_usuarios.map((foto) =>
+                    foto ? (
+                        <img src={foto} alt="" className="w-6 h-6 rounded-full bg-red-500" />
+                    ) : (
+                        <div className="w-6 h-6 rounded-full bg-(--cinza-300) border-[0.2px] border-white"></div>
+                    ),
+                )}
             </div>
         </div>
     );
