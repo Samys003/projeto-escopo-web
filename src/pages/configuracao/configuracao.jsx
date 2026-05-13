@@ -221,7 +221,7 @@ function Configuracao() {
                     <div className=" text-center">
                         <div className="flex justify-center mb-6">
                             <div className="relative">
-                                <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
+                                <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 md: flex items-start justify-start sm:flex items-center justify-center">
                                     {fotoPreview ? (
                                         <img
                                             src={fotoPreview}
