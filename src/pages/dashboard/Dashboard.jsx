@@ -25,7 +25,7 @@ function Dashboard() {
             }
         }
         loadDashboard();
-    });
+    }, []);
 
     //TODO: Criar uma função model, ordenar por data também pode ser utilizado em notificações
     const convitesOrdenados = [];
@@ -66,7 +66,7 @@ function Dashboard() {
                                 {formatDate(data)}
                             </ParagraphLarge>
                             {convitesDia.map((convite) => (
-                                <Invite convite={convite}></Invite>
+                                <Invite key={convite.id} convite={convite}></Invite>
                             ))}
                         </div>
                     ))}

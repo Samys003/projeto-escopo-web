@@ -18,7 +18,7 @@ function ProjectList() {
             }
         }
         loadProjects();
-    });
+    }, []);
 
     return (
         <div>
