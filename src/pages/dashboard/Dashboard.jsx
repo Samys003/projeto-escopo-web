@@ -8,6 +8,7 @@ import { formatDate } from '../../utils/formatters';
 
 import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
 import Invite from './components/Invite';
+import AsideMenu from '../../components/AsideMenu.jsx';
 
 function Dashboard() {
     const [documentos, setDocumentos] = useState([]);
@@ -42,9 +43,15 @@ function Dashboard() {
     });
 
     return (
-        <div className="bg-(--fundo)">
+        <div
+            className="h-screen
+        bg-(--fundo) 
+        lg:flex
+        "
+        >
             <MobileHeader></MobileHeader>
-            <main className="flex flex-col gap-3 px-4 py-3">
+            <AsideMenu></AsideMenu>
+            <main className="flex flex-col gap-3 px-4 py-3 overflow-y-auto">
                 <Title2 className="text-(--cinza-700)">Continue de onde parou</Title2>
 
                 <div className="overflow-x-auto border-b border-(--cinza-500) pb-3">

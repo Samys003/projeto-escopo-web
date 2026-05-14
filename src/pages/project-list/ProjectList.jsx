@@ -27,7 +27,7 @@ function ProjectList() {
         <div>
             <MobileHeader></MobileHeader>
 
-            <main className="p-3 flex flex-col gap-3">
+            <main className="p-3 flex flex-col gap-3 overflow-y-auto">
                 <Title2 className="text-(--cinza-700)">Lista de Projetos</Title2>
 
                 <div className="flex flex-col items-center gap-3 ">

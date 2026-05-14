@@ -17,7 +17,7 @@ function MobileHeader() {
     ];
 
     return (
-        <div className="relative">
+        <div className="relative lg:hidden">
             <header className="px-4 bg-(--color-base) flex place-content-between relative z-50">
                 <img src={logotipoMobile} alt="" />
                 <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
