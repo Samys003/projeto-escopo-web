@@ -105,7 +105,7 @@ export async function getProjectById(id) {
 }
 
 export async function getProjectDocumentById(id) {
-    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/documentacao`, {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/categorias/documentos`, {
         method: 'GET',
         headers: getAuthHeaders(),
     });

@@ -4,25 +4,24 @@ import ParagraphLarge from "../../../components/Typography/ParagraphLarge";
 import Title2 from "../../../components/Typography/Title2";
 import ParagraphMedium from "../../../components/Typography/ParagraphMedium";
 
-function Documents({ categoria }) {
+function Documents({ documentos }) {
     return (
         <div className="w-full flex flex-col gap-3">
-            {categoria.map((doc) => {
+            {documentos?.projeto?.categorias?.map((doc) => {
                 return (
-
-                    <div key={doc.id} className=" w-full flex flex-col gap-1 ">
+                    <div key={doc.id} className="w-full flex flex-col gap-1 ">
                         <div className="w-full flex justify-between">
-                            <Title2 key={doc.id}>{doc.nome}</Title2>
+                            <Title2>{doc.nome?.charAt(0).toUpperCase() + doc.nome?.slice(1)}</Title2>
                             <IconButton className="bg-transparent" icon={<Trash2 className="text-(--color-base)"></Trash2>}></IconButton>
                         </div>
-                        <div className="border w-full flex flex-col p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) bg-emerald-300 ">
+                        <div className="border w-full flex flex-col p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) ">
                             {doc.documentos.map((subdoc) => {
                                 return (
-                                    <div key={subdoc.id} className="flex justify-evenly w-full">
-                                        <div className="" >
-                                            <ParagraphLarge>{subdoc.titulo}</ParagraphLarge>
-                                            <ParagraphLarge className="text-(--cinza-500)">Ultima Alteração: {new Date(subdoc.ultima_alteracao).toLocaleDateString()}</ParagraphLarge>
-                                        </div>
+                                    <div key={subdoc.id} className="flex m-2 items-center  justify-between w-full">
+                                        <button className="text-start ">
+                                            <ParagraphLarge className="leading-4.5 ">{subdoc.titulo}</ParagraphLarge>
+                                            <ParagraphMedium className="text-(--cinza-500)"> Ultima Alteração: {new Date(subdoc.ultima_alteracao).toLocaleDateString()}</ParagraphMedium>
+                                        </button>
                                         <ParagraphMedium className="bg-(--cinza-400) rounded-sm p-1 w-6 h-6 flex items-center justify-center text-white">{subdoc.quantidade_versoes}</ParagraphMedium>
                                     </div>
                                 )
@@ -30,7 +29,6 @@ function Documents({ categoria }) {
                             <IconButton className="gap-2" icon={<FolderPlus />}>Novo Documento</IconButton>
                         </div>
                     </div>
-
                 )
             })}
 

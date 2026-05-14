@@ -1,6 +1,6 @@
 import MobileHeader from "../../components/MobileHeader";
 import IconButton from "../../components/IconButton";
-import { SquarePen, FolderPlus } from "lucide-react";
+import { SquarePen, FolderPlus, ChevronUp, ChevronDown } from "lucide-react";
 import Title2 from "../../components/Typography/Title2";
 import ParagraphMedium from "../../components/Typography/ParagraphMedium";
 import ComponentMenu from "./components/ComponentMenu";
@@ -19,22 +19,11 @@ import { getProjectById, getProjectDocumentById } from "../../services/api";
 
 
 function ProjectDetails() {
-    // const project = {
-
-    //     id: 1,
-    //     titulo: "Meu Projeto",
-    //     descricao: "Descrição do projeto",
-    //     status: true,
-    //     data_criacao: "2026-04-14T10:00:00Z",
-    //     ultima_atualizacao: "2026-04-14T12:00:00Z",
-    //     nome_responsavel: "Nathan"
-
-    // }
-
 
     const { id } = useParams()
 
-    const [project, setProject] = useState("")
+    const [project, setProject] = useState(null)
+    const [documentos, setDocumentos] = useState([])
 
     useEffect(() => {
 
@@ -43,9 +32,11 @@ function ProjectDetails() {
             try {
 
                 const data = await getProjectById(id)
+                const dataDoc = await getProjectDocumentById(id)
 
 
                 setProject(data)
+                setDocumentos(dataDoc)
 
 
             } catch (error) {
@@ -60,26 +51,6 @@ function ProjectDetails() {
 
     }, [id])
 
-
-
-    const [categoria, setCategoria] = useState([])
-
-    useEffect(() => {
-        async function carregarDocumentos() {
-            try {
-                const data = await getProjectDocumentById(id)
-
-                console.log(data)
-                setCategoria(data)
-
-            } catch (error) {
-                console.error(error)
-
-            }
-
-        }
-        carregarDocumentos()
-    }, [id])
 
     const registros = [
 
@@ -229,26 +200,12 @@ function ProjectDetails() {
     const [openModal, setOpenModal] = useState(false)
     const [nomeCategoria, setNomeCategoria] = useState("")
 
+    const [expand, setExpand] = useState(false)
+
+
     function novaCategoria() {
 
-        const ultimoId = categoria[categoria.length - 1]
 
-        const novoId = ultimoId ? ultimoId.id + 1 : 1
-
-        const categoriaObj = {
-            id: novoId,
-            nome: nomeCategoria,
-            documentos: []
-        }
-
-        setCategoria([
-            ...categoria,
-            categoriaObj
-        ])
-
-        setNomeCategoria("")
-
-        setOpenModal(false)
 
     }
 
@@ -256,25 +213,29 @@ function ProjectDetails() {
     return (
         <div className="w-full">
             <MobileHeader />
-            <div className="w-full flex flex-col p-4" >
+            <div className=" relative w-full flex flex-col p-4" >
                 <div className="w-full flex items-center gap-2 ">
                     <Title2 className="text-2xl" >
-                        {project.titulo}
+                        {project?.titulo}
                     </Title2>
                     <IconButton icon={<SquarePen />} />
                 </div>
                 <div className="w-full flex flex-col  gap-2">
                     <div className="">
-                        <ParagraphMedium>Status: {project.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
+                        <ParagraphMedium>Status: {project?.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
                     </div>
-                    <div>
-                        <ParagraphMedium>Descrição: {project.descricao} </ParagraphMedium>
+                    <div className={`relative flex items-end ${!expand ? "" : "flex-col gap-2"} `}>
+                        <ParagraphMedium className={!expand ? "line-clamp-2" : ""} >Descrição: {project?.descricao}</ParagraphMedium>
+                        {expand && (
+                            <div className=" flex flex-col w-full">
+                                <ParagraphMedium>Data de Criação: {new Date(project?.data_criacao).toLocaleDateString()}</ParagraphMedium>
+                                <ParagraphMedium>Ultima Alteração: {new Date(project?.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
+                                <ParagraphMedium>Responsavel: {project?.nome_responsavel}</ParagraphMedium>
+                            </div>
+                        )}
+                        <button className="" onClick={() => setExpand(!expand)}>{expand ? <ChevronUp /> : <ChevronDown />}</button>
                     </div>
-                    <div>
-                        <ParagraphMedium>Data de Criação: {new Date(project.data_criacao).toLocaleDateString()}</ParagraphMedium>
-                        <ParagraphMedium>Ultima Alteração: {new Date(project.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
-                        <ParagraphMedium>Responsavel: {project.nome_responsavel}</ParagraphMedium>
-                    </div>
+
                     <ComponentMenu currentTab={currentTab} setCurrentTab={setCurrentTab} tabs={tabs}></ComponentMenu>
                 </div>
                 {currentTab === "Documentos" && (
@@ -287,7 +248,7 @@ function ProjectDetails() {
                         {openModal && (
                             <PopUp nomeCategoria={nomeCategoria} setNomeCategoria={setNomeCategoria} novaCategoria={novaCategoria} onClose={() => setOpenModal(false)} />
                         )}
-                        <Documents categoria={categoria}></Documents>
+                        <Documents documentos={documentos}></Documents>
                     </div>
                 )}
                 {currentTab === "Registros" && (
