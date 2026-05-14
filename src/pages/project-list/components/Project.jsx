@@ -6,10 +6,10 @@ import Title4 from '../../../components/Typography/Title4';
 function Project({ projeto }) {
     return (
         <Link to={`/projeto/${projeto.id}`}>
-            <div className="p-2 rounded-lg w-[180px] shadow-(--external-shadow)">
+            <div className="flex flex-col p-2 rounded-lg w-full h-[120px] shadow-(--external-shadow) justify-between">
                 <Title4 className="text-(--cinza-600)">{projeto.titulo}</Title4>
                 <div className="flex items-center">
-                    <ParagraphSmall className="line-clamp-3 text-(--cinza-400) ">
+                    <ParagraphSmall className="line-clamp-3 text-(--cinza-400) w-full">
                         {projeto.descricao}
                     </ParagraphSmall>
                     <ChevronRight className="w-6 h-6 shrink-0"></ChevronRight>
