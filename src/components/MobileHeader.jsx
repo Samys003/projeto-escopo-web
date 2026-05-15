@@ -14,6 +14,7 @@ function MobileHeader() {
         { id: 3, nome: 'Lista de projetos', path: '/projetos' },
         { id: 4, nome: 'Notificações', path: '/notificacoes' },
         { id: 5, nome: 'Configurações', path: '/configuracao' },
+        { id: 6, nome: 'Documento', path: '/documento' }, // DELETAR, PROVISÓRIO
     ];
 
     return (

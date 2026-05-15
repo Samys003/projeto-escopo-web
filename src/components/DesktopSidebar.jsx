@@ -1,5 +1,5 @@
 import logotipoDesktop from '../assets/logotipo-desktop.svg';
-import { Menu, X } from 'lucide-react';
+import { Dock, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Title3 from './Typography/Title3';
@@ -9,6 +9,7 @@ const sidebarLinks = [
     { label: 'Dashboard', path: '/dashboard', Icon: Home },
     { label: 'Novo Projeto', path: '/novo-projeto', Icon: FolderPlus },
     { label: 'Lista de projetos', path: '/projetos', Icon: List },
+    { label: 'Documento', path: '/documento', Icon: Dock }, // DELETAR, PROVISÓRIO
 ];
 
 function DesktopSidebar({ onLogout }) {

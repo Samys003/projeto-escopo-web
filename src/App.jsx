@@ -5,6 +5,7 @@ import Senha from './pages/login/Senha';
 import Redefinir from './pages/login/Redefinir';
 import Dashboard from './pages/dashboard/Dashboard';
 import Configuracao from './pages/configuracao/configuracao';
+import Documento from './pages/documento/documento'; // DELETAR, PROVISÓRIO
 
 function App() {
     return (
@@ -17,6 +18,7 @@ function App() {
                 <Route path="/Redefinir" element={<Redefinir />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/configuracao" element={<Configuracao />} />
+                <Route path="/documento" element={<Documento />} /> {/* DELETAR, PROVISÓRIO */}
             </Routes>
         </Router>
     );
