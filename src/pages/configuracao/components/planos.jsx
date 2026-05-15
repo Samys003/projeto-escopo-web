@@ -1,8 +1,12 @@
-import Title1 from '../../../components/Typography/Title1';
-import Title2 from '../../../components/Typography/Title2';
-import Title3 from '../../../components/Typography/Title3';
+import ParagraphLarge from '../../../components/Typography/ParagraphLarge.jsx';
+import ParagraphMedium from '../../../components/Typography/ParagraphMedium.jsx';
+import Title2 from '../../../components/Typography/Title2.jsx';
+import Title3 from '../../../components/Typography/Title3.jsx';
+import Title4 from '../../../components/Typography/Title4.jsx';
 
-const plans = [
+// Mantem os dados dos planos junto do componente, como no modelo original da tela.
+// eslint-disable-next-line react-refresh/only-export-components
+export const plans = [
     {
         name: 'Free',
         price: '$0',
@@ -27,7 +31,7 @@ const plans = [
     },
 ];
 
-function InlinePlanCard({ plan, currentPlanName, index, onUpgrade }) {
+function InlinePlanCard({ plan, currentPlanName, index }) {
     const isCurrent = plan.name === currentPlanName;
 
     return (
@@ -36,15 +40,21 @@ function InlinePlanCard({ plan, currentPlanName, index, onUpgrade }) {
                 index > 0 ? 'border-l-2 border-[var(--color-variant)]' : ''
             }`}
         >
-            <Title3>{plan.name}</Title3>
-            <p className="mt-7 text-xl font-semibold text-[var(--color-base)]">{plan.price}</p>
-            <p className="mt-6 text-xl text-[var(--cinza-500)]">{plan.subtitle}</p>
+            <Title3 className="text-black">{plan.name}</Title3>
+            <ParagraphLarge className="mt-7 text-xl font-semibold text-[var(--color-base)]">
+                {plan.price}
+            </ParagraphLarge>
+            <ParagraphLarge className="mt-6 text-xl text-[var(--cinza-500)]">
+                {plan.subtitle}
+            </ParagraphLarge>
 
-            <ul className="mt-16 flex flex-col gap-3 text-left text-base text-black">
+            <ul className="mt-16 flex flex-col gap-3 text-left">
                 {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
                         <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
-                        <span>{feature}</span>
+                        <ParagraphMedium className="text-base text-black">
+                            {feature}
+                        </ParagraphMedium>
                     </li>
                 ))}
             </ul>
@@ -52,7 +62,6 @@ function InlinePlanCard({ plan, currentPlanName, index, onUpgrade }) {
             {!isCurrent && (
                 <button
                     type="button"
-                    onClick={onUpgrade}
                     className="mt-auto pt-11 text-xl font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                 >
                     Fazer Upgrade
@@ -62,63 +71,50 @@ function InlinePlanCard({ plan, currentPlanName, index, onUpgrade }) {
     );
 }
 
-function ModalPlanCard({ plan, currentPlanName, onClose }) {
-    const isCurrent = plan.name === currentPlanName;
-
+function ModalPlanCard({ plan, index, onClose }) {
     return (
-        <article
-            className={`rounded-2xl border p-5 ${
-                isCurrent
-                    ? 'border-[var(--color-variant)] bg-[var(--cinza-100)]'
-                    : 'border-[var(--color-dark)] bg-white'
-            }`}
-        >
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <h3 className="text-xl font-bold text-black">{plan.name}</h3>
-                    <p className="mt-2 text-lg font-semibold text-[var(--color-base)]">
-                        {plan.price}
-                    </p>
-                    <p className="mt-1 text-sm text-[var(--cinza-500)]">{plan.subtitle}</p>
-                </div>
-                {isCurrent && (
-                    <span className="rounded-full border border-[var(--color-variant)] px-3 py-1 text-sm font-medium text-[var(--color-variant)]">
-                        Atual
-                    </span>
-                )}
+        <div className={`rounded-[28px] ${index === 0 ? 'bg-[var(--cinza-100)]' : 'bg-white'}`}>
+            <div className="text-center">
+                <Title3 className="text-black">{plan.name}</Title3>
+                <ParagraphLarge className="mt-2 text-[26px] font-semibold text-[var(--color-base)]">
+                    {plan.price}
+                </ParagraphLarge>
+                <ParagraphMedium className="mt-1 text-[var(--cinza-500)]">
+                    {plan.subtitle}
+                </ParagraphMedium>
             </div>
 
-            <ul className="mt-5 flex flex-col gap-2 text-sm text-black">
+            <ul className="mt-5 space-y-2 text-sm text-[var(--cinza-700)]">
                 {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-base)]" />
-                        <span>{feature}</span>
+                    <li key={feature} className="flex gap-2">
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--color-base)]" />
+                        <ParagraphMedium>{feature}</ParagraphMedium>
                     </li>
                 ))}
             </ul>
 
-            {!isCurrent && (
+            <div className="mt-6 border-t border-[var(--color-base)] pt-4 text-center">
                 <button
                     type="button"
-                    className="mt-6 w-full rounded-xl bg-[var(--color-base)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)]"
+                    className="font-semibold text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                     onClick={onClose}
                 >
                     Fazer Upgrade
                 </button>
-            )}
-        </article>
+            </div>
+        </div>
     );
 }
 
-function Planos({ onClose, onUpgrade, currentPlanName = 'Free', variant = 'modal' }) {
+function Planos({ onClose, currentPlanName = 'Free', variant = 'modal' }) {
     if (variant === 'inline') {
         return (
             <section aria-label="Planos disponíveis">
                 <div className="mb-14 flex flex-col items-center gap-4">
-                    <h2 className="text-2xl font-medium text-black">Plano Atual:</h2>
-                    <span className="min-w-[116px] rounded-md border border-[var(--color-variant)] px-8 py-2 text-center text-lg font-medium text-[var(--color-variant)]">
+                    <Title2 className="text-black">Plano Atual:</Title2>
+                    <Title4 className="min-w-[116px] rounded-md border border-[var(--color-variant)] px-8 py-2 text-center text-[var(--color-variant)]">
                         {currentPlanName}
-                    </span>
+                    </Title4>
                 </div>
 
                 <div className="grid grid-cols-3">
@@ -128,7 +124,6 @@ function Planos({ onClose, onUpgrade, currentPlanName = 'Free', variant = 'modal
                             plan={plan}
                             index={index}
                             currentPlanName={currentPlanName}
-                            onUpgrade={onUpgrade}
                         />
                     ))}
                 </div>
@@ -138,32 +133,24 @@ function Planos({ onClose, onUpgrade, currentPlanName = 'Free', variant = 'modal
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
-            <div className="relative max-h-[86vh] w-full max-w-md overflow-y-auto rounded-3xl border border-[#e5e7eb] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.18)]">
+            <div className="relative max-h-[80vh] w-full max-w-md overflow-y-auto rounded-[32px] border border-[var(--cinza-200)] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.18)]">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--cinza-100)] text-2xl leading-none text-[var(--color-base)] transition-colors hover:bg-[#eee7ff]"
+                    className="absolute right-4 top-4 rounded-full bg-[var(--cinza-100)] p-1 text-[var(--color-base)] transition-colors hover:bg-[var(--color-variant)]"
                     aria-label="Fechar"
                 >
                     ×
                 </button>
 
-                <div className="px-6 py-8">
-                    <div className="mb-6 pr-10">
-                        <Title1 className="text-sm font-medium text-[var(--cinza-500)]">
-                            Plano Atual
-                        </Title1>
-                        <Title2 className="text-2xl font-bold text-[var(--cinza-700)]">
-                            {currentPlanName}
-                        </Title2>
-                    </div>
-
-                    <div className="space-y-4">
-                        {plans.map((plan) => (
+                <div className="px-6 py-7">
+                    <div className="mb-6 text-center"></div>
+                    <div className="space-y-6">
+                        {plans.map((plan, index) => (
                             <ModalPlanCard
                                 key={plan.name}
                                 plan={plan}
-                                currentPlanName={currentPlanName}
+                                index={index}
                                 onClose={onClose}
                             />
                         ))}
