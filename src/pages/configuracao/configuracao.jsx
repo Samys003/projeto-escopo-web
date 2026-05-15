@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, LogOut, PenLine, Trash2 } from 'lucide-react';
+import { Camera, LogOut, PenLine, X } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader.jsx';
 import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import Planos from './components/planos.jsx';
@@ -10,6 +10,7 @@ import {
     updateUserProfilePicture,
     deleteUserAccount,
     updatePassword,
+    getUserByEmail,
 } from '../../services/api.js';
 import Title3 from '../../components/Typography/Title3.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
@@ -57,6 +58,8 @@ function Configuracao() {
     const [senhaNovaConfirm, setSenhaNovaConfirm] = useState('');
     const [showPlanos, setShowPlanos] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteEmail, setDeleteEmail] = useState('');
+    const [deleteError, setDeleteError] = useState('');
 
     const currentPlan = useMemo(() => getCurrentPlan(usuario), [usuario]);
 
@@ -194,10 +197,33 @@ function Configuracao() {
         }
     };
 
+    const closeDeleteConfirm = () => {
+        setShowDeleteConfirm(false);
+        setDeleteEmail('');
+        setDeleteError('');
+    };
+
     const handleDeleteAccount = async () => {
+        const emailDigitado = deleteEmail.trim();
+        const emailUsuario = usuario?.email || '';
+
+        if (!emailDigitado) {
+            setDeleteError('Digite o e-mail de cadastro.');
+            return;
+        }
+
         try {
             setSaving(true);
             setError('');
+            setDeleteError('');
+
+            const usuarioEncontrado = await getUserByEmail(emailDigitado);
+            const emailEncontrado = usuarioEncontrado?.email || emailDigitado;
+
+            if (emailEncontrado.toLowerCase() !== emailUsuario.toLowerCase()) {
+                setDeleteError('O e-mail informado não corresponde ao usuário logado.');
+                return;
+            }
 
             await deleteUserAccount();
 
@@ -206,7 +232,8 @@ function Configuracao() {
 
             navigate('/');
         } catch (err) {
-            setError(err.message || 'Erro ao deletar conta');
+            setDeleteError(err.message || 'Erro ao confirmar e-mail');
+        } finally {
             setSaving(false);
         }
     };
@@ -247,7 +274,7 @@ function Configuracao() {
             </div>
             <DesktopSidebar onLogout={handleLogout} />
 
-            <main className="flex-1 px-5 py-8 sm:px-8 lg:px-8 lg:py-14 xl:px-20">
+            <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-14 xl:px-20">
                 <div className="mx-auto flex w-full max-w-[1240px] flex-col">
                     {error && (
                         <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
@@ -261,10 +288,10 @@ function Configuracao() {
                         </div>
                     )}
 
-                    <section className="grid items-start gap-9 lg:grid-cols-[minmax(300px,470px)_minmax(240px,360px)] lg:justify-between lg:gap-8 xl:gap-24">
+                    <section className="grid items-start gap-6 lg:grid-cols-[minmax(300px,470px)_minmax(240px,360px)] lg:justify-between lg:gap-8 xl:gap-24">
                         <div className="order-1 flex flex-col items-center lg:order-2 lg:pt-16">
                             <div className="relative">
-                                <div className="flex aspect-square w-[min(68vw,18rem)] items-center justify-center overflow-hidden rounded-full border-4 border-[var(--color-base)] bg-[var(--cinza-200)] sm:w-80 lg:w-[280px] xl:w-[330px]">
+                                <div className="flex aspect-square w-[min(54vw,11.5rem)] items-center justify-center overflow-hidden rounded-full border-[3px] border-[var(--color-base)] bg-[var(--cinza-200)] sm:w-56 lg:w-[280px] lg:border-4 xl:w-[330px]">
                                     {fotoPreview ? (
                                         <img
                                             src={fotoPreview}
@@ -279,10 +306,10 @@ function Configuracao() {
                                 </div>
                                 <label
                                     htmlFor="foto-input"
-                                    className="absolute bottom-3 right-3 flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] sm:h-[60px] sm:w-[60px] lg:bottom-2 lg:right-5"
+                                    className="absolute bottom-1 right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] sm:h-11 sm:w-11 lg:bottom-2 lg:right-5 lg:h-[60px] lg:w-[60px]"
                                     aria-label="Alterar foto"
                                 >
-                                    <Camera size={25} />
+                                    <Camera className="h-5 w-5 lg:h-[25px] lg:w-[25px]" />
                                 </label>
                                 <input
                                     id="foto-input"
@@ -350,7 +377,7 @@ function Configuracao() {
                                             type="text"
                                             value={nomeTemp}
                                             onChange={(e) => setNomeTemp(e.target.value)}
-                                            className="w-full rounded-2xl border-2 border-[var(--color-base)] bg-white px-4 py-3 text-center text-2xl font-semibold text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            className="w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-4 py-2 text-center text-xl font-semibold text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                             disabled={saving}
                                         />
                                         <div className="mt-3 flex gap-3">
@@ -377,7 +404,7 @@ function Configuracao() {
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-center gap-3">
-                                        <Title2 className="break-words text-center text-4xl leading-tight text-[var(--cinza-700)] sm:text-5xl">
+                                        <Title2 className="break-words text-center text-2xl leading-tight text-[var(--cinza-700)] sm:text-3xl">
                                             {usuario?.nome || 'Usuário'}
                                         </Title2>
                                         <button
@@ -386,7 +413,7 @@ function Configuracao() {
                                             className="shrink-0 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                                             aria-label="Editar nome"
                                         >
-                                            <PenLine size={30} />
+                                            <PenLine size={22} />
                                         </button>
                                     </div>
                                 )}
@@ -394,10 +421,10 @@ function Configuracao() {
                         </div>
 
                         <div className="order-2 w-full lg:order-1 lg:pt-24">
-                            <div className="space-y-7">
+                            <div className="space-y-5 lg:space-y-7">
                                 <div>
                                     <label htmlFor="email" className="mb-2 block">
-                                        <ParagraphMedium className="text-[28px] font-semibold text-[var(--cinza-700)] lg:text-base">
+                                        <ParagraphMedium className="text-lg font-semibold text-[var(--cinza-700)] lg:text-base">
                                             E-mail
                                         </ParagraphMedium>
                                     </label>
@@ -406,13 +433,13 @@ function Configuracao() {
                                         type="email"
                                         value={usuario?.email || ''}
                                         disabled
-                                        className="h-[60px] w-full rounded-2xl border-2 border-[var(--cinza-500)] bg-white px-5 text-[26px] text-[var(--cinza-700)] opacity-100 outline-none lg:h-14 lg:rounded-xl lg:text-base lg:text-[var(--cinza-500)]"
+                                        className="h-12 w-full rounded-xl border-2 border-[var(--cinza-500)] bg-white px-4 text-base text-[var(--cinza-700)] opacity-100 outline-none lg:h-14 lg:px-5 lg:text-base lg:text-[var(--cinza-500)]"
                                     />
                                 </div>
 
                                 <div>
                                     <label htmlFor="password-display" className="mb-2 block">
-                                        <ParagraphMedium className="text-[28px] font-semibold text-[var(--cinza-700)] lg:text-base">
+                                        <ParagraphMedium className="text-lg font-semibold text-[var(--cinza-700)] lg:text-base">
                                             Senha
                                         </ParagraphMedium>
                                     </label>
@@ -424,7 +451,7 @@ function Configuracao() {
                                                 value={senhaAtual}
                                                 onChange={(e) => setSenhaAtual(e.target.value)}
                                                 disabled={saving}
-                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                                className="h-12 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-4 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)] lg:h-14 lg:px-5"
                                             />
                                             <input
                                                 type="password"
@@ -432,7 +459,7 @@ function Configuracao() {
                                                 value={senhaNova}
                                                 onChange={(e) => setSenhaNova(e.target.value)}
                                                 disabled={saving}
-                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                                className="h-12 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-4 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)] lg:h-14 lg:px-5"
                                             />
                                             <input
                                                 type="password"
@@ -442,7 +469,7 @@ function Configuracao() {
                                                     setSenhaNovaConfirm(e.target.value)
                                                 }
                                                 disabled={saving}
-                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                                className="h-12 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-4 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)] lg:h-14 lg:px-5"
                                             />
                                             <div className="flex gap-3">
                                                 <button
@@ -471,15 +498,15 @@ function Configuracao() {
                                                     type="password"
                                                     value="************"
                                                     disabled
-                                                    className="h-[60px] w-full rounded-2xl border-2 border-[var(--cinza-500)] bg-white px-5 pr-16 text-[26px] text-[var(--cinza-700)] opacity-100 outline-none lg:h-14 lg:rounded-xl lg:text-base lg:text-[var(--cinza-500)]"
+                                                    className="h-12 w-full rounded-xl border-2 border-[var(--cinza-500)] bg-white px-4 pr-12 text-base text-[var(--cinza-700)] opacity-100 outline-none lg:h-14 lg:px-5 lg:pr-16 lg:text-base lg:text-[var(--cinza-500)]"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setEditingPassword(true)}
-                                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] lg:hidden"
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] lg:hidden"
                                                     aria-label="Alterar senha"
                                                 >
-                                                    <PenLine size={32} />
+                                                    <PenLine size={22} />
                                                 </button>
                                             </div>
                                             <div className="mt-5 hidden justify-center lg:flex">
@@ -499,7 +526,7 @@ function Configuracao() {
                                     <button
                                         type="button"
                                         onClick={() => setShowDeleteConfirm(true)}
-                                        className="text-[var(--color-base)] transition-colors hover:text-red-700"
+                                        className="text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                                     >
                                         Deletar sua conta
                                     </button>
@@ -508,17 +535,17 @@ function Configuracao() {
                         </div>
                     </section>
 
-                    <section className="mt-20 lg:hidden">
-                        <Title2 className="mb-6 text-[28px] ">Plano Atual:</Title2>
+                    <section className="mt-10 lg:hidden">
+                        <Title2 className="mb-4 text-xl">Plano Atual:</Title2>
                         <button
                             type="button"
                             onClick={() => setShowPlanos(true)}
-                            className="flex w-full items-center justify-between gap-4 bg-[var(--cinza-100)] px-6 py-7 text-left sm:px-10 sm:py-8"
+                            className="flex w-full items-center justify-between gap-4 bg-[var(--cinza-200)] px-5 py-4 text-left sm:px-6"
                         >
-                            <Title4 className="text-[22px] text-[var(--color-variant)] sm:text-[28px]">
+                            <Title4 className="text-lg text-[var(--color-variant)]">
                                 {currentPlan.name}
                             </Title4>
-                            <Title3 className="text-[22px] text-[var(--color-base)] sm:text-[28px]">
+                            <Title3 className="text-lg text-[var(--color-base)]">
                                 Fazer Upgrade
                             </Title3>
                         </button>
@@ -528,19 +555,19 @@ function Configuracao() {
                         <Planos variant="inline" currentPlanName={currentPlan.name} />
                     </div>
 
-                    <div className="mt-32 flex items-center justify-between gap-4 lg:hidden">
+                    <div className="mt-16 flex items-center justify-between gap-4 lg:hidden">
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="flex items-center gap-1 text-[22px] font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] sm:text-[28px]"
+                            className="flex items-center gap-1 text-lg font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                         >
-                            <LogOut size={30} />
+                            <LogOut size={21} />
                             Sair
                         </button>
                         <button
                             type="button"
                             onClick={() => setShowDeleteConfirm(true)}
-                            className="text-right text-[22px] font-medium text-[var(--color-base)] transition-colors hover:text-red-700 sm:text-[28px]"
+                            className="text-right text-lg font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                         >
                             Deletar sua conta
                         </button>
@@ -555,35 +582,60 @@ function Configuracao() {
                 )}
 
                 {showDeleteConfirm && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5">
-                        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-[var(--external-shadow)]">
-                            <div className="mb-4 flex items-center gap-3 text-[var(--color-base)]">
-                                <Trash2 size={24} />
-                                <Title2 className="text-xl font-semibold">Deletar sua conta</Title2>
-                            </div>
-                            <ParagraphMedium className="mb-6 text-[var(--cinza-700)]">
-                                Tem certeza que deseja deletar sua conta? Essa ação não pode ser
-                                desfeita.
-                            </ParagraphMedium>
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowDeleteConfirm(false)}
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 px-4 py-6">
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                handleDeleteAccount();
+                            }}
+                            className="relative w-full max-w-[940px] rounded-[28px] bg-white px-6 py-10 shadow-[var(--external-shadow)] sm:px-10 lg:rounded-[40px] lg:px-16 lg:py-14"
+                        >
+                            <button
+                                type="button"
+                                onClick={closeDeleteConfirm}
+                                disabled={saving}
+                                className="absolute right-6 top-6 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] disabled:opacity-50 lg:right-14 lg:top-12"
+                                aria-label="Fechar confirmação"
+                            >
+                                <X className="h-8 w-8 lg:h-10 lg:w-10" strokeWidth={3.2} />
+                            </button>
+
+                            <Title2 className="pr-10 text-center text-2xl text-black lg:text-[40px]">
+                                Tem certeza que deseja deletar sua conta?
+                            </Title2>
+
+                            <div className="mx-auto mt-12 w-full max-w-[250px] lg:mt-20">
+                                <ParagraphMedium className="mb-4 text-center text-lg font-semibold text-[var(--color-dark)] lg:text-[26px]">
+                                    para prosseguir digite o e-mail de cadastro
+                                </ParagraphMedium>
+                                <input
+                                    type="email"
+                                    value={deleteEmail}
+                                    onChange={(event) => {
+                                        setDeleteEmail(event.target.value);
+                                        setDeleteError('');
+                                    }}
+                                    placeholder="Digite seu e-mail"
                                     disabled={saving}
-                                    className="flex-1 rounded-xl bg-[var(--cinza-200)] px-4 py-3 font-semibold text-[var(--cinza-700)] transition-colors hover:bg-[var(--cinza-300)] disabled:opacity-50"
-                                >
-                                    Cancelar
-                                </button>
+                                    className="h-12 w-full rounded-xl border-[3px] border-black bg-white px-4 text-lg text-[var(--cinza-700)] outline-none focus:border-[var(--color-base)] lg:h-14 lg:text-2xl"
+                                />
+                                {deleteError && (
+                                    <ParagraphMedium className="mt-3 text-center text-[var(--color-base)]">
+                                        {deleteError}
+                                    </ParagraphMedium>
+                                )}
+                            </div>
+
+                            <div className="mx-auto mt-8 flex w-full max-w-[620px] justify-end lg:mt-10">
                                 <button
-                                    type="button"
-                                    onClick={handleDeleteAccount}
+                                    type="submit"
                                     disabled={saving}
-                                    className="flex-1 rounded-xl bg-[var(--color-base)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
+                                    className="rounded-lg bg-[var(--color-base)] px-8 py-3 text-lg font-medium text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50 lg:px-12 lg:text-2xl"
                                 >
-                                    {saving ? 'Deletando...' : 'Deletar'}
+                                    {saving ? 'Verificando...' : 'Prosseguir'}
                                 </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 )}
             </main>
