@@ -1,4 +1,5 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
+import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import { getDashboard } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
 
@@ -8,7 +9,6 @@ import { formatDate } from '../../utils/formatters';
 
 import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
 import Invite from './components/Invite';
-import AsideMenu from '../../components/AsideMenu.jsx';
 
 function Dashboard() {
     const [documentos, setDocumentos] = useState([]);
@@ -50,7 +50,7 @@ function Dashboard() {
         "
         >
             <MobileHeader></MobileHeader>
-            <AsideMenu></AsideMenu>
+            <DesktopSidebar></DesktopSidebar>
             <main className="flex flex-col gap-3 px-4 py-3 overflow-y-auto">
                 <Title2 className="text-(--cinza-700)">Continue de onde parou</Title2>
 
