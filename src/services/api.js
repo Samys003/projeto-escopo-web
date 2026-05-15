@@ -1,6 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-async function parseResponse(response) {
+export async function parseResponse(response) {
     const contentType = response.headers.get('content-type') || '';
     const data = contentType.includes('application/json') ? await response.json() : null;
 
@@ -39,7 +39,7 @@ export async function register({ nome, email, senha }) {
     return parseResponse(response);
 }
 
-function getAuthHeaders() {
+export function getAuthHeaders() {
     const token = localStorage.getItem('authToken');
     return {
         'Content-Type': 'application/json',
@@ -89,3 +89,28 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     });
     return parseResponse(response);
 }
+
+// export async function createProject({ titulo, descricao, integrantes }) {
+//     const response = await fetch(`${API_URL}/api/v1/projeto`, {
+//         method: 'POST',
+//         headers: getAuthHeaders(),
+//         body: JSON.stringify({ titulo, descricao, integrantes }),
+//     });
+//     return parseResponse(response);
+// }
+
+// export async function getDashboard() {
+//     const response = await fetch(`${API_URL}/api/v1/dashboard/`, {
+//         method: 'GET',
+//         headers: getAuthHeaders(),
+//     });
+//     return parseResponse(response);
+// }
+
+// export async function getProjects() {
+//     const response = await fetch(`${API_URL}/api/v1/projetos/`, {
+//         method: 'GET',
+//         headers: getAuthHeaders(),
+//     });
+//     return parseResponse(response);
+// }
