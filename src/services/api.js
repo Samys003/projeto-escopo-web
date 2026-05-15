@@ -112,3 +112,12 @@ export async function getProjectDocumentById(id) {
     return parseResponse(response);
 }
 
+export async function newCategoria(id , categoria) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/categoria`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(categoria),
+    
+    });
+    return parseResponse(response);
+}

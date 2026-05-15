@@ -11,7 +11,7 @@ import Register from "./components/Register";
 import Meeting from "./components/Meeting";
 import PopUp from "./components/PopUp";
 import { useParams } from "react-router-dom";
-import { getProjectById, getProjectDocumentById } from "../../services/api";
+import { getProjectById, getProjectDocumentById, newCategoria } from "../../services/api";
 
 
 
@@ -24,6 +24,8 @@ function ProjectDetails() {
 
     const [project, setProject] = useState(null)
     const [documentos, setDocumentos] = useState([])
+
+
 
     useEffect(() => {
 
@@ -50,6 +52,36 @@ function ProjectDetails() {
         carregarProjeto()
 
     }, [id])
+
+    const [nomeCategoria, setNomeCategoria] = useState("")
+
+    async function novaCategoria() {
+
+        try {
+
+            const nameCategoria = {
+                titulo: nomeCategoria
+            }
+
+            const data = await newCategoria(id, nameCategoria)
+            const dataDoc = await getProjectDocumentById(id)
+
+
+            setNomeCategoria(data)
+
+            setDocumentos(dataDoc)
+
+
+            setOpenModal(false)
+
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
+
+
+
 
 
     const registros = [
@@ -198,19 +230,14 @@ function ProjectDetails() {
 
 
     const [openModal, setOpenModal] = useState(false)
-    const [nomeCategoria, setNomeCategoria] = useState("")
 
     const [expand, setExpand] = useState(false)
 
 
-    function novaCategoria() {
-
-
-
-    }
 
 
     return (
+
         <div className="w-full">
             <MobileHeader />
             <div className=" relative w-full flex flex-col p-4" >
@@ -233,13 +260,13 @@ function ProjectDetails() {
                                     <ParagraphMedium>Ultima Alteração: {new Date(project?.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
                                     <ParagraphMedium>Responsavel: {project?.nome_responsavel}</ParagraphMedium>
                                 </div>
-                                <button onClick={() => setExpand(false)}>
+                                <button className="text-(--color-base)" onClick={() => setExpand(false)}>
                                     <ChevronUp />
                                 </button>
                             </div>
                         )}
                         {!expand &&
-                            <button onClick={() => setExpand(true)}>
+                            <button className="text-(--color-base)" onClick={() => setExpand(true)}>
                                 <ChevronDown />
                             </button>
                         }
