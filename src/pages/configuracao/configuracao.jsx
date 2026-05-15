@@ -1,20 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, LogOut, Pen, PenLine, Trash2 } from 'lucide-react';
+import { Camera, LogOut, PenLine, X } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader.jsx';
-import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
-import Title3 from '../../components/Typography/Title3.jsx';
-import Title2 from '../../components/Typography/Title2.jsx';
-import Title1 from '../../components/Typography/Title1.jsx';
+import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import Planos from './components/planos.jsx';
+import { plans } from './components/planos.jsx';
 import {
     updateUserName,
     updateUserProfilePicture,
     deleteUserAccount,
-    getUserByEmail,
     updatePassword,
+    getUserByEmail,
 } from '../../services/api.js';
+import Title3 from '../../components/Typography/Title3.jsx';
+import Title2 from '../../components/Typography/Title2.jsx';
+import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import Title4 from '../../components/Typography/Title4.jsx';
+
+function getCurrentPlan(usuario) {
+    const planoAtual = usuario?.plano_atual;
+
+    if (typeof planoAtual === 'object' && planoAtual !== null) {
+        const planName = planoAtual.nome || planoAtual.name;
+        return (
+            plans.find((plan) => plan.name.toLowerCase() === planName?.toLowerCase()) || plans[0]
+        );
+    }
+
+    if (typeof planoAtual === 'number') {
+        return plans[planoAtual] || plans[0];
+    }
+
+    if (typeof planoAtual === 'string') {
+        const planByName = plans.find(
+            (plan) => plan.name.toLowerCase() === planoAtual.toLowerCase(),
+        );
+        const planByIndex = plans[Number(planoAtual)];
+        return planByName || planByIndex || plans[0];
+    }
+
+    return plans[0];
+}
 
 function Configuracao() {
     const navigate = useNavigate();
@@ -32,6 +58,10 @@ function Configuracao() {
     const [senhaNovaConfirm, setSenhaNovaConfirm] = useState('');
     const [showPlanos, setShowPlanos] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteEmail, setDeleteEmail] = useState('');
+    const [deleteError, setDeleteError] = useState('');
+
+    const currentPlan = useMemo(() => getCurrentPlan(usuario), [usuario]);
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -44,7 +74,7 @@ function Configuracao() {
                     setNomeTemp(user.nome || '');
                     setFotoPreview(user.foto_perfil || null);
                 }
-            } catch (err) {
+            } catch {
                 setError('Erro ao carregar dados do usuário');
             } finally {
                 setLoading(false);
@@ -60,7 +90,7 @@ function Configuracao() {
             return;
         }
 
-        if (nomeTemp === usuario.nome) {
+        if (nomeTemp === usuario?.nome) {
             setEditingNome(false);
             return;
         }
@@ -131,6 +161,7 @@ function Configuracao() {
             setSaving(false);
         }
     };
+
     const handleFotoChange = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -160,16 +191,39 @@ function Configuracao() {
                 }
             };
             reader.readAsDataURL(file);
-        } catch (err) {
+        } catch {
             setError('Erro ao processar imagem');
             setSaving(false);
         }
     };
 
+    const closeDeleteConfirm = () => {
+        setShowDeleteConfirm(false);
+        setDeleteEmail('');
+        setDeleteError('');
+    };
+
     const handleDeleteAccount = async () => {
+        const emailDigitado = deleteEmail.trim();
+        const emailUsuario = usuario?.email || '';
+
+        if (!emailDigitado) {
+            setDeleteError('Digite o e-mail de cadastro.');
+            return;
+        }
+
         try {
             setSaving(true);
             setError('');
+            setDeleteError('');
+
+            const usuarioEncontrado = await getUserByEmail(emailDigitado);
+            const emailEncontrado = usuarioEncontrado?.email || emailDigitado;
+
+            if (emailEncontrado.toLowerCase() !== emailUsuario.toLowerCase()) {
+                setDeleteError('O e-mail informado não corresponde ao usuário logado.');
+                return;
+            }
 
             await deleteUserAccount();
 
@@ -178,7 +232,8 @@ function Configuracao() {
 
             navigate('/');
         } catch (err) {
-            setError(err.message || 'Erro ao deletar conta');
+            setDeleteError(err.message || 'Erro ao confirmar e-mail');
+        } finally {
             setSaving(false);
         }
     };
@@ -189,54 +244,72 @@ function Configuracao() {
         navigate('/');
     };
 
+    const cancelPasswordEdit = () => {
+        setEditingPassword(false);
+        setSenhaAtual('');
+        setSenhaNova('');
+        setSenhaNovaConfirm('');
+    };
+
     if (loading) {
         return (
-            <div className="bg-[#f8f8f8] min-h-screen">
-                <MobileHeader />
-                <main className="flex items-center justify-center px-4 py-12">
-                    <p className="text-gray-600">Carregando...</p>
+            <div className="min-h-screen bg-[var(--fundo)] lg:flex">
+                <div className="lg:hidden">
+                    <MobileHeader />
+                </div>
+                <DesktopSidebar onLogout={handleLogout} />
+                <main className="flex flex-1 items-center justify-center px-4 py-12">
+                    <ParagraphMedium className="text-[var(--cinza-600)]">
+                        Carregando...
+                    </ParagraphMedium>
                 </main>
             </div>
         );
     }
 
     return (
-        <div className="bg-[#f8f8f8] min-h-screen">
-            <MobileHeader />
+        <div className="min-h-screen bg-[var(--fundo)] lg:flex">
+            <div className="lg:hidden">
+                <MobileHeader />
+            </div>
+            <DesktopSidebar onLogout={handleLogout} />
 
-            <main className="px-4 py-6 sm:px-6 sm:py-8 max-w-md mx-auto">
-                {error && (
-                    <div className="mb-4 rounded-lg bg-red-50 p-4 border border-red-200">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                )}
+            <main className="flex-1 px-5 py-8 sm:px-8 lg:px-8 lg:py-14 xl:px-20">
+                <div className="mx-auto flex w-full max-w-[1240px] flex-col">
+                    {error && (
+                        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
+                            <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                    )}
 
-                {success && (
-                    <div className="mb-4 rounded-lg bg-green-50 p-4 border border-green-200">
-                        <p className="text-sm text-green-700">{success}</p>
-                    </div>
-                )}
+                    {success && (
+                        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 p-4">
+                            <p className="text-sm text-green-700">{success}</p>
+                        </div>
+                    )}
 
-                <section className="mb-8">
-                    <div className=" text-center">
-                        <div className="flex justify-center mb-6">
+                    <section className="grid items-start gap-9 lg:grid-cols-[minmax(300px,470px)_minmax(240px,360px)] lg:justify-between lg:gap-8 xl:gap-24">
+                        <div className="order-1 flex flex-col items-center lg:order-2 lg:pt-16">
                             <div className="relative">
-                                <div className="w-40 h-40 rounded-full border-2 border-[var(--color-base)] overflow-hidden bg-gray-200 flex items-center justify-center">
+                                <div className="flex aspect-square w-[min(68vw,18rem)] items-center justify-center overflow-hidden rounded-full border-4 border-[var(--color-base)] bg-[var(--cinza-200)] sm:w-80 lg:w-[280px] xl:w-[330px]">
                                     {fotoPreview ? (
                                         <img
                                             src={fotoPreview}
                                             alt="Foto de perfil"
-                                            className="w-full h-full object-cover"
+                                            className="h-full w-full object-cover"
                                         />
                                     ) : (
-                                        <div className="text-4xl text-gray-400"></div>
+                                        <Title2 className="text-5xl font-semibold text-[var(--cinza-500)]">
+                                            {(usuario?.nome || 'U').charAt(0).toUpperCase()}
+                                        </Title2>
                                     )}
                                 </div>
                                 <label
                                     htmlFor="foto-input"
-                                    className="absolute bottom-0 right-0 bg-[var(--color-base)] text-white rounded-full p-2 cursor-pointer hover:bg-[var(--color-dark)] transition-colors shadow-md"
+                                    className="absolute bottom-3 right-3 flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] sm:h-[60px] sm:w-[60px] lg:bottom-2 lg:right-5"
+                                    aria-label="Alterar foto"
                                 >
-                                    <Camera size={16} />
+                                    <Camera size={25} />
                                 </label>
                                 <input
                                     id="foto-input"
@@ -247,207 +320,324 @@ function Configuracao() {
                                     className="hidden"
                                 />
                             </div>
-                        </div>
 
-                        {editingNome ? (
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    value={nomeTemp}
-                                    onChange={(e) => setNomeTemp(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    disabled={saving}
-                                />
-                                <div className="flex gap-2 mt-3 justify-center">
-                                    <button
-                                        onClick={handleNomeSave}
-                                        disabled={saving}
-                                        className="px-6 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
-                                    >
-                                        {saving ? 'Salvando...' : 'Salvar'}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setEditingNome(false);
-                                            setNomeTemp(usuario.nome || '');
-                                        }}
-                                        disabled={saving}
-                                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mb-4">
-                                <Title3 className="text-gray-900 mb-2">
-                                    {usuario?.nome || 'Usuário'}
-                                </Title3>
-                                <label
-                                    htmlFor="nome-input"
-                                    onClick={() => setEditingNome(true)}
-                                    className=" "
-                                ></label>
-                            </div>
-                        )}
-
-                        <div className="mb-4">
-                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                E-mail
-                            </ParagraphMedium>
-                            <input
-                                type="email"
-                                value={usuario?.email || ''}
-                                disabled
-                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
-                            />
-                            <ParagraphMedium className="text-gray-700 font-medium mb-1 text-left">
-                                Senha
-                            </ParagraphMedium>
-                            {editingPassword ? (
-                                <div className="space-y-3">
-                                    <input
-                                        type="password"
-                                        placeholder="Senha atual"
-                                        value={senhaAtual}
-                                        onChange={(e) => setSenhaAtual(e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    />
-                                    <input
-                                        type="password"
-                                        placeholder="Nova senha"
-                                        value={senhaNova}
-                                        onChange={(e) => setSenhaNova(e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    />
-                                    <input
-                                        type="password"
-                                        placeholder="Confirmar nova senha"
-                                        value={senhaNovaConfirm}
-                                        onChange={(e) => setSenhaNovaConfirm(e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-[var(--color-base)] focus:outline-none focus:ring-2 focus:ring-[var(--color-base)]"
-                                    />
-                                    <div className="flex gap-2 mt-3">
-                                        <button
-                                            onClick={handlePasswordSave}
+                            <div className="mt-5 hidden w-full max-w-[360px] flex-col items-center lg:flex">
+                                {editingNome ? (
+                                    <div className="w-full">
+                                        <input
+                                            type="text"
+                                            value={nomeTemp}
+                                            onChange={(e) => setNomeTemp(e.target.value)}
+                                            className="w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-4 py-3 text-center text-xl font-semibold text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
                                             disabled={saving}
-                                            className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
-                                        >
-                                            {saving ? 'Salvando...' : 'Salvar'}
-                                        </button>
+                                        />
+                                        <div className="mt-3 flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={handleNomeSave}
+                                                disabled={saving}
+                                                className="flex-1 rounded-lg bg-[var(--color-base)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
+                                            >
+                                                {saving ? 'Salvando...' : 'Salvar'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingNome(false);
+                                                    setNomeTemp(usuario?.nome || '');
+                                                }}
+                                                disabled={saving}
+                                                className="flex-1 rounded-lg bg-[var(--cinza-200)] px-4 py-2 font-semibold text-[var(--cinza-700)] transition-colors hover:bg-[var(--cinza-300)] disabled:opacity-50"
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-3">
+                                        <Title2 className="break-words text-center text-[var(--cinza-700)]">
+                                            {usuario?.nome || 'Usuário'}
+                                        </Title2>
                                         <button
-                                            onClick={() => {
-                                                setEditingPassword(false);
-                                                setSenhaAtual('');
-                                                setSenhaNova('');
-                                                setSenhaNovaConfirm('');
-                                            }}
-                                            disabled={saving}
-                                            className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                            type="button"
+                                            onClick={() => setEditingNome(true)}
+                                            className="shrink-0 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
+                                            aria-label="Editar nome"
                                         >
-                                            Cancelar
+                                            <PenLine size={24} />
                                         </button>
                                     </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <input
-                                        type="password"
-                                        value="••••••••"
-                                        disabled
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed mb-4"
-                                    />
-                                    <label
-                                        htmlFor="password-input"
-                                        onClick={() => setEditingPassword(true)}
-                                        className=" text-[var(--color-base)] p-3 cursor-pointer hover:bg-[var(--color-dark)] transition-colors absolute right-3 top-1/2 transform -translate-y-1/2"
-                                    >
-                                        <PenLine size={10} />
+                                )}
+                            </div>
+
+                            <div className="mt-5 flex w-full flex-col items-center lg:hidden">
+                                {editingNome ? (
+                                    <div className="w-full">
+                                        <input
+                                            type="text"
+                                            value={nomeTemp}
+                                            onChange={(e) => setNomeTemp(e.target.value)}
+                                            className="w-full rounded-2xl border-2 border-[var(--color-base)] bg-white px-4 py-3 text-center text-2xl font-semibold text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            disabled={saving}
+                                        />
+                                        <div className="mt-3 flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={handleNomeSave}
+                                                disabled={saving}
+                                                className="flex-1 rounded-lg bg-[var(--color-base)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
+                                            >
+                                                {saving ? 'Salvando...' : 'Salvar'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingNome(false);
+                                                    setNomeTemp(usuario?.nome || '');
+                                                }}
+                                                disabled={saving}
+                                                className="flex-1 rounded-lg bg-[var(--cinza-200)] px-4 py-2 font-semibold text-[var(--cinza-700)] transition-colors hover:bg-[var(--cinza-300)] disabled:opacity-50"
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-3">
+                                        <Title2 className="break-words text-center text-4xl leading-tight text-[var(--cinza-700)] sm:text-5xl">
+                                            {usuario?.nome || 'Usuário'}
+                                        </Title2>
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingNome(true)}
+                                            className="shrink-0 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
+                                            aria-label="Editar nome"
+                                        >
+                                            <PenLine size={30} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="order-2 w-full lg:order-1 lg:pt-24">
+                            <div className="space-y-7">
+                                <div>
+                                    <label htmlFor="email" className="mb-2 block">
+                                        <ParagraphMedium className="text-[28px] font-semibold text-[var(--cinza-700)] lg:text-base">
+                                            E-mail
+                                        </ParagraphMedium>
                                     </label>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        value={usuario?.email || ''}
+                                        disabled
+                                        className="h-[60px] w-full rounded-2xl border-2 border-[var(--cinza-500)] bg-white px-5 text-[26px] text-[var(--cinza-700)] opacity-100 outline-none lg:h-14 lg:rounded-xl lg:text-base lg:text-[var(--cinza-500)]"
+                                    />
+                                </div>
 
-                                    {/* <button
-                                        onClick={() => setEditingPassword(true)}
-                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
-                                    >
-                                        Alterar Senha
-                                    </button>
+                                <div>
+                                    <label htmlFor="password-display" className="mb-2 block">
+                                        <ParagraphMedium className="text-[28px] font-semibold text-[var(--cinza-700)] lg:text-base">
+                                            Senha
+                                        </ParagraphMedium>
+                                    </label>
+                                    {editingPassword ? (
+                                        <div className="space-y-3">
+                                            <input
+                                                type="password"
+                                                placeholder="Senha atual"
+                                                value={senhaAtual}
+                                                onChange={(e) => setSenhaAtual(e.target.value)}
+                                                disabled={saving}
+                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            />
+                                            <input
+                                                type="password"
+                                                placeholder="Nova senha"
+                                                value={senhaNova}
+                                                onChange={(e) => setSenhaNova(e.target.value)}
+                                                disabled={saving}
+                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            />
+                                            <input
+                                                type="password"
+                                                placeholder="Confirmar nova senha"
+                                                value={senhaNovaConfirm}
+                                                onChange={(e) =>
+                                                    setSenhaNovaConfirm(e.target.value)
+                                                }
+                                                disabled={saving}
+                                                className="h-14 w-full rounded-xl border-2 border-[var(--color-base)] bg-white px-5 text-base text-[var(--cinza-700)] outline-none focus:ring-2 focus:ring-[var(--color-base)]"
+                                            />
+                                            <div className="flex gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={handlePasswordSave}
+                                                    disabled={saving}
+                                                    className="flex-1 rounded-xl bg-[var(--color-base)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50"
+                                                >
+                                                    {saving ? 'Salvando...' : 'Salvar'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={cancelPasswordEdit}
+                                                    disabled={saving}
+                                                    className="flex-1 rounded-xl bg-[var(--cinza-200)] px-4 py-3 font-semibold text-[var(--cinza-700)] transition-colors hover:bg-[var(--cinza-300)] disabled:opacity-50"
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="relative">
+                                                <input
+                                                    id="password-display"
+                                                    type="password"
+                                                    value="************"
+                                                    disabled
+                                                    className="h-[60px] w-full rounded-2xl border-2 border-[var(--cinza-500)] bg-white px-5 pr-16 text-[26px] text-[var(--cinza-700)] opacity-100 outline-none lg:h-14 lg:rounded-xl lg:text-base lg:text-[var(--cinza-500)]"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingPassword(true)}
+                                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] lg:hidden"
+                                                    aria-label="Alterar senha"
+                                                >
+                                                    <PenLine size={32} />
+                                                </button>
+                                            </div>
+                                            <div className="mt-5 hidden justify-center lg:flex">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingPassword(true)}
+                                                    className="rounded-xl bg-[var(--color-base)] px-7 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-dark)]"
+                                                >
+                                                    Alterar a senha
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="hidden justify-center lg:flex">
                                     <button
-                                        onClick={() => setEditingNome(true)}
-                                        className="w-50% flex items-center justify-center gap-3 px-4 py-3 bg-[var(--color-base)] hover:bg-[var(--color-dark)] text-white rounded-lg font-medium border-2 transition-colors mt-4"
+                                        type="button"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className="text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                                     >
-                                        Alterar Nome
-                                    </button> */}
-                                </>
-                            )}
-                        </div>
-
-                        <div className="mt-5 mb-5 align-left">
-                            <Title1 className="text-gray-700 font-medium align-left text-left">
-                                Plano Atual:
-                            </Title1>
-                            <div className="rounded-[32px] bg-[var(--cinza-200)]  p-5">
-                                <div className="flex flex-col   ">
-                                    <div>
-                                        <Title4 className="text-[var(--color-variant)]">
-                                            {Planos[usuario?.plano_atual]?.nome || 'Free'}
-                                        </Title4>
-                                        <button
-                                            onClick={() => setShowPlanos(true)}
-                                            className="text-[var(--color-base)] font-semibold hover:text-[var(--color-dark)] transition-colors right text-right"
-                                        >
-                                            Fazer Upgrade
-                                        </button>
-                                    </div>
+                                        Deletar sua conta
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <section className="mb-8">
+                    </section>
+
+                    <section className="mt-20 lg:hidden">
+                        <Title2 className="mb-6 text-[28px]">Plano Atual:</Title2>
                         <button
-                            onClick={handleLogout}
-                            className="text-[var(--color-base)] text-sm font-medium hover:text-[var(--color-dark)] transition-colors gap-2 flex items-center justify-center mb-4 mt-4"
+                            type="button"
+                            onClick={() => setShowPlanos(true)}
+                            className="flex w-full items-center justify-between gap-4 bg-[var(--cinza-100)] px-6 py-7 text-left sm:px-10 sm:py-8"
                         >
-                            <LogOut size={16} />
+                            <Title4 className="text-[22px] text-[var(--color-variant)] sm:text-[28px]">
+                                {currentPlan.name}
+                            </Title4>
+                            <Title3 className="text-[22px] text-[var(--color-base)] sm:text-[28px]">
+                                Fazer Upgrade
+                            </Title3>
+                        </button>
+                    </section>
+
+                    <div className="mt-12 hidden lg:block">
+                        <Planos variant="inline" currentPlanName={currentPlan.name} />
+                    </div>
+
+                    <div className="mt-32 flex items-center justify-between gap-4 lg:hidden">
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="flex items-center gap-1 text-[22px] font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] sm:text-[28px]"
+                        >
+                            <LogOut size={30} />
                             Sair
                         </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="text-right text-[22px] font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] sm:text-[28px]"
+                        >
+                            Deletar sua conta
+                        </button>
+                    </div>
+                </div>
 
-                        {!showDeleteConfirm ? (
+                {showPlanos && (
+                    <Planos
+                        onClose={() => setShowPlanos(false)}
+                        currentPlanName={currentPlan.name}
+                    />
+                )}
+
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 px-4 py-6">
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                handleDeleteAccount();
+                            }}
+                            className="relative w-full max-w-[calc(100vw-24px)] rounded-[34px] bg-white px-8 py-11 shadow-[var(--external-shadow)] sm:px-10 lg:max-w-[900px] lg:rounded-[28px] lg:px-16 lg:py-10"
+                        >
                             <button
-                                onClick={() => setShowDeleteConfirm(true)}
-                                className="text-[var(--color-base)] text-sm font-medium hover:text-red-700 transition-colors"
+                                type="button"
+                                onClick={closeDeleteConfirm}
+                                disabled={saving}
+                                className="absolute right-5 top-5 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] disabled:opacity-50 lg:right-9 lg:top-9"
+                                aria-label="Fechar confirmação"
                             >
-                                Deletar Conta
+                                <X className="h-5 w-5 lg:h-7 lg:w-7" strokeWidth={3.4} />
                             </button>
-                        ) : (
-                            <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-[var(--color-variant)]">
-                                <p className="text-gray-700 mb-4 text-center">
-                                    Tem certeza que deseja deletar sua conta?.
-                                </p>
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => setShowDeleteConfirm(false)}
-                                        disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-[var(--cinza-300)] disabled:opacity-50 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={handleDeleteAccount}
-                                        disabled={saving}
-                                        className="flex-1 px-4 py-2 bg-[var(--color-base)] text-white rounded-lg font-medium hover:bg-[var(--color-dark)] disabled:opacity-50 transition-colors"
-                                    >
-                                        {saving ? 'Deletando...' : 'Deletar'}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </section>
-                </section>
 
-                {showPlanos && <Planos onClose={() => setShowPlanos(false)} />}
+                            <Title2 className="pr-7 text-left text-[30px] leading-tight text-black lg:pr-8 lg:text-center lg:text-[28px]">
+                                Tem certeza que deseja deletar sua conta?
+                            </Title2>
+
+                            <div className="mx-auto mt-9 w-full lg:mt-14 lg:max-w-[520px]">
+                                <ParagraphMedium className="mb-4 text-center text-xl font-semibold text-[var(--color-dark)] lg:text-xl">
+                                    Para prosseguir digite o e-mail de cadastro
+                                </ParagraphMedium>
+                                <input
+                                    type="email"
+                                    value={deleteEmail}
+                                    onChange={(event) => {
+                                        setDeleteEmail(event.target.value);
+                                        setDeleteError('');
+                                    }}
+                                    placeholder="Digite seu e-mail"
+                                    disabled={saving}
+                                    className="h-12 w-full rounded-xl border-2 border-[var(--cinza-500)] bg-white px-4 text-lg text-[var(--cinza-700)] opacity-100 outline-none focus:border-[var(--color-base)] lg:h-11 lg:border-black lg:text-base"
+                                />
+                                {deleteError && (
+                                    <ParagraphMedium className="mt-3 text-center text-[var(--color-base)]">
+                                        {deleteError}
+                                    </ParagraphMedium>
+                                )}
+                            </div>
+
+                            <div className="mx-auto mt-16 flex w-full justify-end lg:mt-9 lg:max-w-[620px]">
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="rounded-lg bg-[var(--color-base)] px-10 py-3 text-lg font-medium text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50 lg:px-8 lg:py-2 lg:text-base"
+                                >
+                                    {saving ? 'Verificando...' : 'Prosseguir'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
             </main>
         </div>
     );

@@ -18,7 +18,7 @@ const Carrossel = () => {
     const displayedSlides = slides;
 
     return (
-        <div className="relative overflow-hidden w-full h-full hidden md:block rounded-[28px] shadow-lg">
+        <div className="relative overflow-hidden w-full h-full sm:h-80 mt-6 md:mt-0 hidden md:block rounded-[28px] shadow-lg">
             <div
                 className="flex transition-transform duration-700 ease-out"
                 style={{ transform: `translateX(-${current * 100}%)` }}
