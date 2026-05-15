@@ -224,16 +224,26 @@ function ProjectDetails() {
                     <div className="">
                         <ParagraphMedium>Status: {project?.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
                     </div>
-                    <div className={`relative flex items-end ${!expand ? "" : "flex-col gap-2"} `}>
+                    <div className={` flex  ${!expand ? "items-end justify-between" : "flex-col gap-2"} `}>
                         <ParagraphMedium className={!expand ? "line-clamp-2" : ""} >Descrição: {project?.descricao}</ParagraphMedium>
                         {expand && (
-                            <div className=" flex flex-col w-full">
-                                <ParagraphMedium>Data de Criação: {new Date(project?.data_criacao).toLocaleDateString()}</ParagraphMedium>
-                                <ParagraphMedium>Ultima Alteração: {new Date(project?.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
-                                <ParagraphMedium>Responsavel: {project?.nome_responsavel}</ParagraphMedium>
+                            <div className=" flex justify-between items-end w-full">
+                                <div>
+                                    <ParagraphMedium>Data de Criação: {new Date(project?.data_criacao).toLocaleDateString()}</ParagraphMedium>
+                                    <ParagraphMedium>Ultima Alteração: {new Date(project?.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
+                                    <ParagraphMedium>Responsavel: {project?.nome_responsavel}</ParagraphMedium>
+                                </div>
+                                <button onClick={() => setExpand(false)}>
+                                    <ChevronUp />
+                                </button>
                             </div>
                         )}
-                        <button className="" onClick={() => setExpand(!expand)}>{expand ? <ChevronUp /> : <ChevronDown />}</button>
+                        {!expand &&
+                            <button onClick={() => setExpand(true)}>
+                                <ChevronDown />
+                            </button>
+                        }
+
                     </div>
 
                     <ComponentMenu currentTab={currentTab} setCurrentTab={setCurrentTab} tabs={tabs}></ComponentMenu>
