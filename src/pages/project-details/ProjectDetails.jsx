@@ -11,7 +11,7 @@ import Register from "./components/Register";
 import Meeting from "./components/Meeting";
 import PopUp from "./components/PopUp";
 import { useParams } from "react-router-dom";
-import { getProjectById, getProjectDocumentById, newCategoria } from "../../services/api";
+import { deleteCategoria, getProjectById, getProjectDocumentById, newCategoria } from "../../services/api";
 
 
 
@@ -79,6 +79,29 @@ function ProjectDetails() {
         }
 
     }
+
+    async function deletarCategoria(categoriaId) {
+
+        try {
+
+
+
+
+            await deleteCategoria(categoriaId)
+
+            console.log(dataDoc)
+            const dataDoc = await getProjectDocumentById(id)
+
+
+
+            setDocumentos(dataDoc)
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
 
 
 
@@ -285,7 +308,7 @@ function ProjectDetails() {
                         {openModal && (
                             <PopUp nomeCategoria={nomeCategoria} setNomeCategoria={setNomeCategoria} novaCategoria={novaCategoria} onClose={() => setOpenModal(false)} />
                         )}
-                        <Documents documentos={documentos}></Documents>
+                        <Documents documentos={documentos} deletarCategoria={deletarCategoria}></Documents>
                     </div>
                 )}
                 {currentTab === "Registros" && (

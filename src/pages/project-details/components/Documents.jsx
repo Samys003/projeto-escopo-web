@@ -4,7 +4,7 @@ import ParagraphLarge from "../../../components/Typography/ParagraphLarge";
 import Title2 from "../../../components/Typography/Title2";
 import ParagraphMedium from "../../../components/Typography/ParagraphMedium";
 
-function Documents({ documentos }) {
+function Documents({ documentos, deletarCategoria }) {
     return (
         <div className="w-full flex flex-col gap-3">
             {documentos?.projeto?.categorias?.map((doc) => {
@@ -12,7 +12,7 @@ function Documents({ documentos }) {
                     <div key={doc.id} className="w-full flex flex-col gap-1 ">
                         <div className="w-full flex justify-between">
                             <Title2>{doc.nome?.charAt(0).toUpperCase() + doc.nome?.slice(1)}</Title2>
-                            <IconButton className="bg-transparent" icon={<Trash2 className="text-(--color-base)"></Trash2>}></IconButton>
+                            <IconButton onClick={() => deletarCategoria(doc.id)} className="bg-transparent" icon={<Trash2 className="text-(--color-base)"></Trash2>}></IconButton>
                         </div>
                         <div className="border w-full flex flex-col p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) ">
                             {doc.documentos.map((subdoc) => {

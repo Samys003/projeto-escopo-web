@@ -121,3 +121,13 @@ export async function newCategoria(id , categoria) {
     });
     return parseResponse(response);
 }
+
+
+export async function deleteCategoria(idcategoria) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/categoria/${idcategoria}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    
+    });
+    return parseResponse(response);
+}
