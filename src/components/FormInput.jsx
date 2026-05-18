@@ -1,7 +1,8 @@
 import { Icon } from 'lucide-react';
 
 function FormInput({
-    textRows,
+    textRows = 1,
+    allowEnter = false,
     inputClassName = 'text-base',
     labelContent,
     placeholder,
@@ -13,17 +14,20 @@ function FormInput({
 }) {
     return (
         <div className="flex flex-col">
-            <label className="font-inter font-medium text-lg text-(--cinza-700)">
+            <label
+                className={`font-inter font-medium text-lg text-(--cinza-700)
+            lg:text-2xl`}
+            >
                 {labelContent}
             </label>
             <div className={`flex justify-between border rounded-xl px-4 py-3`}>
                 <textarea
                     {...register}
                     placeholder={placeholder}
-                    rows={1}
-                    className={`flex wrap focus:outline-0 font-inter font-medium w-full ${inputClassName}`}
+                    rows={textRows}
+                    className={`focus:outline-0 font-inter font-medium w-full resize-none appreace-none ${inputClassName}`}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !allowEnter) {
                             e.preventDefault();
                             onInputSubmit?.();
                         }
