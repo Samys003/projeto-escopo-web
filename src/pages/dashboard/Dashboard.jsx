@@ -31,7 +31,7 @@ function Dashboard() {
     //TODO: Criar uma função model, ordenar por data também pode ser utilizado em notificações
     const convitesOrdenados = [];
     convites.forEach((convite) => {
-        const dia = convite.criado_em.split(' ')[0];
+        const dia = convite.criado_em.split('T')[0];
 
         if (!convitesOrdenados[dia]) {
             //caso não exista uma data correspondente no novo array, ele cria
@@ -51,10 +51,21 @@ function Dashboard() {
         >
             <MobileHeader></MobileHeader>
             <DesktopSidebar></DesktopSidebar>
-            <main className="flex flex-col gap-3 px-4 py-3 overflow-y-auto">
-                <Title2 className="text-(--cinza-700)">Continue de onde parou</Title2>
+            <main
+                className="flex flex-col gap-3 px-4 py-3 overflow-y-auto
+            lg:gap-10 lg:px-12 lg:py-8"
+            >
+                <Title2
+                    className="text-(--cinza-700)
+                lg:text-3xl"
+                >
+                    Continue de onde parou
+                </Title2>
 
-                <div className="overflow-x-auto border-b border-(--cinza-500) pb-3">
+                <div
+                    className="overflow-x-auto border-b border-(--cinza-500) pb-3
+                lg:pb-4"
+                >
                     <div className="flex gap-[10px] w-max">
                         {documentos.map((documento) => (
                             <DocumentQuickAccess
@@ -69,7 +80,7 @@ function Dashboard() {
                 <div className="flex flex-col gap-[10px]">
                     {Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
                         <div key={data} className="flex flex-col gap-[10px]">
-                            <ParagraphLarge className="text-(--cinza-700)">
+                            <ParagraphLarge className="text-(--cinza-700) lg:hidden">
                                 {formatDate(data)}
                             </ParagraphLarge>
                             {convitesDia.map((convite) => (

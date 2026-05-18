@@ -9,8 +9,8 @@ import Title4 from '../../components/Typography/Title4.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import ProjectMember from './components/ProjectMember.jsx';
 import { useEffect, useState } from 'react';
-// import { createProject } from '../../services/api.js';
 import { createProject } from './services/new-project-endpoints';
+import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 
 function NewProject() {
     const [integrantes, setIntegrantes] = useState([]);
@@ -100,58 +100,84 @@ function NewProject() {
     }
 
     return (
-        <div>
+        <div className=" lg:flex">
             <MobileHeader></MobileHeader>
-            <div className="flex flex-col px-4 py-[10px] gap-3">
-                <Title2>Novo Projeto</Title2>
-                <FormInput
-                    labelContent="Titulo do Projeto"
-                    inputClassName="text-lg"
-                    placeholder="Novo Projeto"
-                    register={register('titulo', { required: true })}
-                ></FormInput>
 
-                <FormInput
-                    labelContent="Sobre o projeto"
-                    className="h-24"
-                    placeholder="Insira uma breve descrição sobre o projeto"
-                    register={register('descricao', { required: true })}
-                ></FormInput>
+            <DesktopSidebar></DesktopSidebar>
 
-                <FormInput
-                    labelContent="Integrantes"
-                    placeholder="Buscar por email"
-                    icon={<Search className="text-(--cinza-700)" />}
-                    register={register('email')}
-                    onInputSubmit={handleAdicionarIntegrante}
-                >
-                    {' '}
-                    <Search></Search>{' '}
-                </FormInput>
-
-                <div className="flex px-14 justify-between">
-                    <Title4 className="text-(--cinza-700)">Nome</Title4>
-                    <Title4 className="text-(--cinza-700)">Nível de acesso</Title4>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    {integrantes.map((integrante) => (
-                        <ProjectMember
-                            key={integrante.id}
-                            integrante={integrante}
-                            isOwner={integrante.isOwner}
-                            onClose={() => onRemoveIntegrante(integrante.id)}
-                        ></ProjectMember>
-                    ))}
-                </div>
-            </div>
-
-            <button
-                className="absolute bottom-5 right-5 py-2 px-5 bg-(--color-base) text-white font-semibold rounded-lg text-xl"
-                onClick={() => handleSubmit(onSubmit)()}
+            <main
+                className="flex flex-col px-4 py-[10px] gap-3 relative
+                lg:gap-10 lg:px-12 lg:py-8 lg:w-full"
             >
-                Criar Projeto
-            </button>
+                <Title2 className="3xl">Novo Projeto</Title2>
+                <div className="flex flex-col gap-3">
+                    <FormInput
+                        labelContent="Titulo do Projeto"
+                        inputClassName="text-lg lg:text-xl"
+                        placeholder="Novo Projeto"
+                        register={register('titulo', { required: true })}
+                    ></FormInput>
+
+                    <FormInput
+                        labelContent="Sobre o projeto"
+                        inputClassName="lg:text-base font-normal"
+                        placeholder="Insira uma breve descrição sobre o projeto"
+                        allowEnter={true}
+                        register={register('descricao', { required: true })}
+                        textRows={3}
+                    ></FormInput>
+
+                    <FormInput
+                        labelContent="Integrantes"
+                        placeholder="Buscar por email"
+                        icon={<Search className="text-(--cinza-700)" />}
+                        register={register('email')}
+                        onInputSubmit={handleAdicionarIntegrante}
+                    >
+                        <Search></Search>
+                    </FormInput>
+
+                    <div className="xl:px-[20%]">
+                        <div
+                            className="flex px-14 justify-between
+                        lg:justify-around"
+                        >
+                            <Title4
+                                className="text-(--cinza-700)
+                            lg:text-xl"
+                            >
+                                Nome
+                            </Title4>
+                            <Title4
+                                className="text-(--cinza-700)
+                            lg:text-xl"
+                            >
+                                Nível de acesso
+                            </Title4>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            {integrantes.map((integrante) => (
+                                <ProjectMember
+                                    key={integrante.id}
+                                    integrante={integrante}
+                                    isOwner={integrante.isOwner}
+                                    onClose={() => onRemoveIntegrante(integrante.id)}
+                                ></ProjectMember>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="w-full flex flex-col items-end">
+                        <button
+                            className="
+                        py-2 px-5 bg-(--color-base) text-white font-semibold rounded-lg text-xl w-min text-nowrap
+                        lg:py-3>"
+                            onClick={() => handleSubmit(onSubmit)()}
+                        >
+                            Criar Projeto
+                        </button>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }
