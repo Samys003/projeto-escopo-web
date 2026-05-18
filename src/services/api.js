@@ -1,7 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 // formatacao da resposta
-async function parseResponse(response) {
+export async function parseResponse(response) {
     const contentType = response.headers.get('content-type') || '';
     const data = contentType.includes('application/json') ? await response.json() : null;
 
@@ -41,7 +41,7 @@ export async function register({ nome, email, senha }) {
 }
 
 // obter autenticacao
-function getAuthHeaders() {
+export function getAuthHeaders() {
     const token = localStorage.getItem('authToken');
     return {
         'Content-Type': 'application/json',

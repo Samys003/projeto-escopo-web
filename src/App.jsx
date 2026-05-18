@@ -5,8 +5,10 @@ import Senha from './pages/login/Senha';
 import Redefinir from './pages/login/Redefinir';
 import Dashboard from './pages/dashboard/Dashboard';
 import Configuracao from './pages/configuracao/configuracao';
-import ProjectDetails from './pages/project-details/ProjectDetails'
+import ProjectDetails from './pages/project-details/ProjectDetails';
 
+import NewProject from './pages/new-project/NewProject';
+import ProjectList from './pages/project-list/ProjectList';
 
 function App() {
     return (
@@ -19,6 +21,8 @@ function App() {
                 <Route path="/Login" element={<Login />} />
                 <Route path="/Redefinir" element={<Redefinir />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/novo-projeto" element={<NewProject />} />
+                <Route path="/projetos" element={<ProjectList />} />
                 <Route path="/configuracao" element={<Configuracao />} />
             </Routes>
         </Router>
