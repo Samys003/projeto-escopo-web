@@ -7,6 +7,7 @@ function ProjectMember({ integrante, isOwner = false, onClose }) {
             <div
                 className={`
                 flex bg-(--cinza-300) w-full px-1 py-2 rounded-lg justify-between items-center
+                lg:px-2
                 ${isOwner ? 'bg-(--cinza-300):' : 'bg-(--cinza-200'}
                 `}
             >
