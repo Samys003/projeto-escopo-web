@@ -89,3 +89,12 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     });
     return parseResponse(response);
 }
+
+export async function updateDocumentTitle({ documento_id, titulo }) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo }),
+    });
+    return parseResponse(response);
+}

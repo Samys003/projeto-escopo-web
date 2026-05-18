@@ -1,6 +1,7 @@
-import LogoImg from '../../assets/logo(1).svg';
+import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Undo2 } from 'lucide-react';
 import { register as registerApi } from '../../services/api';
 
 function Cadastro() {
@@ -27,21 +28,34 @@ function Cadastro() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-white px-6 py-12">
-            <div className="w-full max-w-md">
-                <div className="flex justify-center mb-8">
-                    <img src={LogoImg} className="w-64 h-auto" alt="Escopo" />
+        <div
+            className="flex min-h-screen flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-5 py-8 sm:px-6 lg:px-10 lg:py-12"
+            style={{ backgroundImage: 'var(--login-background)' }}
+        >
+            <div className="w-full max-w-[41.75rem]">
+                <div className="mb-8 flex justify-center lg:mb-10">
+                    <img
+                        src={LogoImg}
+                        className="h-auto w-[clamp(12rem,23vw,21rem)] max-w-full"
+                        alt="Escopo"
+                    />
                 </div>
-                <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
-                    <h1 className="text-3xl font-bold text-center text-gray-900! mb-8">Cadastro</h1>
+                <div className="rounded-[2.25rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:px-[3.75rem] lg:py-10">
+                    <p className="mb-5 text-center text-2xl font-bold leading-snug text-[var(--color-base)]">
+                        Transforme ideias em requisitos bem definidos.
+                    </p>
+                    <h1 className="mb-5 text-center text-2xl font-bold text-gray-800">Cadastro</h1>
 
                     {error && (
-                        <p className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
+                        <p className="mx-auto mb-4 max-w-[22.5rem] rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
                             {error}
                         </p>
                     )}
 
-                    <form className="space-y-6" onSubmit={handleSubmit}>
+                    <form
+                        className="mx-auto w-full max-w-[22.5rem] space-y-5"
+                        onSubmit={handleSubmit}
+                    >
                         <div>
                             <label className="block text-gray-800 font-medium mb-2">Nome</label>
                             <input
@@ -50,7 +64,7 @@ function Cadastro() {
                                 value={nome}
                                 onChange={(event) => setNome(event.target.value)}
                                 placeholder="Digite seu nome"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-base)] text-gray-700 placeholder-gray-400 transition"
                                 required
                             />
                         </div>
@@ -61,8 +75,8 @@ function Cadastro() {
                                 type="email"
                                 value={email}
                                 onChange={(event) => setEmail(event.target.value)}
-                                placeholder="Digite seu email"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
+                                placeholder="Digite seu e-mail"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-base)] text-gray-700 placeholder-gray-400 transition"
                                 required
                             />
                         </div>
@@ -75,27 +89,27 @@ function Cadastro() {
                                 value={senha}
                                 onChange={(event) => setSenha(event.target.value)}
                                 placeholder="Digite sua senha"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder-gray-400 transition"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-base)] text-gray-700 placeholder-gray-400 transition"
                                 required
                             />
                         </div>
 
-                        <div className="flex justify-center gap-2 pt-4 text-center">
+                        <div className="flex flex-col-reverse gap-4 pt-7 sm:flex-row sm:items-center sm:justify-between">
+                            <Link
+                                to="/Login"
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 px-5 font-semibold text-[var(--color-base)] transition hover:bg-gray-50 sm:min-w-[7rem]"
+                            >
+                                <span>Voltar</span>
+                                <Undo2 size={20} strokeWidth={2.2} />
+                            </Link>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className=" py-3 w-30 mt-2 rounded-2xl bg-[var(--color-base)] text-white text-base font-semibold hover:bg-[var(--color-base)] disabled:cursor-not-allowed disabled:opacity-60 transition"
+                                className="h-11 rounded-lg bg-[var(--color-base)] px-6 text-base font-semibold text-white transition hover:bg-[var(--color-dark)] disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[6.75rem]"
                             >
-                                {loading ? 'Cadastrando...' : 'Cadastre-se'}
+                                {loading ? 'Cadastrando...' : 'Cadastrar'}
                             </button>
                         </div>
-                        <Link
-                            to="/Login"
-                            className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-[#552ba9] font-semibold hover:bg-gray-50 transition"
-                        >
-                            <span>Voltar</span>
-                            <span className="text-xl">↩︎</span>
-                        </Link>
                     </form>
                 </div>
             </div>

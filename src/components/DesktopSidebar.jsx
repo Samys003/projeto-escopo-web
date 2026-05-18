@@ -5,6 +5,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import Title3 from './Typography/Title3';
 import { Bell, FolderPlus, Home, List, LogOut, Settings } from 'lucide-react';
 
+const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    navigate('/');
+};
+
 const sidebarLinks = [
     { label: 'Dashboard', path: '/dashboard', Icon: Home },
     { label: 'Novo Projeto', path: '/novo-projeto', Icon: FolderPlus },
@@ -12,7 +18,7 @@ const sidebarLinks = [
     { label: 'Documento', path: '/documento', Icon: Dock }, // DELETAR, PROVISÓRIO
 ];
 
-function DesktopSidebar({ onLogout }) {
+function DesktopSidebar({ onLogout = handleLogout }) {
     return (
         <aside className="hidden min-h-screen w-[280px] shrink-0 flex-col bg-[var(--color-base)] px-8 py-10 text-white lg:flex xl:w-[356px]">
             <Link to="/dashboard" className="mb-12 inline-flex w-fit" aria-label="Escopo">

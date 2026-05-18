@@ -4,8 +4,6 @@ import Title2 from '../../../components/Typography/Title2.jsx';
 import Title3 from '../../../components/Typography/Title3.jsx';
 import Title4 from '../../../components/Typography/Title4.jsx';
 
-// Mantem os dados dos planos junto do componente, como no modelo original da tela.
-// eslint-disable-next-line react-refresh/only-export-components
 export const plans = [
     {
         name: 'Free',
