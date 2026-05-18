@@ -13,6 +13,7 @@ import PopUp from './components/PopUp';
 import { useParams } from 'react-router-dom';
 import {
     deleteCategoria,
+    getDetailsMeetingById,
     getMeetingById,
     getProjectById,
     getProjectDocumentById,
@@ -27,6 +28,11 @@ function ProjectDetails() {
     const [documentos, setDocumentos] = useState([]);
     const [registros, setRegistros] = useState([]);
     const [reunioes, setReunioes] = useState([]);
+    const [detalhesReuniao, setDetalhesReuniao] = useState([]);
+    const [currentTab, setCurrentTab] = useState('Documentos');
+    const tabs = ['Documentos', 'Registros', 'Reuniões'];
+    const [openModal, setOpenModal] = useState(false);
+    const [expand, setExpand] = useState(false);
 
     useEffect(() => {
         async function carregarProjeto() {
@@ -124,10 +130,8 @@ function ProjectDetails() {
     useEffect(() => {
         async function carregarReunioes() {
             try {
-                const data = await getProjectById(id);
                 const dataMeeting = await getMeetingById(id);
 
-                setProject(data);
                 setReunioes(dataMeeting);
             } catch (error) {
                 console.error(error);
@@ -164,13 +168,16 @@ function ProjectDetails() {
         return acc;
     }, {});
 
-    const [currentTab, setCurrentTab] = useState('Documentos');
+    async function detalharReuniao(idreuniao) {
+        try {
+            const dataDetails = await getDetailsMeetingById(idreuniao);
 
-    const tabs = ['Documentos', 'Registros', 'Reuniões'];
-
-    const [openModal, setOpenModal] = useState(false);
-
-    const [expand, setExpand] = useState(false);
+            console.log(dataDetails);
+            setDetalhesReuniao(dataDetails);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     return (
         <div className="w-full">
@@ -260,7 +267,10 @@ function ProjectDetails() {
                 {currentTab === 'Reuniões' && (
                     <div className="pt-4">
                         <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
-                        <Meeting formatReunioes={formatReunioes}></Meeting>
+                        <Meeting
+                            detalharReuniao={detalharReuniao}
+                            formatReunioes={formatReunioes}
+                        ></Meeting>
                     </div>
                 )}
             </div>

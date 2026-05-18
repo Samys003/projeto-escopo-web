@@ -2,22 +2,26 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title2 from '../../../components/Typography/Title2';
 import user_default from '../assets/user_default.svg';
 
-function Meeting({ formatReunioes }) {
+function Meeting({ formatReunioes, detalharReuniao }) {
     return (
         <div>
             {Object.entries(formatReunioes).map(([ano, meses]) => (
-                <div>
-                    <div key={ano} className="flex items-center justify-center gap-2">
+                <div key={ano}>
+                    <div className="flex items-center justify-center gap-2">
                         <Title2>{ano}</Title2>
                     </div>
                     {Object.entries(meses).map(([mes, reunioes]) => (
-                        <div className="flex flex-col gap-2 mb-2 ">
-                            <div key={mes} className="flex border-b border-(--cinza-300) pb-1">
+                        <div key={mes} className="flex flex-col gap-2 mb-2 ">
+                            <div className="flex border-b border-(--cinza-300) pb-1">
                                 <Title2 className="text-(--color-base)">{mes}</Title2>
                             </div>
                             {reunioes.map((reuniao) => (
-                                <div className="flex border border-(--cinza-300) justify-between rounded-xl p-3 mb-3">
-                                    <div key={reuniao.id} className="">
+                                <button
+                                    key={reuniao.id}
+                                    onClick={() => detalharReuniao(reuniao.id)}
+                                    className="flex border border-(--cinza-300) justify-between rounded-xl p-3 mb-3"
+                                >
+                                    <div className="">
                                         <ParagraphMedium>{reuniao.titulo}</ParagraphMedium>
                                         <div className="flex -space-x-4">
                                             {reuniao.foto_usuarios ? (
@@ -39,7 +43,7 @@ function Meeting({ formatReunioes }) {
                                     <ParagraphMedium>
                                         {new Date(reuniao.criado_em).toLocaleDateString('pt-BR')}
                                     </ParagraphMedium>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     ))}

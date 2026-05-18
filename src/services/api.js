@@ -141,3 +141,11 @@ export async function getMeetingById(id) {
     });
     return parseResponse(response);
 }
+
+export async function getDetailsMeetingById(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
