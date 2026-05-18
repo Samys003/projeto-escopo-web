@@ -18,7 +18,6 @@ async function parseResponse(response) {
     return data;
 }
 
-
 export async function login({ email, senha }) {
     const response = await fetch(`${API_URL}/api/v1/auth/login`, {
         method: 'POST',
@@ -50,7 +49,7 @@ function getAuthHeaders() {
     };
 }
 
-// atualizar o nome 
+// atualizar o nome
 export async function updateUserName({ nome }) {
     const response = await fetch(`${API_URL}/api/v1/usuario/nome`, {
         method: 'PATCH',
@@ -59,7 +58,6 @@ export async function updateUserName({ nome }) {
     });
     return parseResponse(response);
 }
-
 
 export async function updateUserProfilePicture({ foto_perfil }) {
     const response = await fetch(`${API_URL}/api/v1/usuario/foto-perfil`, {
@@ -95,7 +93,6 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     return parseResponse(response);
 }
 
-
 export async function getProjectById(id) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${id}`, {
         method: 'GET',
@@ -112,22 +109,35 @@ export async function getProjectDocumentById(id) {
     return parseResponse(response);
 }
 
-export async function newCategoria(id , categoria) {
+export async function newCategoria(id, categoria) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${id}/categoria`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(categoria),
-    
     });
     return parseResponse(response);
 }
-
 
 export async function deleteCategoria(idcategoria) {
     const response = await fetch(`${API_URL}/api/v1/projeto/categoria/${idcategoria}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
-    
+    });
+    return parseResponse(response);
+}
+
+export async function getRegisterById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/registros`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getMeetingById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/reunioes`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
     });
     return parseResponse(response);
 }

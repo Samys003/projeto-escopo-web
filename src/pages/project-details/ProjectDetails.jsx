@@ -1,335 +1,271 @@
-import MobileHeader from "../../components/MobileHeader";
-import IconButton from "../../components/IconButton";
-import { SquarePen, FolderPlus, ChevronUp, ChevronDown } from "lucide-react";
-import Title2 from "../../components/Typography/Title2";
-import ParagraphMedium from "../../components/Typography/ParagraphMedium";
-import ComponentMenu from "./components/ComponentMenu";
-import { useEffect, useState } from "react";
-import Documents from "./components/Documents";
-import ButtonRegistrer from "./components/ButtonRegister";
-import Register from "./components/Register";
-import Meeting from "./components/Meeting";
-import PopUp from "./components/PopUp";
-import { useParams } from "react-router-dom";
-import { deleteCategoria, getProjectById, getProjectDocumentById, newCategoria } from "../../services/api";
-
-
-
-
-
+import MobileHeader from '../../components/MobileHeader';
+import IconButton from '../../components/IconButton';
+import { SquarePen, FolderPlus, ChevronUp, ChevronDown } from 'lucide-react';
+import Title2 from '../../components/Typography/Title2';
+import ParagraphMedium from '../../components/Typography/ParagraphMedium';
+import ComponentMenu from './components/ComponentMenu';
+import { useEffect, useState } from 'react';
+import Documents from './components/Documents';
+import ButtonRegistrer from './components/ButtonRegister';
+import Register from './components/Register';
+import Meeting from './components/Meeting';
+import PopUp from './components/PopUp';
+import { useParams } from 'react-router-dom';
+import {
+    deleteCategoria,
+    getMeetingById,
+    getProjectById,
+    getProjectDocumentById,
+    getRegisterById,
+    newCategoria,
+} from '../../services/api';
 
 function ProjectDetails() {
+    const { id } = useParams();
 
-    const { id } = useParams()
-
-    const [project, setProject] = useState(null)
-    const [documentos, setDocumentos] = useState([])
-
-
+    const [project, setProject] = useState(null);
+    const [documentos, setDocumentos] = useState([]);
+    const [registros, setRegistros] = useState([]);
+    const [reunioes, setReunioes] = useState([]);
 
     useEffect(() => {
-
         async function carregarProjeto() {
-
             try {
+                const data = await getProjectById(id);
+                const dataDoc = await getProjectDocumentById(id);
 
-                const data = await getProjectById(id)
-                const dataDoc = await getProjectDocumentById(id)
-
-
-                setProject(data)
-                setDocumentos(dataDoc)
-
-
+                setProject(data);
+                setDocumentos(dataDoc);
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
-
-
         }
 
+        carregarProjeto();
+    }, [id]);
 
-        carregarProjeto()
-
-    }, [id])
-
-    const [nomeCategoria, setNomeCategoria] = useState("")
+    const [nomeCategoria, setNomeCategoria] = useState('');
 
     async function novaCategoria() {
-
         try {
-
             const nameCategoria = {
-                titulo: nomeCategoria
-            }
+                titulo: nomeCategoria,
+            };
 
-            const data = await newCategoria(id, nameCategoria)
-            const dataDoc = await getProjectDocumentById(id)
+            const data = await newCategoria(id, nameCategoria);
+            const dataDoc = await getProjectDocumentById(id);
 
+            setNomeCategoria(data);
 
-            setNomeCategoria(data)
+            setDocumentos(dataDoc);
 
-            setDocumentos(dataDoc)
-
-
-            setOpenModal(false)
-
+            setOpenModal(false);
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-
     }
 
     async function deletarCategoria(categoriaId) {
-
         try {
+            await deleteCategoria(categoriaId);
 
+            console.log(dataDoc);
+            const dataDoc = await getProjectDocumentById(id);
 
-
-
-            await deleteCategoria(categoriaId)
-
-            console.log(dataDoc)
-            const dataDoc = await getProjectDocumentById(id)
-
-
-
-            setDocumentos(dataDoc)
-
+            setDocumentos(dataDoc);
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
     }
 
+    useEffect(() => {
+        async function carregarRegistros() {
+            try {
+                const data = await getProjectById(id);
+                const dataReg = await getRegisterById(id);
 
-
-
-
-
-
-    const registros = [
-
-        {
-            id: 1,
-            titulo: "Registro de Reunião",
-            conteudo: "Conteúdo do registro",
-            atualizado_em: "2026-04-14T10:00:00Z",
-            criado_em: "2026-05-14T10:00:00Z"
-        },
-        {
-            id: 2,
-            titulo: "Registro de Reunião 2",
-            conteudo: "Conteúdo do registro",
-            atualizado_em: "2026-05-11T10:00:00Z",
-            criado_em: "2026-04-14T10:00:00Z"
-        },
-        {
-            id: 3,
-            titulo: "Registro de Reunião 3",
-            conteudo: "Conteúdo do registro",
-            atualizado_em: "2026-06-12T10:00:00Z",
-            criado_em: "2026-03-14T10:00:00Z"
-        },
-        {
-            id: 4,
-            titulo: "Registro de Reunião 4",
-            conteudo: "Conteúdo do registro",
-            atualizado_em: "2026-05-12T10:00:00Z",
-            criado_em: "2026-04-14T10:00:00Z"
+                setProject(data);
+                setRegistros(dataReg);
+            } catch (error) {
+                console.error(error);
+            }
         }
 
-    ]
+        carregarRegistros();
+    }, [id]);
 
     const formatRegistros = registros.reduce((acc, registro) => {
+        const data = new Date(registro.criado_em);
 
-        const data = new Date(registro.criado_em)
+        const ano = data.getFullYear();
 
-        const ano = data.getFullYear()
+        const mes = data.toLocaleDateString('pt-BR', {
+            month: 'long',
+        });
 
-        const mes = data.toLocaleDateString("pt-BR", {
-            month: "long"
-        })
-
-        const mesFormatado =
-            mes.charAt(0).toUpperCase() + mes.slice(1)
+        const mesFormatado = mes.charAt(0).toUpperCase() + mes.slice(1);
 
         //cria o ano
         if (!acc[ano]) {
-            acc[ano] = {}
+            acc[ano] = {};
         }
 
         //cria o mes
         if (!acc[ano][mesFormatado]) {
-            acc[ano][mesFormatado] = []
+            acc[ano][mesFormatado] = [];
         }
 
         //adicionando os registros
-        acc[ano][mesFormatado].push(registro)
+        acc[ano][mesFormatado].push(registro);
 
-        return acc
+        return acc;
+    }, {});
 
-    }, {})
+    useEffect(() => {
+        async function carregarReunioes() {
+            try {
+                const data = await getProjectById(id);
+                const dataMeeting = await getMeetingById(id);
 
-    const reunioes = [
-        {
-            "id": 1,
-            "titulo": "Reunião de Planejamento",
-            "criado_em": "2026-05-14T10:00:00Z",
-            "foto_usuarios": [
-                "https://ui-avatars.com/api/?name=Samara",
-                "https://ui-avatars.com/api/?name=Samara"
-            ]
-        },
-        {
-            "id": 2,
-            "titulo": "Reunião de Requisitos",
-            "criado_em": "2026-03-14T10:00:00Z",
-            "foto_usuarios": [
-                "https://ui-avatars.com/api/?name=Samara",
-                "https://ui-avatars.com/api/?name=Samara"
-            ]
-        },
+                setProject(data);
+                setReunioes(dataMeeting);
+            } catch (error) {
+                console.error(error);
+            }
+        }
 
-        {
-            "id": 3,
-            "titulo": "Reunião de alinhamentos",
-            "criado_em": "2026-04-14T10:00:00Z",
-            "foto_usuarios": [
-                "https://ui-avatars.com/api/?name=Samara",
-                "https://ui-avatars.com/api/?name=Samara"
-            ]
-        },
-        {
-            "id": 4,
-            "titulo": "Reunião de alinhamentos 2",
-            "criado_em": "2026-04-14T10:00:00Z",
-            "foto_usuarios": [
-                "https://ui-avatars.com/api/?name=Samara",
-                "https://ui-avatars.com/api/?name=Samara"
-            ]
-        },
-    ]
+        carregarReunioes();
+    }, [id]);
 
     const formatReunioes = reunioes.reduce((acc, reuniao) => {
+        const data = new Date(reuniao.criado_em);
 
-        const data = new Date(reuniao.criado_em)
+        const ano = data.getFullYear();
 
-        const ano = data.getFullYear()
+        const mes = data.toLocaleDateString('pt-BR', {
+            month: 'long',
+        });
 
-        const mes = data.toLocaleDateString("pt-BR", {
-            month: "long"
-        })
-
-        const mesFormatado =
-            mes.charAt(0).toUpperCase() + mes.slice(1)
+        const mesFormatado = mes.charAt(0).toUpperCase() + mes.slice(1);
 
         //cria o ano
         if (!acc[ano]) {
-            acc[ano] = {}
+            acc[ano] = {};
         }
 
         //cria o mes
         if (!acc[ano][mesFormatado]) {
-            acc[ano][mesFormatado] = []
+            acc[ano][mesFormatado] = [];
         }
 
         //adicionando os registros
-        acc[ano][mesFormatado].push(reuniao)
+        acc[ano][mesFormatado].push(reuniao);
 
-        return acc
+        return acc;
+    }, {});
 
-    }, {})
+    const [currentTab, setCurrentTab] = useState('Documentos');
 
+    const tabs = ['Documentos', 'Registros', 'Reuniões'];
 
-    const [currentTab, setCurrentTab] = useState("Documentos")
+    const [openModal, setOpenModal] = useState(false);
 
-    const tabs = [
-        "Documentos",
-        "Registros",
-        "Reuniões"
-    ]
-
-
-
-
-    const [openModal, setOpenModal] = useState(false)
-
-    const [expand, setExpand] = useState(false)
-
-
-
+    const [expand, setExpand] = useState(false);
 
     return (
-
         <div className="w-full">
             <MobileHeader />
-            <div className=" relative w-full flex flex-col p-4" >
+            <div className=" relative w-full flex flex-col p-4">
                 <div className="w-full flex items-center gap-2 ">
-                    <Title2 className="text-2xl" >
-                        {project?.titulo}
-                    </Title2>
+                    <Title2 className="text-2xl">{project?.titulo}</Title2>
                     <IconButton icon={<SquarePen />} />
                 </div>
                 <div className="w-full flex flex-col  gap-2">
                     <div className="">
-                        <ParagraphMedium>Status: {project?.status ? "Concluido" : "Em andamento"}</ParagraphMedium>
+                        <ParagraphMedium>
+                            Status: {project?.status ? 'Concluido' : 'Em andamento'}
+                        </ParagraphMedium>
                     </div>
-                    <div className={` flex  ${!expand ? "items-end justify-between" : "flex-col gap-2"} `}>
-                        <ParagraphMedium className={!expand ? "line-clamp-2" : ""} >Descrição: {project?.descricao}</ParagraphMedium>
+                    <div
+                        className={` flex  ${!expand ? 'items-end justify-between' : 'flex-col gap-2'} `}
+                    >
+                        <ParagraphMedium className={!expand ? 'line-clamp-2' : ''}>
+                            Descrição: {project?.descricao}
+                        </ParagraphMedium>
                         {expand && (
                             <div className=" flex justify-between items-end w-full">
                                 <div>
-                                    <ParagraphMedium>Data de Criação: {new Date(project?.data_criacao).toLocaleDateString()}</ParagraphMedium>
-                                    <ParagraphMedium>Ultima Alteração: {new Date(project?.ultima_atualizacao).toLocaleDateString()}</ParagraphMedium>
-                                    <ParagraphMedium>Responsavel: {project?.nome_responsavel}</ParagraphMedium>
+                                    <ParagraphMedium>
+                                        Data de Criação:{' '}
+                                        {new Date(project?.data_criacao).toLocaleDateString()}
+                                    </ParagraphMedium>
+                                    <ParagraphMedium>
+                                        Ultima Alteração:{' '}
+                                        {new Date(project?.ultima_atualizacao).toLocaleDateString()}
+                                    </ParagraphMedium>
+                                    <ParagraphMedium>
+                                        Responsavel: {project?.nome_responsavel}
+                                    </ParagraphMedium>
                                 </div>
-                                <button className="text-(--color-base)" onClick={() => setExpand(false)}>
+                                <button
+                                    className="text-(--color-base)"
+                                    onClick={() => setExpand(false)}
+                                >
                                     <ChevronUp />
                                 </button>
                             </div>
                         )}
-                        {!expand &&
+                        {!expand && (
                             <button className="text-(--color-base)" onClick={() => setExpand(true)}>
                                 <ChevronDown />
                             </button>
-                        }
-
+                        )}
                     </div>
 
-                    <ComponentMenu currentTab={currentTab} setCurrentTab={setCurrentTab} tabs={tabs}></ComponentMenu>
+                    <ComponentMenu
+                        currentTab={currentTab}
+                        setCurrentTab={setCurrentTab}
+                        tabs={tabs}
+                    ></ComponentMenu>
                 </div>
-                {currentTab === "Documentos" && (
+                {currentTab === 'Documentos' && (
                     <div className="flex flex-col w-full items-center gap-4 pt-5 ">
                         <IconButton
                             onClick={() => setOpenModal(true)}
                             className="w-40 gap-2"
-                            icon={<FolderPlus />}>Nova Categoria
+                            icon={<FolderPlus />}
+                        >
+                            Nova Categoria
                         </IconButton>
                         {openModal && (
-                            <PopUp nomeCategoria={nomeCategoria} setNomeCategoria={setNomeCategoria} novaCategoria={novaCategoria} onClose={() => setOpenModal(false)} />
+                            <PopUp
+                                nomeCategoria={nomeCategoria}
+                                setNomeCategoria={setNomeCategoria}
+                                novaCategoria={novaCategoria}
+                                onClose={() => setOpenModal(false)}
+                            />
                         )}
-                        <Documents documentos={documentos} deletarCategoria={deletarCategoria}></Documents>
+                        <Documents
+                            documentos={documentos}
+                            deletarCategoria={deletarCategoria}
+                        ></Documents>
                     </div>
                 )}
-                {currentTab === "Registros" && (
+                {currentTab === 'Registros' && (
                     <div className="pt-4">
                         <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
                         <Register formatRegistros={formatRegistros}></Register>
                     </div>
                 )}
-                {currentTab === "Reuniões" && (
+                {currentTab === 'Reuniões' && (
                     <div className="pt-4">
                         <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
                         <Meeting formatReunioes={formatReunioes}></Meeting>
                     </div>
                 )}
-
-            </div >
-        </div >
-    )
+            </div>
+        </div>
+    );
 }
-
-
-
 
 export default ProjectDetails;
