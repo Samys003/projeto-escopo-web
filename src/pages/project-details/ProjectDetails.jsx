@@ -168,47 +168,49 @@ function ProjectDetails() {
     return (
         <div className="w-full">
             <MobileHeader />
-            <DescriptionProject project={project} expand={expand} set={setExpand} />
-            <ComponentMenu
-                currentTab={currentTab}
-                setCurrentTab={setCurrentTab}
-                tabs={tabs}
-            ></ComponentMenu>
-            {currentTab === 'Documentos' && (
-                <div className="flex flex-col w-full items-center gap-4 pt-5 ">
-                    <IconButton
-                        onClick={() => setOpenModal(true)}
-                        className="w-40 gap-2"
-                        icon={<FolderPlus />}
-                    >
-                        Nova Categoria
-                    </IconButton>
-                    {openModal && (
-                        <PopUp
-                            nomeCategoria={nomeCategoria}
-                            setNomeCategoria={setNomeCategoria}
-                            novaCategoria={novaCategoria}
-                            onClose={() => setOpenModal(false)}
-                        />
-                    )}
-                    <Documents
-                        documentos={documentos}
-                        deletarCategoria={deletarCategoria}
-                    ></Documents>
-                </div>
-            )}
-            {currentTab === 'Registros' && (
-                <div className="pt-4">
-                    <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
-                    <Register formatRegistros={formatRegistros}></Register>
-                </div>
-            )}
-            {currentTab === 'Reuniões' && (
-                <div className="pt-4">
-                    <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
-                    <Meeting formatReunioes={formatReunioes}></Meeting>
-                </div>
-            )}
+            <div className="w-full p-4 ">
+                <DescriptionProject project={project} expand={expand} setExpand={setExpand} />
+                <ComponentMenu
+                    currentTab={currentTab}
+                    setCurrentTab={setCurrentTab}
+                    tabs={tabs}
+                ></ComponentMenu>
+                {currentTab === 'Documentos' && (
+                    <div className="flex flex-col w-full items-center gap-4 pt-5 ">
+                        <IconButton
+                            onClick={() => setOpenModal(true)}
+                            className="w-40 gap-2"
+                            icon={<FolderPlus />}
+                        >
+                            Nova Categoria
+                        </IconButton>
+                        {openModal && (
+                            <PopUp
+                                nomeCategoria={nomeCategoria}
+                                setNomeCategoria={setNomeCategoria}
+                                novaCategoria={novaCategoria}
+                                onClose={() => setOpenModal(false)}
+                            />
+                        )}
+                        <Documents
+                            documentos={documentos}
+                            deletarCategoria={deletarCategoria}
+                        ></Documents>
+                    </div>
+                )}
+                {currentTab === 'Registros' && (
+                    <div className="pt-4">
+                        <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+                        <Register formatRegistros={formatRegistros}></Register>
+                    </div>
+                )}
+                {currentTab === 'Reuniões' && (
+                    <div className="pt-4">
+                        <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
+                        <Meeting formatReunioes={formatReunioes}></Meeting>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

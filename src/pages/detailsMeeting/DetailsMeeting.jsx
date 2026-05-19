@@ -1,5 +1,11 @@
+import MobileHeader from '../../components/MobileHeader';
+
 function DetailsMeeting() {
-    return <div></div>;
+    return (
+        <div className="w-full">
+            <MobileHeader></MobileHeader>
+        </div>
+    );
 }
 
 export default DetailsMeeting;

@@ -5,7 +5,7 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
 function DescriptionProject({ project, expand, setExpand }) {
     return (
-        <div className=" relative w-full flex flex-col p-4">
+        <div className=" w-full flex flex-col p-2">
             <div className="w-full flex items-center gap-2 ">
                 <Title2 className="text-2xl">{project?.titulo}</Title2>
                 <IconButton icon={<SquarePen />} />
