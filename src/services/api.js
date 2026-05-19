@@ -98,3 +98,36 @@ export async function updateDocumentTitle({ documento_id, titulo }) {
     });
     return parseResponse(response);
 }
+
+export async function getDocumentById(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createDocumentVersion({ documento_id, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/conteudo`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentVersions(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/versoes`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentVersionById(documento_versao_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/versao/${documento_versao_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}

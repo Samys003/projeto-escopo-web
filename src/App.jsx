@@ -18,6 +18,7 @@ function App() {
                 <Route path="/Redefinir" element={<Redefinir />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/configuracao" element={<Configuracao />} />
+                <Route path="/documento/:documentoId" element={<Documento />} />
                 <Route path="/documento" element={<Documento />} /> {/* DELETAR, PROVISÓRIO */}
             </Routes>
         </Router>
