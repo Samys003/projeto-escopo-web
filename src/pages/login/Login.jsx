@@ -55,7 +55,7 @@ function Login() {
                             <h1 className="mx-auto mb-8 max-w-[23rem] text-center text-2xl font-bold leading-snug text-[var(--color-base)]">
                                 Transforme ideias em requisitos bem definidos.
                             </h1>
-                            <h2 className="mb-8 text-center text-2xl font-bold text-gray-800">
+                            <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">
                                 Login
                             </h2>
                             {error && (

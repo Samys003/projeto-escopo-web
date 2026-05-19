@@ -1,6 +1,9 @@
 import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link } from 'react-router-dom';
 import { Undo2 } from 'lucide-react';
+import Title2 from '../../components/Typography/Title2';
+import Title3 from '../../components/Typography/Title3';
+import Title4 from '../../components/Typography/Title4';
 
 function Senha() {
     return (
@@ -18,9 +21,9 @@ function Senha() {
                 </div>
 
                 <div className="rounded-[2.25rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:px-[3.625rem] lg:py-11">
-                    <h1 className="mb-6 text-center text-2xl font-bold text-gray-800">
+                    <Title2 className="mb-6 text-center text-3xl font-bold text-gray-800">
                         Redefinir Senha
-                    </h1>
+                    </Title2>
 
                     <p className="mb-5 text-center text-sm leading-6 text-black">
                         Você receberá um código de verificação em seu e-mail
@@ -28,24 +31,24 @@ function Senha() {
 
                     <form className="space-y-5">
                         <div>
-                            <label className="mb-2 block font-medium text-gray-800">E-mail</label>
+                            <label className="mb-2 block font-medium text-gray-800"></label>
                             <input
                                 type="email"
                                 placeholder="Digite seu e-mail"
-                                className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-gray-700 transition placeholder:text-gray-400 focus:border-[#552ba9] focus:outline-none"
+                                className="w-full rounded-lg border-2 border-[var(--cinza-300)] px-4 py-3 text-[var(--cinza-700)] transition placeholder:text-gray-400 focus:border-[var(--color-base)] focus:outline-none"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(8.5rem,1fr)_minmax(6.25rem,0.75fr)]">
                             <button
                                 type="button"
-                                className="h-11 rounded-lg bg-[#552ba9] px-4 font-semibold text-white transition hover:bg-[#42257c]"
+                                className="h-11 rounded-lg bg-[var(--color-base)] px-4 font-semibold text-white transition hover:bg-[var(--color-dark)]"
                             >
                                 Enviar Código
                             </button>
                             <button
                                 type="button"
-                                className="h-11 rounded-lg bg-purple-300 px-4 font-semibold text-white transition hover:bg-[#7645d787]"
+                                className="h-11 rounded-lg bg-[var(--color-variant)] px-4 font-semibold text-white transition hover:bg-[#7645d787]"
                             >
                                 Reenviar
                             </button>

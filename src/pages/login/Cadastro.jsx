@@ -44,7 +44,7 @@ function Cadastro() {
                     <p className="mb-5 text-center text-2xl font-bold leading-snug text-[var(--color-base)]">
                         Transforme ideias em requisitos bem definidos.
                     </p>
-                    <h1 className="mb-5 text-center text-2xl font-bold text-gray-800">Cadastro</h1>
+                    <h1 className="mb-5 text-center text-3xl font-bold text-gray-800">Cadastro</h1>
 
                     {error && (
                         <p className="mx-auto mb-4 max-w-[22.5rem] rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">

@@ -1,6 +1,9 @@
 import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link } from 'react-router-dom';
 import { Undo2 } from 'lucide-react';
+import Title2 from '../../components/Typography/Title2';
+import Title3 from '../../components/Typography/Title3';
+import Title4 from '../../components/Typography/Title4';
 
 function Redefinir() {
     return (
@@ -17,9 +20,9 @@ function Redefinir() {
                     />
                 </div>
                 <div className="rounded-[2.25rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:px-10 lg:py-11">
-                    <h1 className="mb-12 text-center text-3xl font-medium text-black">
+                    <Title2 className="mb-12 text-center text-3xl font-medium text-black">
                         Redefinir Senha
-                    </h1>
+                    </Title2>
 
                     <form className="space-y-5">
                         <div>

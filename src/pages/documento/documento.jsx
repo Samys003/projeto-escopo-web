@@ -1,55 +1,75 @@
-import Title1 from '../../components/Typography/Title1';
-import Title2 from '../../components/Typography/Title2';
-import Title3 from '../../components/Typography/Title3';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
+import Title2 from '../../components/Typography/Title2';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { MessagesSquare, ChevronsLeft, History } from 'lucide-react';
+import { ChevronsLeft, History, MessagesSquare } from 'lucide-react';
 
 function Documento() {
     return (
         <div className="min-h-screen bg-[var(--fundo)] lg:flex">
             <MobileHeader />
             <DesktopSidebar />
-            <main className="flex-1 px-5 py-8 sm:px-8 lg:px-8 lg:py-14 xl:px-20">
-                <ChevronsLeft className="" strokeWidth={2} />
-                <Title2 onclick={() => {}}>Requisitos funcionais</Title2>
-                <ParagraphMedium className="text-[var(--color-variant)]">
-                    Última atualização: 10/04/2023
-                </ParagraphMedium>
-                <ParagraphMedium className="text-gray-700">
-                    Data de criação: 01/04/2023
-                </ParagraphMedium>
-                <History
-                    className="absolute right-10 flex h-[40px] w-[40px] cursor-pointer items-center justify-center text-[var(--color-variant)]  transition-colors hover:bg-[var(--color-dark)] sm:h-[60px] sm:w-[60px] lg:bottom-2 lg:right-5"
-                    strokeWidth={2}
-                />
-                <MessagesSquare
-                    className="absolute bottom-3 right-3 flex h-[40px] w-[40px] rounded-2xl cursor-pointer items-center justify-center  bg-[var(--color-base)]  text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] sm:h-[60px] sm:w-[60px] lg:bottom-2 lg:right-5"
-                    strokeWidth={2}
-                />
 
-                <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
-                    <Title2>Requisito 01: Cadastro </Title2>
-                    <Title3>1.1:</Title3>
-                    <ParagraphMedium>
-                        O usuário deverá ser capaz de realizar o cadastro e criar um acesso por meio
-                        de um formulário, será solicitado nome, email e senha.
-                    </ParagraphMedium>
-                    <Title3>1.2:</Title3>
-                    <ParagraphMedium>
-                        O usuário deverá ser capaz de realizar o cadastro e criar um acesso por meio
-                        de um formulário, será solicitado nome, email e senha.
-                    </ParagraphMedium>
+            <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-8 lg:py-14 xl:px-20">
+                <section className="mx-auto max-w-[700px] lg:max-w-[900px]">
+                    <div className="relative border-b border-[var(--cinza-400)] pb-2">
+                        <div>
+                            <div className="mb-2 flex items-center gap-3">
+                                <ChevronsLeft className="h-8 w-8 text-gray-900" strokeWidth={3} />
+                                <Title2 className="text-[26px] leading-none text-black">
+                                    Requisitos Funcionais
+                                </Title2>
+                            </div>
 
-                    <Title2>Requisito 02: Login </Title2>
-                    <Title3>2.1:</Title3>
-                    <ParagraphMedium>
-                        O usuário terá acesso ao sistema usando o email e senha cadastrados
-                    </ParagraphMedium>
-                </div>
+                            <ParagraphMedium className="text-[var(--color-variant)]">
+                                Última Alteração: 16/05/2026
+                            </ParagraphMedium>
+                            <ParagraphMedium className="text-black">
+                                Data de criação: 17/03/2026
+                            </ParagraphMedium>
+                        </div>
+
+                        <div className="absolute bottom-2 right-3 flex items-center gap-7">
+                            <History
+                                className="h-10 w-10 cursor-pointer text-[var(--color-variant)]"
+                                strokeDasharray="8 8"
+                                strokeWidth={2}
+                            />
+                            <button
+                                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
+                                type="button"
+                            >
+                                <MessagesSquare className="h-6 w-6" strokeWidth={2} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="mt-3 min-h-[610px] rounded-2xl border border-[var(--cinza-300)] bg-white px-4 py-4 text-black sm:px-6">
+                        <h3 className="mb-5 font-inter text-[16px] font-normal">
+                            Requisito 01: Cadastro
+                        </h3>
+
+                        <div className="mb-5 grid grid-cols-[28px_1fr] gap-2 font-inter text-[16px] leading-6">
+                            <span>1.1:</span>
+                            <p>
+                                O usuário deverá ser capaz de realizar o cadastro e criar um acesso por
+                                meio de um formulário, será solicitado nome, email e senha.
+                            </p>
+                        </div>
+
+                        <p className="mb-5 font-inter text-[16px] leading-6">
+                            1.2: O sistema irá enviar um email validação do cadastro
+                        </p>
+
+                        <h3 className="mb-5 font-inter text-[16px] font-normal">
+                            Requisito 02: Login
+                        </h3>
+
+                        <p className="font-inter text-[16px] leading-6">
+                            2.1: O usuário terá acesso ao sistema usando o email e senha cadastrados
+                        </p>
+                    </div>
+                </section>
             </main>
         </div>
     );
