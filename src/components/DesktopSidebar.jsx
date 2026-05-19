@@ -1,24 +1,24 @@
 import logotipoDesktop from '../assets/logotipo-desktop.svg';
-import { Dock, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Bell, Dock, FolderPlus, Home, List, LogOut, Settings } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import Title3 from './Typography/Title3';
-import { Bell, FolderPlus, Home, List, LogOut, Settings } from 'lucide-react';
-
-const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    navigate('/');
-};
 
 const sidebarLinks = [
     { label: 'Dashboard', path: '/dashboard', Icon: Home },
     { label: 'Novo Projeto', path: '/novo-projeto', Icon: FolderPlus },
     { label: 'Lista de projetos', path: '/projetos', Icon: List },
-    { label: 'Documento', path: '/documento', Icon: Dock }, // DELETAR, PROVISÓRIO
+    { label: 'Documento', path: '/documento', Icon: Dock }, // DELETAR, PROVISORIO
 ];
 
-function DesktopSidebar({ onLogout = handleLogout }) {
+function DesktopSidebar({ onLogout }) {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        onLogout?.();
+        navigate('/');
+    };
+
     return (
         <aside className="hidden min-h-screen w-[280px] shrink-0 flex-col bg-[var(--color-base)] px-8 py-10 text-white lg:flex xl:w-[356px]">
             <Link to="/dashboard" className="mb-12 inline-flex w-fit" aria-label="Escopo">
@@ -42,20 +42,20 @@ function DesktopSidebar({ onLogout = handleLogout }) {
                 <Link
                     to="/configuracao"
                     className="rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
-                    aria-label="Configurações"
+                    aria-label="Configuracoes"
                 >
                     <Settings size={27} />
                 </Link>
                 <button
                     type="button"
                     className="rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
-                    aria-label="Notificações"
+                    aria-label="Notificacoes"
                 >
                     <Bell size={27} />
                 </button>
                 <button
                     type="button"
-                    onClick={onLogout}
+                    onClick={handleLogout}
                     className="rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
                     aria-label="Sair"
                 >
@@ -65,4 +65,5 @@ function DesktopSidebar({ onLogout = handleLogout }) {
         </aside>
     );
 }
+
 export default DesktopSidebar;
