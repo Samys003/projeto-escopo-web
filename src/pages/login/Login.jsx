@@ -51,7 +51,7 @@ function Login() {
 
                 <div className="grid grid-cols-1 items-start justify-center gap-8 lg:grid-cols-[minmax(20rem,26.625rem)_minmax(31rem,34.875rem)] lg:gap-[clamp(4rem,9vw,9rem)]">
                     <section className="w-full">
-                        <div className="flex min-h-[29rem] flex-col justify-center rounded-[0.625rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:min-h-[32.25rem] lg:px-7 lg:py-12">
+                        <div className="flex min-h-[29rem] flex-col justify-center rounded-[2.25rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:min-h-[32.25rem] lg:px-7 lg:py-12">
                             <h1 className="mx-auto mb-8 max-w-[23rem] text-center text-2xl font-bold leading-snug text-[var(--color-base)]">
                                 Transforme ideias em requisitos bem definidos.
                             </h1>
@@ -100,7 +100,7 @@ function Login() {
                                 <div className="text-right">
                                     <Link
                                         to="/Senha"
-                                        className="text-[#552ba9] hover:text-[#42257c] text-sm font-medium transition"
+                                        className="text-[var(--color-base)] hover:text-[var(--color-dark)] text-sm font-medium transition"
                                     >
                                         Esqueceu a senha?
                                     </Link>
@@ -109,14 +109,14 @@ function Login() {
                                 <div className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-center">
                                     <Link
                                         to="/cadastro"
-                                        className="rounded-lg border-2 border-[var(--color-base)] bg-white px-5 py-3 text-center font-semibold text-[var(--color-base)] transition hover:bg-purple-50 sm:w-[7.75rem]"
+                                        className="flex-1 py-3 bg-white border-2 border-[#552ba9] text-[#552ba9] font-semibold rounded-lg hover:bg-purple-50 transition text-center"
                                     >
                                         Cadastre-se
                                     </Link>
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="rounded-lg bg-[#552ba9] px-5 py-3 font-semibold text-white transition hover:bg-[#42257c] disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[5.125rem]"
+                                        className="flex-1 py-3 bg-[#552ba9] text-white font-semibold rounded-lg hover:bg-[#42257c] transition disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {loading ? 'Entrando...' : 'Entrar'}
                                     </button>
