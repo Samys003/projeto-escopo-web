@@ -1,8 +1,11 @@
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title2 from '../../../components/Typography/Title2';
-import user_default from '../assets/user_default.svg';
+import user_default from '../../../../src/pages/project-details/assets/user_default.svg';
+import { useNavigate } from 'react-router-dom';
 
-function Meeting({ formatReunioes, detalharReuniao }) {
+function Meeting({ formatReunioes }) {
+    const navigate = useNavigate();
+
     return (
         <div>
             {Object.entries(formatReunioes).map(([ano, meses]) => (
@@ -18,25 +21,21 @@ function Meeting({ formatReunioes, detalharReuniao }) {
                             {reunioes.map((reuniao) => (
                                 <button
                                     key={reuniao.id}
-                                    onClick={() => detalharReuniao(reuniao.id)}
+                                    onClick={() => navigate(`/reuniao/${reuniao.id}`)}
                                     className="flex border border-(--cinza-300) justify-between rounded-xl p-3 mb-3"
                                 >
                                     <div className="">
                                         <ParagraphMedium>{reuniao.titulo}</ParagraphMedium>
                                         <div className="flex -space-x-4">
-                                            {reuniao.foto_usuarios ? (
-                                                <img
-                                                    className="w-10 rounded-full"
-                                                    src={reuniao.foto_usuarios}
-                                                    alt="Usuario"
-                                                />
-                                            ) : (
-                                                <img
-                                                    className="w-10 rounded-full"
-                                                    src={user_default}
-                                                    alt="usuario"
-                                                ></img>
-                                            )}
+                                            {reuniao.foto_usuarios.map((foto) => {
+                                                return (
+                                                    <img
+                                                        key={foto}
+                                                        className="w-10 rounded-full"
+                                                        src={foto || user_default}
+                                                    ></img>
+                                                );
+                                            })}
                                         </div>
                                     </div>
 

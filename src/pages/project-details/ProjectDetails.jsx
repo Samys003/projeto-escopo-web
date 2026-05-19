@@ -1,8 +1,5 @@
 import MobileHeader from '../../components/MobileHeader';
 import IconButton from '../../components/IconButton';
-import { SquarePen, FolderPlus, ChevronUp, ChevronDown } from 'lucide-react';
-import Title2 from '../../components/Typography/Title2';
-import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import ComponentMenu from './components/ComponentMenu';
 import { useEffect, useState } from 'react';
 import Documents from './components/Documents';
@@ -11,15 +8,16 @@ import Register from './components/Register';
 import Meeting from './components/Meeting';
 import PopUp from './components/PopUp';
 import { useParams } from 'react-router-dom';
+import { FolderPlus } from 'lucide-react';
 import {
     deleteCategoria,
-    getDetailsMeetingById,
     getMeetingById,
     getProjectById,
     getProjectDocumentById,
     getRegisterById,
     newCategoria,
 } from '../../services/api';
+import DescriptionProject from './components/DescriptionProject';
 
 function ProjectDetails() {
     const { id } = useParams();
@@ -28,7 +26,6 @@ function ProjectDetails() {
     const [documentos, setDocumentos] = useState([]);
     const [registros, setRegistros] = useState([]);
     const [reunioes, setReunioes] = useState([]);
-    const [detalhesReuniao, setDetalhesReuniao] = useState([]);
     const [currentTab, setCurrentTab] = useState('Documentos');
     const tabs = ['Documentos', 'Registros', 'Reuniões'];
     const [openModal, setOpenModal] = useState(false);
@@ -168,112 +165,50 @@ function ProjectDetails() {
         return acc;
     }, {});
 
-    async function detalharReuniao(idreuniao) {
-        try {
-            const dataDetails = await getDetailsMeetingById(idreuniao);
-
-            console.log(dataDetails);
-            setDetalhesReuniao(dataDetails);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     return (
         <div className="w-full">
             <MobileHeader />
-            <div className=" relative w-full flex flex-col p-4">
-                <div className="w-full flex items-center gap-2 ">
-                    <Title2 className="text-2xl">{project?.titulo}</Title2>
-                    <IconButton icon={<SquarePen />} />
-                </div>
-                <div className="w-full flex flex-col  gap-2">
-                    <div className="">
-                        <ParagraphMedium>
-                            Status: {project?.status ? 'Concluido' : 'Em andamento'}
-                        </ParagraphMedium>
-                    </div>
-                    <div
-                        className={` flex  ${!expand ? 'items-end justify-between' : 'flex-col gap-2'} `}
+            <DescriptionProject project={project} expand={expand} set={setExpand} />
+            <ComponentMenu
+                currentTab={currentTab}
+                setCurrentTab={setCurrentTab}
+                tabs={tabs}
+            ></ComponentMenu>
+            {currentTab === 'Documentos' && (
+                <div className="flex flex-col w-full items-center gap-4 pt-5 ">
+                    <IconButton
+                        onClick={() => setOpenModal(true)}
+                        className="w-40 gap-2"
+                        icon={<FolderPlus />}
                     >
-                        <ParagraphMedium className={!expand ? 'line-clamp-2' : ''}>
-                            Descrição: {project?.descricao}
-                        </ParagraphMedium>
-                        {expand && (
-                            <div className=" flex justify-between items-end w-full">
-                                <div>
-                                    <ParagraphMedium>
-                                        Data de Criação:{' '}
-                                        {new Date(project?.data_criacao).toLocaleDateString()}
-                                    </ParagraphMedium>
-                                    <ParagraphMedium>
-                                        Ultima Alteração:{' '}
-                                        {new Date(project?.ultima_atualizacao).toLocaleDateString()}
-                                    </ParagraphMedium>
-                                    <ParagraphMedium>
-                                        Responsavel: {project?.nome_responsavel}
-                                    </ParagraphMedium>
-                                </div>
-                                <button
-                                    className="text-(--color-base)"
-                                    onClick={() => setExpand(false)}
-                                >
-                                    <ChevronUp />
-                                </button>
-                            </div>
-                        )}
-                        {!expand && (
-                            <button className="text-(--color-base)" onClick={() => setExpand(true)}>
-                                <ChevronDown />
-                            </button>
-                        )}
-                    </div>
-
-                    <ComponentMenu
-                        currentTab={currentTab}
-                        setCurrentTab={setCurrentTab}
-                        tabs={tabs}
-                    ></ComponentMenu>
+                        Nova Categoria
+                    </IconButton>
+                    {openModal && (
+                        <PopUp
+                            nomeCategoria={nomeCategoria}
+                            setNomeCategoria={setNomeCategoria}
+                            novaCategoria={novaCategoria}
+                            onClose={() => setOpenModal(false)}
+                        />
+                    )}
+                    <Documents
+                        documentos={documentos}
+                        deletarCategoria={deletarCategoria}
+                    ></Documents>
                 </div>
-                {currentTab === 'Documentos' && (
-                    <div className="flex flex-col w-full items-center gap-4 pt-5 ">
-                        <IconButton
-                            onClick={() => setOpenModal(true)}
-                            className="w-40 gap-2"
-                            icon={<FolderPlus />}
-                        >
-                            Nova Categoria
-                        </IconButton>
-                        {openModal && (
-                            <PopUp
-                                nomeCategoria={nomeCategoria}
-                                setNomeCategoria={setNomeCategoria}
-                                novaCategoria={novaCategoria}
-                                onClose={() => setOpenModal(false)}
-                            />
-                        )}
-                        <Documents
-                            documentos={documentos}
-                            deletarCategoria={deletarCategoria}
-                        ></Documents>
-                    </div>
-                )}
-                {currentTab === 'Registros' && (
-                    <div className="pt-4">
-                        <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
-                        <Register formatRegistros={formatRegistros}></Register>
-                    </div>
-                )}
-                {currentTab === 'Reuniões' && (
-                    <div className="pt-4">
-                        <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
-                        <Meeting
-                            detalharReuniao={detalharReuniao}
-                            formatReunioes={formatReunioes}
-                        ></Meeting>
-                    </div>
-                )}
-            </div>
+            )}
+            {currentTab === 'Registros' && (
+                <div className="pt-4">
+                    <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+                    <Register formatRegistros={formatRegistros}></Register>
+                </div>
+            )}
+            {currentTab === 'Reuniões' && (
+                <div className="pt-4">
+                    <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
+                    <Meeting formatReunioes={formatReunioes}></Meeting>
+                </div>
+            )}
         </div>
     );
 }
