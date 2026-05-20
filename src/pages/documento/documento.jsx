@@ -4,15 +4,7 @@ import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
-import {
-    ChevronsLeft,
-    GitCompare,
-    History,
-    MessagesSquare,
-    Save,
-    Undo2,
-    X,
-} from 'lucide-react';
+import { ChevronsLeft, GitCompare, History, MessagesSquare, Save, Undo2, X } from 'lucide-react';
 import {
     createDocumentVersion,
     getDocumentById,
@@ -36,7 +28,8 @@ function nomeDaVersao(index, total) {
 function Documento() {
     const { documentoId: documentoIdParam } = useParams();
     const [searchParams] = useSearchParams();
-    const documentoId = documentoIdParam || searchParams.get('id') || searchParams.get('documentoId') || 1;
+    const documentoId =
+        documentoIdParam || searchParams.get('id') || searchParams.get('documentoId');
 
     const [documento, setDocumento] = useState(null);
     const [titulo, setTitulo] = useState('');
@@ -59,6 +52,18 @@ function Documento() {
 
     useEffect(() => {
         async function carregarDocumento() {
+            if (!documentoId) {
+                setDocumento(null);
+                setTitulo('Documento');
+                setConteudo('');
+                setTituloOriginal('Documento');
+                setConteudoOriginal('');
+                setVersoes([]);
+                setErro('Informe o ID do documento na URL.');
+                setCarregando(false);
+                return;
+            }
+
             try {
                 setCarregando(true);
                 setErro('');
@@ -83,6 +88,11 @@ function Documento() {
     }, [documentoId]);
 
     async function carregarVersoes() {
+        if (!documentoId) {
+            setErro('Informe o ID do documento na URL.');
+            return [];
+        }
+
         try {
             setErro('');
             const versoesApi = await getDocumentVersions(documentoId);
@@ -128,6 +138,11 @@ function Documento() {
     }
 
     async function salvarDocumento() {
+        if (!documentoId) {
+            setErro('Informe o ID do documento na URL.');
+            return;
+        }
+
         try {
             setSalvando(true);
             setErro('');
@@ -172,7 +187,10 @@ function Documento() {
                         <div>
                             <div className="mb-2 flex items-center gap-3">
                                 <Link to="/dashboard" aria-label="Voltar">
-                                    <ChevronsLeft className="h-8 w-8 text-gray-900" strokeWidth={3} />
+                                    <ChevronsLeft
+                                        className="h-8 w-8 text-gray-900"
+                                        strokeWidth={3}
+                                    />
                                 </Link>
 
                                 <input
@@ -193,7 +211,8 @@ function Documento() {
                             )}
 
                             <ParagraphMedium className="text-black">
-                                Data de criação: {formatarData(documento?.criado_em) || '17/03/2026'}
+                                Data de criação:{' '}
+                                {formatarData(documento?.criado_em) || '17/03/2026'}
                             </ParagraphMedium>
                         </div>
 
@@ -297,7 +316,8 @@ function Documento() {
                             {versoesComparadas.map((versao, index) => (
                                 <div key={versao.id} className="mb-8">
                                     <Title2 className="mb-4 text-center text-[16px] font-medium text-[var(--color-base)]">
-                                        {versao.titulo} - {versao.nome} - {formatarData(versao.criado_em)}
+                                        {versao.titulo} - {versao.nome} -{' '}
+                                        {formatarData(versao.criado_em)}
                                     </Title2>
                                     <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2">
                                         <pre
