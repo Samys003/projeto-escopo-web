@@ -7,3 +7,12 @@ export async function getDashboard() {
     });
     return parseResponse(response);
 }
+
+export async function answerInvite(conviteId, conviteStatusId) {
+    const response = await fetch(`${API_URL}/api/v1/convite/${conviteId}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ novo_status_id: conviteStatusId }),
+    });
+    return parseResponse(response);
+}

@@ -1,6 +1,6 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
-import { getDashboard } from './services/dashboard-endpoints.js';
+import { getDashboard, answerInvite } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
 
 import Title2 from '../../components/Typography/Title2.jsx';
@@ -41,6 +41,15 @@ function Dashboard() {
         //Adicionando convite a data correspondente
         convitesOrdenados[dia].push(convite);
     });
+
+    async function handleAnswerInvite(conviteId, statusId) {
+        try {
+            await answerInvite(conviteId, statusId);
+
+            //Removendo convite da lista
+            setConvites((prev) => prev.filter((convite) => convite.id !== conviteId));
+        } catch (error) {}
+    }
 
     return (
         <div
@@ -84,7 +93,11 @@ function Dashboard() {
                                 {formatDate(data)}
                             </ParagraphLarge>
                             {convitesDia.map((convite) => (
-                                <Invite key={convite.id} convite={convite}></Invite>
+                                <Invite
+                                    key={convite.id}
+                                    convite={convite}
+                                    onAnswerInvite={handleAnswerInvite}
+                                ></Invite>
                             ))}
                         </div>
                     ))}
