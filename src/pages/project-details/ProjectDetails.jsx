@@ -31,6 +31,7 @@ function ProjectDetails() {
     const tabs = ['Documentos', 'Registros', 'Reuniões'];
     const [openModal, setOpenModal] = useState(false);
     const [expand, setExpand] = useState(false);
+    const [nomeCategoria, setNomeCategoria] = useState('');
 
     useEffect(() => {
         async function carregarProjeto() {
@@ -47,8 +48,6 @@ function ProjectDetails() {
 
         carregarProjeto();
     }, [id]);
-
-    const [nomeCategoria, setNomeCategoria] = useState('');
 
     async function novaCategoria() {
         try {
