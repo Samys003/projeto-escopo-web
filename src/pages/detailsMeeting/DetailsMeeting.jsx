@@ -7,7 +7,8 @@ import { getDetailsMeetingById } from '../../services/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import Title2 from '../../components/Typography/Title2';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
-import Title3 from '../../components/Typography/Title3';
+import IconButton from '../../components/IconButton';
+import ParagraphSmall from '../../components/Typography/ParagraphSmall';
 
 function DetailsMeeting() {
     const { id } = useParams();
@@ -55,6 +56,19 @@ function DetailsMeeting() {
                 <button>
                     <SquarePen className="w-6 h-9" />
                 </button>
+            </div>
+            <div className="w-full flex flex-col gap-2 p-2 border-b text-(--cinza-500) text-start">
+                <ParagraphMedium>Gravação da Reunião</ParagraphMedium>
+                <IconButton className="w-32">
+                    <ParagraphSmall>Acessar Gravação</ParagraphSmall>
+                </IconButton>
+                <ParagraphMedium className="text-(--color-base) underline">
+                    Transcrição
+                </ParagraphMedium>
+            </div>
+            <div className="w-full flex">
+                <ParagraphSmall>Links Adicionais</ParagraphSmall>
+                {detalhesReuniao.map((link) => {})}
             </div>
         </div>
     );
