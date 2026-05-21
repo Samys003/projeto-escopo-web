@@ -2,9 +2,12 @@ import MobileHeader from '../../components/MobileHeader.jsx';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import { getDashboard, answerInvite } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
+import iconFolder from '../../assets/icons/icon-folder.svg';
 
 import Title2 from '../../components/Typography/Title2.jsx';
+import Title4 from '../../components/Typography/Title4.jsx';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
+import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import { formatDate } from '../../utils/formatters';
 
 import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
@@ -76,12 +79,27 @@ function Dashboard() {
                 lg:pb-4"
                 >
                     <div className="flex gap-[10px] w-max">
-                        {documentos.map((documento) => (
-                            <DocumentQuickAccess
-                                key={documento.id}
-                                documento={documento}
-                            ></DocumentQuickAccess>
-                        ))}
+                        {documentos?.length > 0 ? (
+                            documentos.map((documento) => (
+                                <DocumentQuickAccess
+                                    key={documento.id}
+                                    documento={documento}
+                                ></DocumentQuickAccess>
+                            ))
+                        ) : (
+                            <div>
+                                <div>
+                                    <Title4 className="font-medium text-(--cinza-700)">
+                                        Sem atividade recente
+                                    </Title4>
+                                    <ParagraphMedium>
+                                        As últimas atividades realizadas em documentos aparecerão
+                                        aqui.
+                                    </ParagraphMedium>
+                                </div>
+                                <img src={iconFolder} alt="" className="opacity-50" />
+                            </div>
+                        )}
                     </div>
                 </div>
 
