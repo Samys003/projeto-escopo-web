@@ -18,6 +18,7 @@ import {
     newCategoria,
 } from '../../services/api';
 import DescriptionProject from './components/DescriptionProject';
+import DesktopSidebar from '../../components/DesktopSidebar';
 
 function ProjectDetails() {
     const { id } = useParams();
@@ -166,7 +167,8 @@ function ProjectDetails() {
     }, {});
 
     return (
-        <div className="w-full">
+        <div className="w-full lg:flex">
+            <DesktopSidebar />
             <MobileHeader />
             <div className="w-full p-4 ">
                 <DescriptionProject project={project} expand={expand} setExpand={setExpand} />

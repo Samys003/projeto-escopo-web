@@ -9,12 +9,14 @@ import ProjectDetails from './pages/project-details/ProjectDetails';
 
 import NewProject from './pages/new-project/NewProject';
 import ProjectList from './pages/project-list/ProjectList';
+import DetailsMeeting from './pages/detailsMeeting/DetailsMeeting';
 
 function App() {
     return (
         <Router>
             <Routes>
                 <Route path="/projeto/:id" element={<ProjectDetails />} />
+                <Route path="/reuniao/:id" element={<DetailsMeeting />} />
                 <Route path="/" element={<Login />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/Senha" element={<Senha />} />
