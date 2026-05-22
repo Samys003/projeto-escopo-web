@@ -84,6 +84,17 @@ function classeDaLinhaDiff(tipo) {
     return 'text-black';
 }
 
+function LinhaDiff({ linha, index }) {
+    return (
+        <span
+            className={`block min-h-5 whitespace-pre-wrap ${classeDaLinhaDiff(linha.tipo)}`}
+            key={`${linha.tipo}-${index}`}
+        >
+            {linha.texto || ' '}
+        </span>
+    );
+}
+
 function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
     const [modo, setModo] = useState('historico');
     const [versoesComparadas, setVersoesComparadas] = useState([]);
@@ -113,22 +124,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
         };
     }
 
-    async function abrirComparacaoMobile(versao, index) {
-        try {
-            onErro('');
-            const versaoAtual = await buscarVersaoCompleta(versao, index);
-            const versaoAnterior = versoes[index + 1]
-                ? await buscarVersaoCompleta(versoes[index + 1], index + 1)
-                : null;
-
-            setVersoesComparadas([versaoAtual, versaoAnterior].filter(Boolean));
-            setModo('comparacao');
-        } catch (error) {
-            onErro(error.message || 'Erro ao carregar versao.');
-        }
-    }
-
-    async function abrirComparacaoDesktop(ids) {
+    async function abrirComparacao(ids) {
         const idsUnicos = [...new Set(ids)].filter(Boolean);
 
         if (idsUnicos.length !== 2) {
@@ -158,7 +154,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
         }
     }
 
-    async function selecionarVersaoDesktop(versao) {
+    async function selecionarVersao(versao) {
         const id = idDaVersao(versao);
         const jaSelecionada = versoesSelecionadasIds.includes(id);
 
@@ -173,7 +169,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
         setVersoesSelecionadasIds(proximasSelecoes);
 
         if (proximasSelecoes.length === 2) {
-            await abrirComparacaoDesktop(proximasSelecoes);
+            await abrirComparacao(proximasSelecoes);
         }
     }
 
@@ -184,204 +180,123 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
     return (
         <>
             {modo === 'historico' && (
-                <>
-                    <div className="fixed left-6 right-6 top-[270px] z-40 rounded-2xl bg-white px-5 py-3 shadow-[var(--external-shadow)] sm:left-auto sm:right-auto sm:w-[342px] lg:hidden">
-                        <div className="mb-4 flex items-center justify-between">
-                            <Title2 className="w-full text-center text-[17px] font-medium text-black">
-                                Histórico de Versões
-                            </Title2>
-                            <button type="button" onClick={onFechar}>
-                                <X className="text-[var(--cinza-700)]" />
-                            </button>
-                        </div>
+                <div className="fixed left-4 right-4 top-1/2 z-40 max-h-[calc(100vh-96px)] -translate-y-1/2 overflow-y-auto rounded-2xl bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-1/2 sm:right-auto sm:w-[342px] sm:-translate-x-1/2 lg:left-[calc((100vw+280px)/2)] lg:w-[520px] xl:left-[calc((100vw+356px)/2)]">
+                    <div className="mb-4 flex items-center justify-between">
+                        <Title2 className="w-full text-center text-[17px] font-medium text-black">
+                            Comparar Versões
+                        </Title2>
+                        <button type="button" onClick={onFechar} aria-label="Fechar versionamento">
+                            <X className="text-[var(--cinza-700)]" />
+                        </button>
+                    </div>
 
-                        <div className="flex flex-col gap-3">
-                            {versoes.length === 0 && (
-                                <ParagraphMedium className="text-[var(--cinza-500)]">
-                                    Nenhuma versão encontrada.
-                                </ParagraphMedium>
-                            )}
+                    <div className="flex max-h-[calc(100vh-180px)] flex-col gap-3 overflow-y-auto pr-1 lg:gap-4">
+                        {versoes.length === 0 && (
+                            <ParagraphMedium className="text-[var(--cinza-500)]">
+                                Nenhuma versão encontrada.
+                            </ParagraphMedium>
+                        )}
 
-                            {versoes.map((versao, index) => (
+                        {versoes.map((versao, index) => {
+                            const selecionada = versoesSelecionadasIds.includes(idDaVersao(versao));
+
+                            return (
                                 <div
                                     key={versao.id}
                                     className="flex items-center justify-between gap-3"
                                 >
                                     <button
                                         type="button"
-                                        onClick={() => abrirComparacaoMobile(versao, index)}
-                                        className={`text-left font-inter text-[14px] ${
-                                            index === 0
+                                        onClick={() => selecionarVersao(versao)}
+                                        className={`text-left font-inter text-[14px] lg:text-[16px] ${
+                                            selecionada
                                                 ? 'text-[var(--color-base)]'
-                                                : 'text-[var(--cinza-500)]'
+                                                : 'text-[var(--cinza-600)]'
                                         }`}
                                     >
                                         {titulo} - {nomeDaVersao(index, versoes.length)} -{' '}
                                         {formatarData(versao.criado_em)}
                                     </button>
-                                    <GitCompare className="text-[var(--color-base)]" size={20} />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="fixed top-[40vh] z-40 hidden w-[520px] -translate-x-1/2 rounded-xl bg-white px-8 py-4 shadow-[var(--external-shadow)] lg:left-[calc((100vw+280px)/2)] lg:block xl:left-[calc((100vw+356px)/2)]">
-                        <div className="mb-4 flex items-center justify-between">
-                            <Title2 className="w-full text-center text-[17px] font-medium text-black">
-                                Comparar Versões
-                            </Title2>
-                            <button type="button" onClick={onFechar}>
-                                <X className="text-[var(--cinza-700)]" />
-                            </button>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                            {versoes.length === 0 && (
-                                <ParagraphMedium className="text-[var(--cinza-500)]">
-                                    Nenhuma versão encontrada.
-                                </ParagraphMedium>
-                            )}
-
-                            {versoes.map((versao, index) => {
-                                const selecionada = versoesSelecionadasIds.includes(
-                                    idDaVersao(versao)
-                                );
-
-                                return (
-                                    <div
-                                        key={versao.id}
-                                        className="flex items-center justify-between gap-4"
+                                    <button
+                                        type="button"
+                                        onClick={() => selecionarVersao(versao)}
+                                        aria-label={
+                                            selecionada
+                                                ? 'Remover versão da comparação'
+                                                : 'Selecionar versão para comparar'
+                                        }
                                     >
-                                        <button
-                                            type="button"
-                                            onClick={() => selecionarVersaoDesktop(versao)}
-                                            className={`text-left font-inter text-[16px] ${
-                                                selecionada
-                                                    ? 'text-[var(--color-base)]'
-                                                    : 'text-[var(--cinza-700)]'
-                                            }`}
-                                        >
-                                            {titulo} - {nomeDaVersao(index, versoes.length)} -{' '}
-                                            {formatarData(versao.criado_em)}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => selecionarVersaoDesktop(versao)}
-                                            aria-label={
-                                                selecionada
-                                                    ? 'Remover versao da comparacao'
-                                                    : 'Selecionar versao para comparar'
-                                            }
-                                        >
-                                            {selecionada ? (
-                                                <X className="text-[var(--cinza-700)]" size={22} />
-                                            ) : (
-                                                <GitCompare
-                                                    className="text-[var(--color-base)]"
-                                                    size={22}
-                                                />
-                                            )}
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                        {selecionada ? (
+                                            <X className="text-[var(--cinza-700)]" size={20} />
+                                        ) : (
+                                            <GitCompare
+                                                className="text-[var(--color-base)]"
+                                                size={20}
+                                            />
+                                        )}
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
-                </>
+                </div>
             )}
 
             {modo === 'comparacao' && (
-                <>
-                    <div className="fixed left-4 right-4 top-[98px] z-40 max-h-[76vh] overflow-y-auto rounded-lg bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-auto sm:right-auto sm:w-[360px] lg:hidden">
-                        {versoesComparadas.map((versao, index) => (
-                            <div key={versao.id} className="mb-8">
+                <div className="fixed left-4 right-4 top-1/2 z-40 max-h-[calc(100vh-64px)] -translate-y-1/2 overflow-y-auto rounded-lg bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-1/2 sm:right-auto sm:w-[360px] sm:-translate-x-1/2 lg:left-[calc((100vw+280px)/2)] lg:w-[min(760px,calc(100vw-320px))] lg:px-8 lg:py-7 xl:left-[calc((100vw+356px)/2)] xl:w-[760px]">
+                    <div className="grid gap-8 lg:grid-cols-2">
+                        {versoesComparadas[0] && (
+                            <div className="min-w-0">
                                 <Title2 className="mb-4 text-center text-[16px] font-medium text-[var(--color-base)]">
-                                    {versao.titulo} - {versao.nome} -{' '}
-                                    {formatarData(versao.criado_em)}
+                                    {versoesComparadas[0].titulo} - {versoesComparadas[0].nome} -{' '}
+                                    {formatarData(versoesComparadas[0].criado_em)}
                                 </Title2>
-                                <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2">
-                                    <pre
-                                        className={`whitespace-pre-wrap font-inter text-[13px] leading-4 ${
-                                            index === 0
-                                                ? 'text-black'
-                                                : 'text-[var(--color-verde)]'
-                                        }`}
-                                    >
-                                        {versao.conteudo}
-                                    </pre>
+                                <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2 lg:max-h-[46vh]">
+                                    <div className="font-inter text-[13px] leading-4 lg:text-[16px] lg:leading-6">
+                                        {diffComparacao.novo.map((linha, index) => (
+                                            <LinhaDiff
+                                                key={`${linha.tipo}-${index}`}
+                                                linha={linha}
+                                                index={index}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+                        )}
 
-                        <div className="flex justify-center">
-                            <button
-                                type="button"
-                                onClick={voltarParaHistorico}
-                                className="flex items-center gap-3 rounded-lg border border-[var(--cinza-300)] px-5 py-3 font-inter text-[16px] text-[var(--color-base)]"
-                            >
-                                Voltar
-                                <Undo2 size={22} />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="fixed top-[25vh] z-40 hidden max-h-[76vh] -translate-x-1/2 overflow-y-auto rounded-xl bg-white px-8 py-8 shadow-[var(--external-shadow)] lg:left-[calc((100vw+280px)/2)] lg:block lg:w-[min(760px,calc(100vw-320px))] xl:left-[calc((100vw+356px)/2)] xl:w-[760px]">
-                        <div className="grid gap-8 lg:grid-cols-2">
-                            {versoesComparadas[0] && (
-                                <div>
-                                    <Title2 className="mb-5 text-center text-[16px] font-medium text-[var(--color-base)]">
-                                        {versoesComparadas[0].titulo} - {versoesComparadas[0].nome}{' '}
-                                        - {formatarData(versoesComparadas[0].criado_em)}
-                                    </Title2>
-                                    <div className="font-inter text-[16px] leading-6">
-                                        {diffComparacao.novo.map((linha, index) => (
-                                            <span
-                                                key={`${linha.tipo}-${index}`}
-                                                className={`block min-h-6 whitespace-pre-wrap ${classeDaLinhaDiff(
-                                                    linha.tipo
-                                                )}`}
-                                            >
-                                                {linha.texto || ' '}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {versoesComparadas[1] && (
-                                <div>
-                                    <Title2 className="mb-5 text-center text-[16px] font-medium text-[var(--color-base)]">
-                                        {versoesComparadas[1].titulo} - {versoesComparadas[1].nome}{' '}
-                                        - {formatarData(versoesComparadas[1].criado_em)}
-                                    </Title2>
-                                    <div className="font-inter text-[16px] leading-6">
+                        {versoesComparadas[1] && (
+                            <div className="min-w-0">
+                                <Title2 className="mb-4 text-center text-[16px] font-medium text-[var(--color-base)]">
+                                    {versoesComparadas[1].titulo} - {versoesComparadas[1].nome} -{' '}
+                                    {formatarData(versoesComparadas[1].criado_em)}
+                                </Title2>
+                                <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2 lg:max-h-[46vh]">
+                                    <div className="font-inter text-[13px] leading-4 lg:text-[16px] lg:leading-6">
                                         {diffComparacao.antigo.map((linha, index) => (
-                                            <span
+                                            <LinhaDiff
                                                 key={`${linha.tipo}-${index}`}
-                                                className={`block min-h-6 whitespace-pre-wrap ${classeDaLinhaDiff(
-                                                    linha.tipo
-                                                )}`}
-                                            >
-                                                {linha.texto || ' '}
-                                            </span>
+                                                linha={linha}
+                                                index={index}
+                                            />
                                         ))}
                                     </div>
                                 </div>
-                            )}
-                        </div>
-
-                        <div className="mt-7 flex justify-start">
-                            <button
-                                type="button"
-                                onClick={voltarParaHistorico}
-                                className="flex items-center gap-3 rounded-lg border border-[var(--cinza-300)] px-5 py-3 font-inter text-[16px] text-[var(--color-base)]"
-                            >
-                                Voltar
-                                <Undo2 size={22} />
-                            </button>
-                        </div>
+                            </div>
+                        )}
                     </div>
-                </>
+
+                    <div className="mt-6 flex justify-center lg:justify-start">
+                        <button
+                            type="button"
+                            onClick={voltarParaHistorico}
+                            className="flex items-center gap-3 rounded-lg border border-[var(--cinza-300)] px-5 py-3 font-inter text-[16px] text-[var(--color-base)]"
+                        >
+                            Voltar
+                            <Undo2 size={22} />
+                        </button>
+                    </div>
+                </div>
             )}
         </>
     );

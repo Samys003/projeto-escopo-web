@@ -4,6 +4,7 @@ import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import { ChevronsLeft, History, MessagesSquare, Save } from 'lucide-react';
+import Comentarios from './components/comentarios';
 import VersionamentoPopup from './components/versionamento';
 import {
     createDocumentVersion,
@@ -36,6 +37,7 @@ function Documento() {
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
     const [historicoAberto, setHistoricoAberto] = useState(false);
+    const [comentariosAbertos, setComentariosAbertos] = useState(false);
 
     const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
 
@@ -175,11 +177,6 @@ function Documento() {
                                     Última Alteração: {formatarData(ultimaAlteracao)}
                                 </ParagraphMedium>
                             )}
-
-                            <ParagraphMedium className="text-black">
-                                Data de criação:{' '}
-                                {formatarData(documento?.criado_em) || '17/03/2026'}
-                            </ParagraphMedium>
                         </div>
 
                         <div className="absolute bottom-2 right-3 flex items-center gap-7">
@@ -193,6 +190,7 @@ function Documento() {
                             <button
                                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
                                 type="button"
+                                onClick={() => setComentariosAbertos(true)}
                                 aria-label="Comentarios"
                             >
                                 <MessagesSquare className="h-6 w-6" strokeWidth={2} />
@@ -242,6 +240,10 @@ function Documento() {
                     )}
                 </section>
             </main>
+
+            {comentariosAbertos && (
+                <Comentarios onFechar={() => setComentariosAbertos(false)} />
+            )}
         </div>
     );
 }

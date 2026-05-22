@@ -13,9 +13,9 @@ function App() {
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/cadastro" element={<Cadastro />} />
-                <Route path="/Senha" element={<Senha />} />
-                <Route path="/Login" element={<Login />} />
-                <Route path="/Redefinir" element={<Redefinir />} />
+                <Route path="/senha" element={<Senha />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/redefinir" element={<Redefinir />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/configuracao" element={<Configuracao />} />
                 <Route path="/documento/:documentoId" element={<Documento />} />
