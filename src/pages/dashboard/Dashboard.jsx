@@ -6,13 +6,16 @@ import iconFolder from '../../assets/icons/icon-folder.svg';
 
 import Title2 from '../../components/Typography/Title2.jsx';
 import Title4 from '../../components/Typography/Title4.jsx';
+import Title3 from '../../components/Typography/Title3.jsx';
+
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import { formatDate } from '../../utils/formatters';
 
 import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
 import Invite from './components/Invite';
-import EmptyDocumentmessage from './components/EmptyDocumentMessage.jsx';
+import EmptyRecentsMessage from './components/EmptyRecentsMessage.jsx';
+import EmptyInvitesMessage from './components/EmptyInvitesMessage.jsx';
 
 function Dashboard() {
     const [documentos, setDocumentos] = useState([]);
@@ -88,27 +91,31 @@ function Dashboard() {
                                 ></DocumentQuickAccess>
                             ))
                         ) : (
-                            <EmptyDocumentmessage></EmptyDocumentmessage>
+                            <EmptyRecentsMessage></EmptyRecentsMessage>
                         )}
                     </div>
                 </div>
 
                 <Title2 className="text-(--cinza-700)">Convites</Title2>
                 <div className="flex flex-col gap-[10px]">
-                    {Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
-                        <div key={data} className="flex flex-col gap-[10px]">
-                            <ParagraphLarge className="text-(--cinza-700) lg:hidden">
-                                {formatDate(data)}
-                            </ParagraphLarge>
-                            {convitesDia.map((convite) => (
-                                <Invite
-                                    key={convite.id}
-                                    convite={convite}
-                                    onAnswerInvite={handleAnswerInvite}
-                                ></Invite>
-                            ))}
-                        </div>
-                    ))}
+                    {convites?.length > 0 ? (
+                        Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
+                            <div key={data} className="flex flex-col gap-[10px]">
+                                <ParagraphLarge className="text-(--cinza-700) lg:hidden">
+                                    {formatDate(data)}
+                                </ParagraphLarge>
+                                {convitesDia.map((convite) => (
+                                    <Invite
+                                        key={convite.id}
+                                        convite={convite}
+                                        onAnswerInvite={handleAnswerInvite}
+                                    ></Invite>
+                                ))}
+                            </div>
+                        ))
+                    ) : (
+                        <EmptyInvitesMessage></EmptyInvitesMessage>
+                    )}
                 </div>
             </main>
         </div>
