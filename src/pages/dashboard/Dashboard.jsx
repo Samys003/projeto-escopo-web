@@ -12,6 +12,7 @@ import { formatDate } from '../../utils/formatters';
 
 import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
 import Invite from './components/Invite';
+import EmptyDocumentmessage from './components/EmptyDocumentMessage.jsx';
 
 function Dashboard() {
     const [documentos, setDocumentos] = useState([]);
@@ -78,7 +79,7 @@ function Dashboard() {
                     className="overflow-x-auto border-b border-(--cinza-500) pb-3
                 lg:pb-4"
                 >
-                    <div className="flex gap-[10px] w-max">
+                    <div className="flex gap-[10px] w-fill">
                         {documentos?.length > 0 ? (
                             documentos.map((documento) => (
                                 <DocumentQuickAccess
@@ -87,18 +88,7 @@ function Dashboard() {
                                 ></DocumentQuickAccess>
                             ))
                         ) : (
-                            <div>
-                                <div className="bg-white py-4 px-4 rounded-xl flex justify-between">
-                                    <Title4 className="font-medium text-(--cinza-700)">
-                                        Sem atividade recente
-                                    </Title4>
-                                    <ParagraphMedium>
-                                        As últimas atividades realizadas em documentos aparecerão
-                                        aqui.
-                                    </ParagraphMedium>
-                                </div>
-                                <img src={iconFolder} alt="" className="opacity-50" />
-                            </div>
+                            <EmptyDocumentmessage></EmptyDocumentmessage>
                         )}
                     </div>
                 </div>
