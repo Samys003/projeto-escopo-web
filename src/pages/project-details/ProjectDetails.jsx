@@ -72,7 +72,6 @@ function ProjectDetails() {
         try {
             await deleteCategoria(categoriaId);
 
-            console.log(dataDoc);
             const dataDoc = await getProjectDocumentById(id);
 
             setDocumentos(dataDoc);
