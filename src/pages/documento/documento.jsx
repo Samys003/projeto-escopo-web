@@ -3,12 +3,11 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
-import Title2 from '../../components/Typography/Title2';
-import { ChevronsLeft, GitCompare, History, MessagesSquare, Save, Undo2, X } from 'lucide-react';
+import { ChevronsLeft, History, MessagesSquare, Save } from 'lucide-react';
+import VersionamentoPopup from './components/versionamento';
 import {
     createDocumentVersion,
     getDocumentById,
-    getDocumentVersionById,
     getDocumentVersions,
     updateDocumentTitle,
 } from '../../services/api';
@@ -19,10 +18,6 @@ function formatarData(data) {
     }
 
     return new Date(data).toLocaleDateString('pt-BR');
-}
-
-function nomeDaVersao(index, total) {
-    return `V${total - index}`;
 }
 
 function Documento() {
@@ -41,8 +36,6 @@ function Documento() {
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
     const [historicoAberto, setHistoricoAberto] = useState(false);
-    const [comparacaoAberta, setComparacaoAberta] = useState(false);
-    const [versoesComparadas, setVersoesComparadas] = useState([]);
 
     const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
 
@@ -107,34 +100,7 @@ function Documento() {
     async function abrirHistorico() {
         const versoesApi = await carregarVersoes();
         setVersoes(versoesApi);
-        setComparacaoAberta(false);
         setHistoricoAberto(true);
-    }
-
-    async function abrirComparacao(versao, index) {
-        try {
-            setErro('');
-            const versaoAtual = await getDocumentVersionById(versao.id);
-            const versaoAnterior = versoes[index + 1]
-                ? await getDocumentVersionById(versoes[index + 1].id)
-                : null;
-            const versoesSelecionadas = [
-                {
-                    ...versaoAtual,
-                    nome: nomeDaVersao(index, versoes.length),
-                },
-                versaoAnterior && {
-                    ...versaoAnterior,
-                    nome: nomeDaVersao(index + 1, versoes.length),
-                },
-            ].filter(Boolean);
-
-            setVersoesComparadas(versoesSelecionadas);
-            setHistoricoAberto(false);
-            setComparacaoAberta(true);
-        } catch (error) {
-            setErro(error.message || 'Erro ao carregar versao.');
-        }
     }
 
     async function salvarDocumento() {
@@ -177,16 +143,16 @@ function Documento() {
             <MobileHeader />
             <DesktopSidebar />
 
-            <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-8 lg:py-14 xl:px-20">
-                <section className="relative mx-auto max-w-[700px] lg:max-w-[900px]">
-                    {(historicoAberto || comparacaoAberta) && (
+            <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-8 lg:pb-8 lg:pt-10 xl:px-10">
+                <section className="relative mx-auto max-w-[700px] lg:max-w-none">
+                    {historicoAberto && (
                         <div className="fixed inset-0 z-20 bg-black/20 lg:left-[280px] xl:left-[356px]" />
                     )}
 
                     <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2">
                         <div>
                             <div className="mb-2 flex items-center gap-3">
-                                <Link to="/dashboard" aria-label="Voltar">
+                                <Link to="/listadedocumento" aria-label="Voltar">
                                     <ChevronsLeft
                                         className="h-8 w-8 text-gray-900"
                                         strokeWidth={3}
@@ -196,7 +162,7 @@ function Documento() {
                                 <input
                                     value={titulo}
                                     onChange={(event) => setTitulo(event.target.value)}
-                                    className="w-full max-w-[310px] rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-black outline-none focus:border-[var(--cinza-600)]"
+                                    className="w-full rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-black outline-none focus:border-[var(--cinza-600)] lg:max-w-[560px]"
                                 />
                             </div>
 
@@ -240,7 +206,7 @@ function Documento() {
                         </ParagraphMedium>
                     )}
 
-                    <div className="relative z-10 mt-3 min-h-[610px] rounded-2xl border border-[var(--cinza-300)] bg-white px-4 py-4 text-black sm:px-6">
+                    <div className="relative z-10 mt-3 min-h-[610px] rounded-2xl border border-[var(--cinza-300)] bg-white px-4 py-4 text-black sm:px-6 lg:mt-[68px] lg:min-h-[calc(100vh-260px)] lg:px-8 lg:py-8">
                         {carregando ? (
                             <ParagraphMedium className="text-[var(--cinza-600)]">
                                 Carregando documento...
@@ -249,7 +215,7 @@ function Documento() {
                             <textarea
                                 value={conteudo}
                                 onChange={(event) => setConteudo(event.target.value)}
-                                className="min-h-[520px] w-full resize-none bg-transparent font-inter text-[16px] leading-6 text-black outline-none"
+                                className="min-h-[520px] w-full resize-none bg-transparent font-inter text-[16px] leading-6 text-black outline-none lg:min-h-[calc(100vh-340px)]"
                             />
                         )}
 
@@ -267,86 +233,12 @@ function Documento() {
                     </div>
 
                     {historicoAberto && (
-                        <div className="fixed left-6 right-6 top-[270px] z-40 rounded-2xl bg-white px-5 py-3 shadow-[var(--external-shadow)] sm:left-auto sm:right-auto sm:w-[342px] lg:left-1/2 lg:-translate-x-1/2">
-                            <div className="mb-4 flex items-center justify-between">
-                                <Title2 className="w-full text-center text-[17px] font-medium text-black">
-                                    Histórico de Versões
-                                </Title2>
-                                <button type="button" onClick={() => setHistoricoAberto(false)}>
-                                    <X className="text-[var(--cinza-700)]" />
-                                </button>
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                {versoes.length === 0 && (
-                                    <ParagraphMedium className="text-[var(--cinza-500)]">
-                                        Nenhuma versão encontrada.
-                                    </ParagraphMedium>
-                                )}
-
-                                {versoes.map((versao, index) => (
-                                    <div
-                                        key={versao.id}
-                                        className="flex items-center justify-between gap-3"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => abrirComparacao(versao, index)}
-                                            className={`text-left font-inter text-[14px] ${
-                                                index === 0
-                                                    ? 'text-[var(--color-base)]'
-                                                    : 'text-[var(--cinza-500)]'
-                                            }`}
-                                        >
-                                            {titulo} - {nomeDaVersao(index, versoes.length)} -{' '}
-                                            {formatarData(versao.criado_em)}
-                                        </button>
-                                        <GitCompare
-                                            className="text-[var(--color-base)]"
-                                            size={20}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {comparacaoAberta && (
-                        <div className="fixed left-4 right-4 top-[98px] z-40 max-h-[76vh] overflow-y-auto rounded-lg bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-auto sm:right-auto sm:w-[360px] lg:left-1/2 lg:-translate-x-1/2">
-                            {versoesComparadas.map((versao, index) => (
-                                <div key={versao.id} className="mb-8">
-                                    <Title2 className="mb-4 text-center text-[16px] font-medium text-[var(--color-base)]">
-                                        {versao.titulo} - {versao.nome} -{' '}
-                                        {formatarData(versao.criado_em)}
-                                    </Title2>
-                                    <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2">
-                                        <pre
-                                            className={`whitespace-pre-wrap font-inter text-[13px] leading-4 ${
-                                                index === 0
-                                                    ? 'text-black'
-                                                    : 'text-[var(--color-verde)]'
-                                            }`}
-                                        >
-                                            {versao.conteudo}
-                                        </pre>
-                                    </div>
-                                </div>
-                            ))}
-
-                            <div className="flex justify-center">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setComparacaoAberta(false);
-                                        setHistoricoAberto(true);
-                                    }}
-                                    className="flex items-center gap-3 rounded-lg border border-[var(--cinza-300)] px-5 py-3 font-inter text-[16px] text-[var(--color-base)]"
-                                >
-                                    Voltar
-                                    <Undo2 size={22} />
-                                </button>
-                            </div>
-                        </div>
+                        <VersionamentoPopup
+                            onFechar={() => setHistoricoAberto(false)}
+                            versoes={versoes}
+                            titulo={titulo}
+                            onErro={setErro}
+                        />
                     )}
                 </section>
             </main>
