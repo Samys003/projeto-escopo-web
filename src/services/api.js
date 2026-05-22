@@ -107,6 +107,14 @@ export async function getDocumentById(documento_id) {
     return parseResponse(response);
 }
 
+export async function deleteDocument(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
 export async function createDocumentVersion({ documento_id, conteudo }) {
     const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/conteudo`, {
         method: 'POST',
@@ -128,6 +136,34 @@ export async function getDocumentVersionById(documento_versao_id) {
     const response = await fetch(`${API_URL}/api/v1/documento/versao/${documento_versao_id}`, {
         method: 'GET',
         headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentComments(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentarios`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createDocumentComment({
+    documento_id,
+    conteudo,
+    parent_id = null,
+    registro_referencia_id = null,
+    comentario_tipo_id = 1,
+}) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentario`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+            conteudo,
+            parent_id,
+            registro_referencia_id,
+            comentario_tipo_id,
+        }),
     });
     return parseResponse(response);
 }

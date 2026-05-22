@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
-import { ChevronsLeft, History, MessagesSquare, Save } from 'lucide-react';
+import { ChevronsLeft, ClockFading, MessagesSquare, Save, Trash2 } from 'lucide-react';
 import Comentarios from './components/comentarios';
 import VersionamentoPopup from './components/versionamento';
 import {
     createDocumentVersion,
+    deleteDocument,
     getDocumentById,
     getDocumentVersions,
     updateDocumentTitle,
@@ -21,7 +22,18 @@ function formatarData(data) {
     return new Date(data).toLocaleDateString('pt-BR');
 }
 
+function primeiroValor(objeto, campos, fallback = '') {
+    for (const campo of campos) {
+        if (objeto?.[campo] !== undefined && objeto?.[campo] !== null && objeto?.[campo] !== '') {
+            return objeto[campo];
+        }
+    }
+
+    return fallback;
+}
+
 function Documento() {
+    const navigate = useNavigate();
     const { documentoId: documentoIdParam } = useParams();
     const [searchParams] = useSearchParams();
     const documentoId =
@@ -36,6 +48,7 @@ function Documento() {
     const [erro, setErro] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
+    const [excluindo, setExcluindo] = useState(false);
     const [historicoAberto, setHistoricoAberto] = useState(false);
     const [comentariosAbertos, setComentariosAbertos] = useState(false);
 
@@ -44,6 +57,17 @@ function Documento() {
     const ultimaAlteracao = useMemo(() => {
         return documento?.ultima_alteracao || versoes[0]?.criado_em;
     }, [documento, versoes]);
+
+    const nomeProjeto = primeiroValor(
+        documento,
+        ['nome_projeto', 'projeto_nome', 'projeto'],
+        'Projeto Integrado'
+    );
+    const setorDocumento = primeiroValor(
+        documento,
+        ['setor_nome', 'nome_setor', 'setor', 'categoria'],
+        'Página Web'
+    );
 
     useEffect(() => {
         async function carregarDocumento() {
@@ -140,18 +164,41 @@ function Documento() {
         }
     }
 
+    async function excluirDocumento() {
+        if (!documentoId || excluindo) {
+            return;
+        }
+
+        const confirmar = window.confirm('Tem certeza que deseja excluir este documento?');
+
+        if (!confirmar) {
+            return;
+        }
+
+        try {
+            setExcluindo(true);
+            setErro('');
+            await deleteDocument(documentoId);
+            navigate('/dashboard');
+        } catch (error) {
+            setErro(error.message || 'Erro ao excluir documento.');
+        } finally {
+            setExcluindo(false);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-[var(--fundo)] lg:flex">
             <MobileHeader />
             <DesktopSidebar />
 
-            <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-8 lg:pb-8 lg:pt-10 xl:px-10">
+            <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-7 lg:pb-8 lg:pt-10 xl:px-7">
                 <section className="relative mx-auto max-w-[700px] lg:max-w-none">
                     {historicoAberto && (
                         <div className="fixed inset-0 z-20 bg-black/20 lg:left-[280px] xl:left-[356px]" />
                     )}
 
-                    <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2">
+                    <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2 lg:hidden">
                         <div>
                             <div className="mb-2 flex items-center gap-3">
                                 <Link to="/listadedocumento" aria-label="Voltar">
@@ -164,7 +211,7 @@ function Documento() {
                                 <input
                                     value={titulo}
                                     onChange={(event) => setTitulo(event.target.value)}
-                                    className="w-full rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-black outline-none focus:border-[var(--cinza-600)] lg:max-w-[560px]"
+                                    className="w-full rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-black outline-none focus:border-[var(--cinza-600)]"
                                 />
                             </div>
 
@@ -181,9 +228,8 @@ function Documento() {
 
                         <div className="absolute bottom-2 right-3 flex items-center gap-7">
                             <button type="button" onClick={abrirHistorico} aria-label="Historico">
-                                <History
+                                <ClockFading
                                     className="h-10 w-10 cursor-pointer text-[var(--color-variant)]"
-                                    strokeDasharray="8 8"
                                     strokeWidth={2}
                                 />
                             </button>
@@ -195,6 +241,64 @@ function Documento() {
                             >
                                 <MessagesSquare className="h-6 w-6" strokeWidth={2} />
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="relative z-30 hidden border-b border-[var(--cinza-400)] pb-3 lg:block lg:min-h-[84px]">
+                        <div className="grid gap-4 lg:grid-cols-[minmax(360px,1fr)_260px_112px] lg:items-start">
+                            <div>
+                                <div className="mb-2 flex items-center gap-3 lg:mb-1 lg:pl-16">
+                                    <input
+                                        value={titulo}
+                                        onChange={(event) => setTitulo(event.target.value)}
+                                        className="w-full rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-[var(--cinza-700)] outline-none focus:border-[var(--cinza-600)] lg:max-w-[560px] lg:text-[34px]"
+                                    />
+                                </div>
+
+                                {temAlteracao ? (
+                                    <ParagraphMedium className="text-[var(--color-alert)] lg:ml-16">
+                                        Alterações não salvas!
+                                    </ParagraphMedium>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={abrirHistorico}
+                                        className="flex h-8 w-full max-w-[420px] items-center justify-center gap-3 rounded-full border border-[var(--color-base)] px-4 font-inter text-[16px] text-[var(--color-base)] transition-colors hover:bg-[var(--roxo-light)] lg:ml-8"
+                                    >
+                                        <span>Última alteração: {formatarData(ultimaAlteracao)}</span>
+                                        <ClockFading
+                                            className="h-6 w-6 text-[var(--color-base)]"
+                                            strokeWidth={2}
+                                        />
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="font-inter text-[16px] leading-6 text-gray-900 lg:pt-2">
+                                <p>{nomeProjeto}</p>
+                                <p>Setor: {setorDocumento}</p>
+                            </div>
+
+                            <div className="flex items-center gap-6 lg:justify-end lg:pt-1">
+                                <button
+                                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
+                                    type="button"
+                                    onClick={excluirDocumento}
+                                    disabled={excluindo}
+                                    aria-label="Excluir documento"
+                                >
+                                    <Trash2 className="h-6 w-6" strokeWidth={2} />
+                                </button>
+
+                                <button
+                                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
+                                    type="button"
+                                    onClick={() => setComentariosAbertos(true)}
+                                    aria-label="Comentarios"
+                                >
+                                    <MessagesSquare className="h-6 w-6" strokeWidth={2} />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -242,7 +346,11 @@ function Documento() {
             </main>
 
             {comentariosAbertos && (
-                <Comentarios onFechar={() => setComentariosAbertos(false)} />
+                <Comentarios
+                    documentoId={documentoId}
+                    onFechar={() => setComentariosAbertos(false)}
+                    onErro={setErro}
+                />
             )}
         </div>
     );

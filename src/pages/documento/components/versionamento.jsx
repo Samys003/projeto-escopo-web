@@ -180,7 +180,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
     return (
         <>
             {modo === 'historico' && (
-                <div className="fixed left-4 right-4 top-1/2 z-40 max-h-[calc(100vh-96px)] -translate-y-1/2 overflow-y-auto rounded-2xl bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-1/2 sm:right-auto sm:w-[342px] sm:-translate-x-1/2 lg:left-[calc((100vw+280px)/2)] lg:w-[520px] xl:left-[calc((100vw+356px)/2)]">
+                <div className="fixed left-4 right-4 top-1/2 z-40 max-h-[calc(100vh-96px)] -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--color-base)] bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-1/2 sm:right-auto sm:w-[342px] sm:-translate-x-1/2 lg:left-[calc((100vw+280px)/2)] lg:w-[520px] xl:left-[calc((100vw+356px)/2)]">
                     <div className="mb-4 flex items-center justify-between">
                         <Title2 className="w-full text-center text-[17px] font-medium text-black">
                             Comparar Versões
@@ -243,7 +243,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
             )}
 
             {modo === 'comparacao' && (
-                <div className="fixed left-4 right-4 top-1/2 z-40 max-h-[calc(100vh-64px)] -translate-y-1/2 overflow-y-auto rounded-lg bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-1/2 sm:right-auto sm:w-[360px] sm:-translate-x-1/2 lg:left-[calc((100vw+280px)/2)] lg:w-[min(760px,calc(100vw-320px))] lg:px-8 lg:py-7 xl:left-[calc((100vw+356px)/2)] xl:w-[760px]">
+                <div className="fixed left-4 right-4 top-1/2 z-40 max-h-[calc(100vh-64px)] -translate-y-1/2 overflow-y-auto rounded-lg border border-[var(--color-base)] bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:left-1/2 sm:right-auto sm:w-[360px] sm:-translate-x-1/2 lg:left-[calc((100vw+280px)/2)] lg:w-[min(760px,calc(100vw-320px))] lg:px-8 lg:py-7 xl:left-[calc((100vw+356px)/2)] xl:w-[760px]">
                     <div className="grid gap-8 lg:grid-cols-2">
                         {versoesComparadas[0] && (
                             <div className="min-w-0">

@@ -1,85 +1,165 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronsLeft, Menu, Send, X } from 'lucide-react';
 import logotipoMobile from '../../../assets/logotipo-mobile.svg';
+import { createDocumentComment, getDocumentComments } from '../../../services/api';
 
-const comentarios = [
-    {
-        id: 1,
-        nome: 'Carlos Ribeiro',
-        cargo: 'Cliente',
-        horario: '13:00',
-        data: '10.10.2025',
-        texto: 'Os requisitos estão alinhados com as minhas ideias no geral, mas faltam mais detalhes',
-        avatar: 'CR',
-        acoes: true,
-    },
-    {
-        id: 2,
-        nome: 'Marcos Santos',
-        cargo: 'Desenvolvedor(a)',
-        horario: '13:00',
-        data: '10.10.2025',
-        texto: 'Os requisitos estão ótimos, bom trabalho pessoal!',
-        avatar: 'MS',
-    },
-    {
-        id: 3,
-        nome: 'Ana Lívia',
-        cargo: 'Gerente do Projeto',
-        horario: '13:00',
-        data: '10.10.2025',
-        texto: 'Se atentem quanto aos prazos!',
-        avatar: 'AL',
-    },
-    {
-        id: 4,
-        nome: 'Larissa Lemos',
-        cargo: 'Analista de Requisitos',
-        horario: '13:00',
-        data: '10.10.2025',
-        texto: 'Tive uma dúvida quanto a um requisito, seria mais interessante o cliente ter a opção de fazer uma avaliação, não?',
-        avatar: 'LL',
-    },
-    {
-        id: 5,
-        nome: 'Carlos Ribeiro',
-        cargo: 'Cliente',
-        horario: '13:00',
-        data: '10.10.2025',
-        texto: 'Realmente! Pode implementar!',
-        avatar: 'CR',
-        resposta: {
-            autor: 'Larissa Lemos',
-            cargo: 'Analista de Requisitos',
-            texto: 'Tive uma dúvida quanto a um requisito, seria mais interessante o cliente ter a opção de fazer uma avaliação, não?',
+function primeiroValor(objeto, campos, fallback = '') {
+    for (const campo of campos) {
+        if (objeto?.[campo] !== undefined && objeto?.[campo] !== null && objeto?.[campo] !== '') {
+            return objeto[campo];
+        }
+    }
+
+    return fallback;
+}
+
+function formatarDataHora(data) {
+    if (!data) {
+        return { data: '', horario: '' };
+    }
+
+    const dataObj = new Date(data);
+
+    if (Number.isNaN(dataObj.getTime())) {
+        return { data: '', horario: '' };
+    }
+
+    return {
+        data: dataObj.toLocaleDateString('pt-BR'),
+        horario: dataObj.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+        }),
+    };
+}
+
+function iniciais(nome) {
+    return String(nome || 'U')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((parte) => parte[0])
+        .join('')
+        .toUpperCase();
+}
+
+function normalizarBooleano(valor) {
+    if (typeof valor === 'boolean') {
+        return valor;
+    }
+
+    if (typeof valor === 'number') {
+        return valor === 1;
+    }
+
+    if (typeof valor === 'string') {
+        return ['1', 'true', 'sim', 'concluido', 'concluído', 'resolvido'].includes(
+            valor.toLowerCase(),
+        );
+    }
+
+    return false;
+}
+
+function lerUsuarioAtual() {
+    try {
+        const usuario = JSON.parse(localStorage.getItem('authUser') || '{}');
+
+        return {
+            nome: usuario?.nome || usuario?.name || usuario?.email || 'Usuário',
+            foto: usuario?.foto_perfil || usuario?.foto || '',
+        };
+    } catch {
+        return { nome: 'Usuário', foto: '' };
+    }
+}
+
+function adaptarComentario(comentario, comentariosPorId) {
+    const id = primeiroValor(comentario, ['id', 'comentario_id', 'comentarioId']);
+    const parentId = primeiroValor(comentario, ['parent_id', 'parentId'], null);
+    const registroReferenciaId = primeiroValor(
+        comentario,
+        ['registro_referencia_id', 'registroReferenciaId'],
+        null,
+    );
+    const tipoId = Number(
+        primeiroValor(comentario, ['comentario_tipo_id', 'tipo_comentario_id', 'tipoId'], 1),
+    );
+    const nome = primeiroValor(
+        comentario,
+        ['nome_criador', 'criador_nome', 'nome_usuario', 'usuario_nome', 'nome'],
+        'Usuário',
+    );
+    const criadoEm = primeiroValor(comentario, ['criado_em', 'created_at', 'data_criacao']);
+    const { data, horario } = formatarDataHora(criadoEm);
+    const parent = parentId ? comentariosPorId.get(String(parentId)) : null;
+
+    return {
+        id,
+        parentId,
+        registroReferenciaId,
+        tipoId,
+        nome,
+        cargo: primeiroValor(
+            comentario,
+            ['cargo', 'perfil', 'papel', 'funcao', 'tipo_usuario'],
+            tipoId === 3 ? 'Registro' : '',
+        ),
+        data,
+        horario,
+        texto: primeiroValor(comentario, ['conteudo', 'texto', 'comentario'], ''),
+        avatar: iniciais(nome),
+        foto: primeiroValor(comentario, ['foto_perfil', 'foto', 'avatar']),
+        concluido: normalizarBooleano(primeiroValor(comentario, ['concluido', 'resolvido'], false)),
+        resposta: parent && {
+            autor: primeiroValor(
+                parent,
+                ['nome_criador', 'criador_nome', 'nome_usuario', 'usuario_nome', 'nome'],
+                'Comentário',
+            ),
+            cargo: primeiroValor(parent, ['cargo', 'perfil', 'papel', 'funcao'], ''),
+            texto: primeiroValor(parent, ['conteudo', 'texto', 'comentario'], ''),
         },
-    },
-    {
-        id: 6,
-        nome: 'Larissa Lemos',
-        cargo: 'Analista de Requisitos',
-        horario: '13:00',
-        data: '10.10.2025',
-        texto: 'Foi decidido com o cliente que a aplicação deverá ter um mapa das localizações visitadas',
-        avatar: 'LL',
-        resposta: {
-            autor: 'Sugestão de Requisito',
-            cargo: 'Registro 01',
-            texto: '',
-        },
-    },
-];
+        referencia:
+            tipoId === 3 || registroReferenciaId
+                ? {
+                      autor: 'Sugestão de Requisito',
+                      cargo: registroReferenciaId ? `Registro ${registroReferenciaId}` : '',
+                      texto: '',
+                  }
+                : null,
+    };
+}
+
+function prepararComentarios(comentariosApi) {
+    const comentarios = Array.isArray(comentariosApi) ? comentariosApi : [];
+    const comentariosPorId = new Map(
+        comentarios.map((comentario) => [
+            String(primeiroValor(comentario, ['id', 'comentario_id', 'comentarioId'])),
+            comentario,
+        ]),
+    );
+
+    return comentarios.map((comentario) => adaptarComentario(comentario, comentariosPorId));
+}
 
 function Avatar({ comentario, className = '' }) {
     return (
         <div
-            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--color-base)] font-inter text-[14px] font-semibold text-[var(--color-base)] ${className}`}
+            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-base)] bg-[var(--cinza-200)] font-inter text-[14px] font-semibold text-[var(--color-base)] ${className}`}
         >
-            {comentario.avatar}
+            {comentario.foto ? (
+                <img src={comentario.foto} alt="" className="h-full w-full object-cover" />
+            ) : (
+                comentario.avatar
+            )}
         </div>
     );
 }
 
-function ComentarioCard({ comentario, mobile = false }) {
+function ComentarioCard({ comentario, mobile = false, onResponder }) {
+    const referencia = comentario.resposta || comentario.referencia;
+
     return (
         <article className="flex gap-3">
             <Avatar comentario={comentario} className={mobile ? 'h-12 w-12' : ''} />
@@ -89,9 +169,11 @@ function ComentarioCard({ comentario, mobile = false }) {
                     <span className="font-semibold text-[var(--color-base)]">
                         {comentario.nome}
                     </span>
-                    <span className="truncate font-semibold text-[var(--cinza-300)]">
-                        {comentario.cargo}
-                    </span>
+                    {comentario.cargo && (
+                        <span className="truncate font-semibold text-[var(--cinza-300)]">
+                            {comentario.cargo}
+                        </span>
+                    )}
                     {mobile && (
                         <span className="ml-auto shrink-0 text-[12px] text-[var(--cinza-400)]">
                             {comentario.horario} · {comentario.data}
@@ -100,17 +182,19 @@ function ComentarioCard({ comentario, mobile = false }) {
                 </div>
 
                 <div className="rounded-xl border border-[var(--cinza-600)] px-4 py-2 font-inter text-[14px] leading-5 text-black">
-                    {comentario.resposta && (
+                    {referencia && (
                         <div className="mb-2 rounded bg-[var(--cinza-200)] px-3 py-2">
                             <div className="mb-1 truncate text-[12px] text-[var(--color-base)]">
-                                {comentario.resposta.autor}{' '}
-                                <span className="text-[var(--cinza-400)]">
-                                    {comentario.resposta.cargo}
-                                </span>
+                                {referencia.autor}{' '}
+                                {referencia.cargo && (
+                                    <span className="text-[var(--cinza-400)]">
+                                        {referencia.cargo}
+                                    </span>
+                                )}
                             </div>
-                            {comentario.resposta.texto && (
+                            {referencia.texto && (
                                 <p className="line-clamp-3 text-[12px] leading-4 text-[var(--cinza-700)]">
-                                    {comentario.resposta.texto}
+                                    {referencia.texto}
                                 </p>
                             )}
                         </div>
@@ -125,58 +209,236 @@ function ComentarioCard({ comentario, mobile = false }) {
                     )}
                 </div>
 
-                {comentario.acoes && (
-                    <div className="mt-1 flex justify-end gap-2">
-                        {mobile && (
-                            <button
-                                type="button"
-                                className="rounded border border-[var(--cinza-700)] px-2 py-1 font-inter text-[14px] text-black"
-                            >
-                                Responder
-                            </button>
-                        )}
-                        <button
-                            type="button"
-                            className="flex h-7 w-7 items-center justify-center rounded border border-[var(--cinza-700)] text-[var(--cinza-700)]"
-                            aria-label="Concluir comentário"
-                        >
-                            <Check size={18} />
-                        </button>
-                    </div>
-                )}
+                <div className="mt-1 flex justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={() => onResponder(comentario)}
+                        className="rounded border border-[var(--cinza-700)] px-2 py-1 font-inter text-[14px] text-black"
+                    >
+                        Responder
+                    </button>
+                    <button
+                        type="button"
+                        className="flex h-7 w-7 items-center justify-center rounded border border-[var(--cinza-700)] text-[var(--cinza-700)]"
+                        aria-label="Concluir comentário"
+                    >
+                        <Check size={18} />
+                    </button>
+                </div>
             </div>
         </article>
     );
 }
 
-function CampoComentario() {
+function CampoComentario({
+    usuarioAtual,
+    valor,
+    onChange,
+    onSubmit,
+    enviando,
+    respostaPara,
+    onCancelarResposta,
+}) {
     return (
-        <div className="flex items-center gap-3">
-            <Avatar
-                comentario={{
-                    avatar: 'AL',
-                }}
-                className="h-12 w-12"
-            />
-            <label className="relative flex-1">
-                <span className="sr-only">Escreva seu comentário</span>
-                <input
-                    className="h-10 w-full rounded-xl border border-[var(--cinza-600)] bg-white px-4 pr-11 font-inter text-[14px] outline-none placeholder:text-[var(--cinza-500)]"
-                    placeholder="Escreva seu comentário"
+        <form className="space-y-2" onSubmit={onSubmit}>
+            {respostaPara && (
+                <div className="flex items-center justify-between rounded bg-[var(--cinza-200)] px-3 py-2 font-inter text-[12px] text-[var(--cinza-700)]">
+                    <span className="truncate">
+                        Respondendo {respostaPara.nome}: {respostaPara.texto}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={onCancelarResposta}
+                        className="ml-2 text-[var(--cinza-700)]"
+                        aria-label="Cancelar resposta"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
+
+            <div className="flex items-center gap-3">
+                <Avatar
+                    comentario={{
+                        avatar: iniciais(usuarioAtual.nome),
+                        foto: usuarioAtual.foto,
+                    }}
+                    className="h-12 w-12"
                 />
-                <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-base)]"
-                    aria-label="Enviar comentário"
-                >
-                    <Send size={22} />
-                </button>
-            </label>
+                <label className="relative flex-1">
+                    <span className="sr-only">Escreva seu comentário</span>
+                    <input
+                        value={valor}
+                        onChange={(event) => onChange(event.target.value)}
+                        className="h-10 w-full rounded-xl border border-[var(--cinza-600)] bg-white px-4 pr-11 font-inter text-[14px] outline-none placeholder:text-[var(--cinza-500)]"
+                        placeholder="Escreva seu comentário"
+                        maxLength={500}
+                        disabled={enviando}
+                    />
+                    <button
+                        type="submit"
+                        disabled={enviando || !valor.trim()}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-base)] disabled:opacity-50"
+                        aria-label="Enviar comentário"
+                    >
+                        <Send size={22} />
+                    </button>
+                </label>
+            </div>
+        </form>
+    );
+}
+
+function ListaComentarios({ comentarios, carregando, onResponder, mobile }) {
+    if (carregando) {
+        return (
+            <p className="font-inter text-[14px] text-[var(--cinza-500)]">
+                Carregando comentários...
+            </p>
+        );
+    }
+
+    if (comentarios.length === 0) {
+        return (
+            <p className="font-inter text-[14px] text-[var(--cinza-500)]">
+                Nenhum comentário encontrado.
+            </p>
+        );
+    }
+
+    return (
+        <div className={`flex flex-col ${mobile ? 'gap-5' : 'gap-8'}`}>
+            {comentarios.map((comentario) => (
+                <ComentarioCard
+                    key={comentario.id}
+                    comentario={comentario}
+                    mobile={mobile}
+                    onResponder={onResponder}
+                />
+            ))}
         </div>
     );
 }
 
-function Comentarios({ onFechar }) {
+function Comentarios({ documentoId, onFechar, onErro }) {
+    const [comentarios, setComentarios] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+    const [enviando, setEnviando] = useState(false);
+    const [erro, setErro] = useState('');
+    const [texto, setTexto] = useState('');
+    const [respostaPara, setRespostaPara] = useState(null);
+    const [filtro, setFiltro] = useState('abertos');
+    const usuarioAtual = useMemo(() => lerUsuarioAtual(), []);
+
+    const comentariosFiltrados = useMemo(() => {
+        return comentarios.filter((comentario) =>
+            filtro === 'concluidos' ? comentario.concluido : !comentario.concluido,
+        );
+    }, [comentarios, filtro]);
+
+    async function carregarComentarios() {
+        if (!documentoId) {
+            setErro('Informe o ID do documento para carregar comentários.');
+            setCarregando(false);
+            return;
+        }
+
+        try {
+            setCarregando(true);
+            setErro('');
+            const comentariosApi = await getDocumentComments(documentoId);
+            setComentarios(prepararComentarios(comentariosApi));
+        } catch (error) {
+            const mensagem = error.message || 'Erro ao carregar comentários.';
+            setErro(mensagem);
+            onErro?.(mensagem);
+        } finally {
+            setCarregando(false);
+        }
+    }
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarComentariosIniciais() {
+            if (!documentoId) {
+                if (ativo) {
+                    setErro('Informe o ID do documento para carregar comentários.');
+                    setCarregando(false);
+                }
+                return;
+            }
+
+            try {
+                setCarregando(true);
+                setErro('');
+                const comentariosApi = await getDocumentComments(documentoId);
+
+                if (ativo) {
+                    setComentarios(prepararComentarios(comentariosApi));
+                }
+            } catch (error) {
+                const mensagem = error.message || 'Erro ao carregar comentários.';
+
+                if (ativo) {
+                    setErro(mensagem);
+                    onErro?.(mensagem);
+                }
+            } finally {
+                if (ativo) {
+                    setCarregando(false);
+                }
+            }
+        }
+
+        carregarComentariosIniciais();
+
+        return () => {
+            ativo = false;
+        };
+    }, [documentoId, onErro]);
+
+    async function enviarComentario(event) {
+        event.preventDefault();
+
+        if (!texto.trim() || enviando) {
+            return;
+        }
+
+        try {
+            setEnviando(true);
+            setErro('');
+            await createDocumentComment({
+                documento_id: documentoId,
+                conteudo: texto.trim(),
+                parent_id: respostaPara?.id || null,
+                registro_referencia_id: null,
+                comentario_tipo_id: respostaPara ? 2 : 1,
+            });
+            setTexto('');
+            setRespostaPara(null);
+            await carregarComentarios();
+        } catch (error) {
+            const mensagem = error.message || 'Erro ao enviar comentário.';
+            setErro(mensagem);
+            onErro?.(mensagem);
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    const campoComentario = (
+        <CampoComentario
+            usuarioAtual={usuarioAtual}
+            valor={texto}
+            onChange={setTexto}
+            onSubmit={enviarComentario}
+            enviando={enviando}
+            respostaPara={respostaPara}
+            onCancelarResposta={() => setRespostaPara(null)}
+        />
+    );
+
     return (
         <>
             <aside className="fixed bottom-0 right-0 top-0 z-50 hidden w-[430px] flex-col border-l border-[var(--cinza-300)] bg-white shadow-[var(--external-shadow)] lg:flex">
@@ -193,29 +455,44 @@ function Comentarios({ onFechar }) {
                     <div className="mt-3 flex gap-2">
                         <button
                             type="button"
-                            className="rounded-full bg-[var(--roxo-light)] px-4 py-1 font-inter text-[14px] text-[var(--roxo-dark)]"
+                            onClick={() => setFiltro('abertos')}
+                            className={`rounded-full px-4 py-1 font-inter text-[14px] ${
+                                filtro === 'abertos'
+                                    ? 'bg-[var(--roxo-light)] text-[var(--roxo-dark)]'
+                                    : 'bg-[var(--cinza-200)] text-[var(--cinza-400)]'
+                            }`}
                         >
                             Em aberto
                         </button>
                         <button
                             type="button"
-                            className="rounded-full bg-[var(--cinza-200)] px-4 py-1 font-inter text-[14px] text-[var(--cinza-400)]"
+                            onClick={() => setFiltro('concluidos')}
+                            className={`rounded-full px-4 py-1 font-inter text-[14px] ${
+                                filtro === 'concluidos'
+                                    ? 'bg-[var(--roxo-light)] text-[var(--roxo-dark)]'
+                                    : 'bg-[var(--cinza-200)] text-[var(--cinza-400)]'
+                            }`}
                         >
                             Concluídos
                         </button>
                     </div>
+                    {erro && (
+                        <p className="mt-2 font-inter text-[12px] text-[var(--color-alert)]">
+                            {erro}
+                        </p>
+                    )}
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-4 py-8">
-                    <div className="flex flex-col gap-8">
-                        {comentarios.map((comentario) => (
-                            <ComentarioCard key={comentario.id} comentario={comentario} />
-                        ))}
-                    </div>
+                    <ListaComentarios
+                        comentarios={comentariosFiltrados}
+                        carregando={carregando}
+                        onResponder={setRespostaPara}
+                    />
                 </div>
 
                 <footer className="border-t border-[var(--cinza-700)] px-4 py-3">
-                    <CampoComentario />
+                    {campoComentario}
                 </footer>
             </aside>
 
@@ -241,22 +518,23 @@ function Comentarios({ onFechar }) {
                     </h2>
                 </div>
 
+                {erro && (
+                    <p className="px-4 pb-2 font-inter text-[12px] text-[var(--color-alert)]">
+                        {erro}
+                    </p>
+                )}
+
                 <div className="flex-1 overflow-y-auto px-4 pb-6">
-                    <div className="flex flex-col gap-5">
-                        {comentarios
-                            .filter((comentario) => comentario.id !== 3)
-                            .map((comentario) => (
-                                <ComentarioCard
-                                    key={comentario.id}
-                                    comentario={comentario}
-                                    mobile
-                                />
-                            ))}
-                    </div>
+                    <ListaComentarios
+                        comentarios={comentariosFiltrados}
+                        carregando={carregando}
+                        onResponder={setRespostaPara}
+                        mobile
+                    />
                 </div>
 
                 <footer className="border-t border-[var(--cinza-700)] px-4 py-3">
-                    <CampoComentario />
+                    {campoComentario}
                 </footer>
             </section>
         </>
