@@ -9,17 +9,23 @@ function Invite(props) {
     const data = convite.criado_em.split('T')[0];
     const message =
         convite.status.id === 1
-            ? `${convite.nome_remetente} enviou um convite para participar do(a) ${convite.projeto}.`
+            ? `${convite.nome_remetente} te enviou um convite para participar do(a) ${convite.projeto}.`
             : `${convite.nome_remetente} aceitou seu convite para participar do(a) ${convite.projeto}.`;
     return (
-        <div className="bg-white py-4 px-4 shadow-(--external-shadow) rounded-xl flex justify-between">
-            <ParagraphMedium className="">{message}.</ParagraphMedium>
-
+        <div
+            className="py-4 px-4 border-[2px] border-(--cinza-300) 
+            rounded-xl gap-6 bg-white  
+            flex justify-between"
+        >
+            <div className="flex-4">
+                <ParagraphMedium>{message}.</ParagraphMedium>
+            </div>
             {/* Interação com o convite */}
             {convite.status.id === 1 ? (
-                <div className="flex gap-3">
+                <div className="flex-1 flex justify-between items-center">
                     {/* Check para rejeitar o convite (Id 6)*/}
                     <IconButtonOutlined
+                        className="aspect-square flex-2"
                         icon={<Check className="text-(--color-verde)" />}
                         onClick={() => props.onAnswerInvite(convite.id, 6)}
                     />
@@ -37,7 +43,10 @@ function Invite(props) {
                 />
             ) : null}
 
-            <ParagraphMedium className="hidden text-(--cinza-500) lg:inline">
+            <ParagraphMedium
+                className="hidden text-(--cinza-500)
+                lg:inline"
+            >
                 {formatDate(data)}
             </ParagraphMedium>
         </div>

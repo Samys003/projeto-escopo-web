@@ -88,7 +88,7 @@ function Dashboard() {
                             ))
                         ) : (
                             <div>
-                                <div>
+                                <div className="bg-white py-4 px-4 rounded-xl flex justify-between">
                                     <Title4 className="font-medium text-(--cinza-700)">
                                         Sem atividade recente
                                     </Title4>
