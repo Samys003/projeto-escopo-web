@@ -82,7 +82,7 @@ function Dashboard() {
                     className="overflow-x-auto border-b border-(--cinza-500) pb-3
                 lg:pb-4"
                 >
-                    <div className="flex gap-[10px] w-fill">
+                    <div className="flex gap-[10px] w-max">
                         {documentos?.length > 0 ? (
                             documentos.map((documento) => (
                                 <DocumentQuickAccess
