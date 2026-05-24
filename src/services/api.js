@@ -89,28 +89,3 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     });
     return parseResponse(response);
 }
-
-// export async function createProject({ titulo, descricao, integrantes }) {
-//     const response = await fetch(`${API_URL}/api/v1/projeto`, {
-//         method: 'POST',
-//         headers: getAuthHeaders(),
-//         body: JSON.stringify({ titulo, descricao, integrantes }),
-//     });
-//     return parseResponse(response);
-// }
-
-// export async function getDashboard() {
-//     const response = await fetch(`${API_URL}/api/v1/dashboard/`, {
-//         method: 'GET',
-//         headers: getAuthHeaders(),
-//     });
-//     return parseResponse(response);
-// }
-
-// export async function getProjects() {
-//     const response = await fetch(`${API_URL}/api/v1/projetos/`, {
-//         method: 'GET',
-//         headers: getAuthHeaders(),
-//     });
-//     return parseResponse(response);
-// }

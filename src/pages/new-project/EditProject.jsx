@@ -5,17 +5,35 @@ import { getUserByEmail } from '../../services/api.js';
 import Title4 from '../../components/Typography/Title4.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { createProject } from './services/new-project-endpoints';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
+import { getProjectById } from './services/new-project-endpoints';
 
-function NewProject() {
+function EditProject() {
     const navigate = useNavigate();
     const authUser = JSON.parse(localStorage.getItem('authUser'));
     const userEmail = authUser.email;
+    const { projetoId } = useParams();
+    const [projectData, setProjectData] = useState(null);
 
-    async function handleCriarProjeto(formData) {
+    useEffect(() => {
+        carregarDetalhesProjeto(projetoId);
+    }, []);
+
+    async function carregarDetalhesProjeto(projetoId) {
+        //TODO: Substituir por versão da services em src depois do merge
+        try {
+            const response = await getProjectById(projetoId);
+
+            setProjectData(response);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function handleAtualizarProjeto(formData) {
         const payload = {
             titulo: formData.titulo,
             descricao: formData.descricao,
@@ -30,7 +48,7 @@ function NewProject() {
             navigate(`/projeto/${response.id}`);
         } catch (error) {}
 
-        //TODO: Está faltando tratativa pro response do create
+        //TODO: Está faltando tratativa pro response
     }
 
     return (
@@ -43,16 +61,17 @@ function NewProject() {
                 className="flex flex-col px-4 py-[10px] gap-3 relative
                 lg:gap-10 lg:px-12 lg:py-8 lg:w-full"
             >
-                <Title2 className="3xl">Novo Projeto</Title2>
+                <Title2 className="3xl">Editar Projeto</Title2>
                 <ProjectForm
-                    mode="create"
-                    initialData={null}
-                    onSubmit={handleCriarProjeto}
+                    mode="edit"
+                    initialData={projectData}
+                    onSubmit={handleAtualizarProjeto}
                     userEmail={userEmail}
+                    projectId={projetoId}
                 ></ProjectForm>
             </main>
         </div>
     );
 }
 
-export default NewProject;
+export default EditProject;

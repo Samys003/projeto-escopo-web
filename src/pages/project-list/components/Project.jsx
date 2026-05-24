@@ -5,7 +5,10 @@ import Title4 from '../../../components/Typography/Title4';
 
 function Project({ projeto }) {
     return (
-        <Link to={`/projeto/${projeto.id}`}>
+        <Link
+            // to={`/projeto/${projeto.id}`}
+            to={`/projeto/${projeto.id}/editar-projeto`}
+        >
             <div
                 className="flex flex-col w-full h-[120px] p-2
                 rounded-lg shadow-(--external-shadow) justify-between

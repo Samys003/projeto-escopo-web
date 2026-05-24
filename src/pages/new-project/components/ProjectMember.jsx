@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
 function ProjectMember({ integrante, isOwner = false, onClose, onNivelAcessoChange }) {
+    console.log(integrante);
     return (
         <div>
             <div

@@ -6,9 +6,11 @@ import { getUserByEmail } from '../../../services/api.js';
 import FormInput from '../../../components/FormInput.jsx';
 import Title4 from '../../../components/Typography/Title4.jsx';
 import ProjectMember from './ProjectMember.jsx';
+import { getProjectMembers } from '../services/new-project-endpoints';
 
-function ProjectForm({ mode, initialData, onSubmit, userEmail }) {
+function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null }) {
     const [integrantes, setIntegrantes] = useState([]);
+    const [pendentes, setPendentes] = useState([]);
     const [erro, setErro] = useState('');
     const isEdit = mode === 'edit';
 
@@ -16,8 +18,15 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail }) {
         register,
         getValues,
         handleSubmit,
+        reset,
         formState: { errors },
-    } = useForm();
+    } = useForm({
+        defaultValues: {
+            titulo: '',
+            descricao: '',
+            email: '',
+        },
+    });
 
     async function submitForm(data) {
         const formData = {
@@ -32,10 +41,27 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail }) {
         //Caso seja um novo projeto, irá adicionar o usuário como proprietário
         if (isEdit === false) {
             handleAdicionarIntegrante(userEmail);
+            return;
         }
+        if (initialData) {
+            reset({
+                titulo: initialData.titulo,
+                descricao: initialData.descricao,
+            });
+
+            carregarParticipantes(projectId);
+        }
+
         //TODO: Adicionar verificação do localStorage na página, desconectar usuário com acesso inválido
         //Adicionando o primeiro usuario, o criador do projeto a lista
-    }, []);
+    }, [isEdit, initialData, reset, userEmail]);
+
+    async function carregarParticipantes(projectId) {
+        const response = await getProjectMembers(projectId);
+
+        setIntegrantes(response.participantes);
+        setPendentes(response.pendentes);
+    }
 
     function onRemoveIntegrante(integranteId) {
         const newIntegrantes = integrantes.filter((integrante) => integrante.id != integranteId);
@@ -159,6 +185,14 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail }) {
                         ></ProjectMember>
                     ))}
                 </div>
+                {mode === 'edit' && (
+                    <div>
+                        <Title4
+                            className="text-(--cinza-500)
+                            lg:text-xl"
+                        ></Title4>
+                    </div>
+                )}
             </div>
             <div className="w-full flex flex-col items-end">
                 <button
