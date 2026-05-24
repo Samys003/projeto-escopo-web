@@ -86,6 +86,22 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail }) {
         }
     }
 
+    //Quando o usuário mudar o nível de acesso de um integrante
+    function handleNivelAcessoChange(integranteId, novoNivel) {
+        //Atualizar a lista de integrantes atualizando o nível de acesso daquele integrante em específico
+        setIntegrantes((prev) =>
+            prev.map((integrante) =>
+                integrante.id === integranteId
+                    ? //Caso seja o integrante correspondente irá atualizar antes de inserir no array
+                      {
+                          ...integrante,
+                          nivelAcesso: Number(novoNivel),
+                      }
+                    : //Caso contrário mantém como está.
+                      integrante,
+            ),
+        );
+    }
     return (
         <div className="flex flex-col gap-3">
             <FormInput
@@ -139,6 +155,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail }) {
                             integrante={integrante}
                             isOwner={integrante.isOwner}
                             onClose={() => onRemoveIntegrante(integrante.id)}
+                            onNivelAcessoChange={handleNivelAcessoChange}
                         ></ProjectMember>
                     ))}
                 </div>

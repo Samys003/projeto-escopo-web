@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
-function ProjectMember({ integrante, isOwner = false, onClose }) {
+function ProjectMember({ integrante, isOwner = false, onClose, onNivelAcessoChange }) {
     return (
         <div>
             <div
@@ -29,6 +29,9 @@ function ProjectMember({ integrante, isOwner = false, onClose }) {
                     disabled={isOwner}
                     className={`
                     text-(--cinza-700) border border-(--cinza-400) rounded-xl px-1 py-2
+                    onChange={(e) =>
+                        onNivelAcessoChange(integrante.id, e.target.value)
+                    }
                     
                 ${isOwner ? 'opacity-50 cursor-not-allowed' : ''}}
                     `}
