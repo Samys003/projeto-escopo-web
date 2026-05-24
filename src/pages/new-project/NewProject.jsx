@@ -1,51 +1,28 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
-import FormInput from '../../components/FormInput.jsx';
 import ButtonText from '../../components/Typography/ButtonText.jsx';
-import { Search, X } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 import { getUserByEmail } from '../../services/api.js';
 import Title4 from '../../components/Typography/Title4.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
-import ProjectMember from './components/ProjectMember.jsx';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createProject } from './services/new-project-endpoints';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
+import ProjectForm from './components/ProjectForm.jsx';
 
 function NewProject() {
     const navigate = useNavigate();
+    const authUser = JSON.parse(localStorage.getItem('authUser'));
+    const userEmail = authUser.email;
 
-    const [integrantes, setIntegrantes] = useState([]);
-    const [erro, setErro] = useState('');
-
-    //Puxando o usuario como proprietário do projeto
-    useEffect(() => {
-        const usuarioStorage = JSON.parse(localStorage.getItem('authUser'));
-
-        if (!usuarioStorage?.email) {
-            return;
-        }
-        //Adicionando o primeiro usuario, o criador do projeto a lista
-        handleAdicionarIntegrante(usuarioStorage.email);
-    }, []);
-
-    const {
-        register,
-        getValues,
-        handleSubmit,
-        formState: { errors },
-    } = useForm();
-
-    const onSubmit = async (data) => {
-        const idsIntegrantes = integrantes.map((integrante) => ({
-            id: integrante.id,
-            nivel_acesso_id: integrante.nivelAcesso,
-        }));
+    async function handleCriarProjeto(formData) {
         const payload = {
-            titulo: data.titulo,
-            descricao: data.descricao,
-            integrantes: idsIntegrantes,
+            titulo: formData.titulo,
+            descricao: formData.descricao,
+            integrantes: formData.integrantes.map((integrante) => ({
+                id: integrante.id,
+                nivel_acesso_id: integrante.nivelAcesso,
+            })),
         };
 
         try {
@@ -54,54 +31,6 @@ function NewProject() {
         } catch (error) {}
 
         //TODO: Está faltando tratativa pro response do create
-    };
-
-    function onRemoveIntegrante(integranteId) {
-        const newIntegrantes = integrantes.filter((integrante) => integrante.id != integranteId);
-        setIntegrantes(newIntegrantes);
-    }
-
-    //Por padrão ele vai executar recebendo o valor do emailBusca, é a execução inicial com o email do autor do projeto
-    async function handleAdicionarIntegrante(emailBusca) {
-        var isOwner = true;
-        //Quando for uma busca de email inserido o emailBusca vai estar vazio, então
-        if (!emailBusca) {
-            emailBusca = getValues('email');
-            isOwner = false;
-        }
-        //Caso o campo de email esteja vazio
-        if (!emailBusca.trim()) return;
-        try {
-            setErro('');
-
-            const response = await getUserByEmail(emailBusca);
-            const usuario = response;
-
-            const novoIntegrante = {
-                id: usuario.id,
-                nome: usuario.nome,
-                email: usuario.email,
-                fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 3, // Gerente de projeto enquanto a lógica da seleção ainda não funciona
-                isOwner: isOwner,
-            };
-
-            // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
-            setIntegrantes((prev) => {
-                // Busca uma correspondência do usuário encontrado na busca na lista de integrantes
-                const usuarioNaLista = prev.some((integrante) => integrante.id === usuario.id);
-
-                // Se houve correspondência não adiciona a lista
-                if (usuarioNaLista) {
-                    return prev;
-                }
-                //Limpando o campo emailBusca
-                emailBusca = null;
-                return [...prev, novoIntegrante];
-            });
-        } catch (error) {
-            setErro('Usuário não encontrado');
-        }
     }
 
     return (
@@ -115,7 +44,13 @@ function NewProject() {
                 lg:gap-10 lg:px-12 lg:py-8 lg:w-full"
             >
                 <Title2 className="3xl">Novo Projeto</Title2>
-                <div className="flex flex-col gap-3">
+                <ProjectForm
+                    mode="create"
+                    initialData={null}
+                    onSubmit={handleCriarProjeto}
+                    userEmail={userEmail}
+                ></ProjectForm>
+                {/* <div className="flex flex-col gap-3">
                     <FormInput
                         labelContent="Titulo do Projeto"
                         inputClassName="text-lg lg:text-xl"
@@ -181,7 +116,7 @@ function NewProject() {
                             Criar Projeto
                         </button>
                     </div>
-                </div>
+                </div> */}
             </main>
         </div>
     );
