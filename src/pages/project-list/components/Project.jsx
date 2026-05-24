@@ -38,7 +38,7 @@ function Project({ projeto }) {
                     ></ChevronRight>
                 </div>
                 <div className="flex -space-x-2">
-                    {projeto.foto_usuarios.map((foto) =>
+                    {projeto.foto_usuarios.map((foto, index) =>
                         foto ? (
                             <img
                                 key={index}
