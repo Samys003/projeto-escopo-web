@@ -156,52 +156,69 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 <Search></Search>
             </FormInput>
 
-            <div className="xl:px-[20%]">
-                <div
-                    className="flex px-14 justify-between
-                        lg:justify-around"
-                >
-                    <Title4
-                        className="text-(--cinza-700)
-                            lg:text-xl"
+            <div className="flex flex-col xl:gap-6">
+                <div className="xl:px-[20%]">
+                    <div
+                        className="flex px-14 justify-between
+                    lg:justify-around"
                     >
-                        Nome
-                    </Title4>
-                    <Title4
-                        className="text-(--cinza-700)
-                            lg:text-xl"
-                    >
-                        Nível de acesso
-                    </Title4>
-                </div>
-                <div className="flex flex-col gap-1">
-                    {integrantes.map((integrante) => (
-                        <ProjectMember
-                            key={integrante.id}
-                            integrante={integrante}
-                            isOwner={integrante.isOwner}
-                            onClose={() => onRemoveIntegrante(integrante.id)}
-                            onNivelAcessoChange={handleNivelAcessoChange}
-                        ></ProjectMember>
-                    ))}
+                        <Title4
+                            className="text-(--cinza-700)
+                        lg:text-xl"
+                        >
+                            Nome
+                        </Title4>
+                        <Title4
+                            className="text-(--cinza-700)
+                        lg:text-xl"
+                        >
+                            Nível de acesso
+                        </Title4>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        {integrantes.map((integrante) => (
+                            <ProjectMember
+                                key={integrante.id}
+                                integrante={integrante}
+                                isOwner={integrante.isOwner}
+                                onClose={() => onRemoveIntegrante(integrante.id)}
+                                onNivelAcessoChange={handleNivelAcessoChange}
+                            ></ProjectMember>
+                        ))}
+                    </div>
                 </div>
                 {mode === 'edit' && (
-                    <div>
-                        <Title4
-                            className="text-(--cinza-500)
+                    <div className="xl:px-[20%]">
+                        <div className="flex flex-col items-center">
+                            <Title4
+                                className="text-(--cinza-500)
                             lg:text-xl"
-                        ></Title4>
+                            >
+                                Convites Pendentes
+                            </Title4>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            {pendentes.map((pendente) => (
+                                <ProjectMember
+                                    key={pendente.id}
+                                    integrante={pendente}
+                                    onClose={() => onRemoveIntegrante(integrante.id)}
+                                    // TODO: Adicionar método para remover convite
+                                    onNivelAcessoChange={handleNivelAcessoChange}
+                                ></ProjectMember>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>
             <div className="w-full flex flex-col items-end">
                 <button
                     className="
-                        py-2 px-5 bg-(--color-base) text-white font-semibold rounded-lg text-xl w-min text-nowrap
-                        lg:py-3>"
+                    py-2 px-5 bg-(--color-base) text-white font-semibold rounded-lg text-xl w-min text-nowrap
+                    lg:py-3>"
                     onClick={() => handleSubmit(submitForm)()}
                 >
-                    Criar Projeto
+                    Atualizar Projeto
                 </button>
             </div>
         </div>
