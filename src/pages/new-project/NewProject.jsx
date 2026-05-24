@@ -9,10 +9,13 @@ import Title4 from '../../components/Typography/Title4.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import ProjectMember from './components/ProjectMember.jsx';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createProject } from './services/new-project-endpoints';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 
 function NewProject() {
+    const navigate = useNavigate();
+
     const [integrantes, setIntegrantes] = useState([]);
     const [erro, setErro] = useState('');
 
@@ -44,11 +47,13 @@ function NewProject() {
             descricao: data.descricao,
             integrantes: idsIntegrantes,
         };
-        console.log(payload);
-        const response = await createProject(payload);
 
-        //TODO: Está faltando response para o create, criar tratativa para cada cenário
-        alert('Projeto criado com sucesso!');
+        try {
+            const response = await createProject(payload);
+            navigate(`/projeto/${response.id}`);
+        } catch (error) {}
+
+        //TODO: Está faltando tratativa pro response do create
     };
 
     function onRemoveIntegrante(integranteId) {
