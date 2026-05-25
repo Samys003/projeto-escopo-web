@@ -10,6 +10,7 @@ import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import IconButton from '../../components/IconButton';
 import ParagraphSmall from '../../components/Typography/ParagraphSmall';
 import user_default from '../project-details/assets/user_default.svg';
+import FotoConvidado from './components/fotoconvidado';
 
 function DetailsMeeting() {
     const { id } = useParams();
@@ -33,6 +34,15 @@ function DetailsMeeting() {
 
         carregarReuniao();
     }, [id]);
+
+    const gerarIniciais = (nomeCompleto) => {
+        return nomeCompleto
+            .split(' ')
+            .map((parte) => parte[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
+    };
 
     return (
         <div className="w-full lg:flex ">
@@ -110,11 +120,33 @@ function DetailsMeeting() {
                                         className="w-10"
                                         src={usuario.foto_perfil || user_default}
                                     />
-                                    <ParagraphSmall>{usuario.nome}</ParagraphSmall>
+                                    <ParagraphSmall className="text-(--cinza-500)">
+                                        {usuario.nome}
+                                    </ParagraphSmall>
                                 </div>
-                                <ParagraphSmall>{usuario.cargo}</ParagraphSmall>
+                                <ParagraphSmall className="text-(--cinza-500)">
+                                    {usuario.cargo}
+                                </ParagraphSmall>
                             </div>
                         ))}
+                        {detalhesReuniao?.convidados?.map((convidado) => (
+                            <div key={convidado.id} className="flex justify-between items-center ">
+                                <div className="flex items-center py-2 gap-1">
+                                    <div className="flex rounded-full text-white w-10 justify-center items-center h-10 bg-(--cinza-200)">
+                                        {gerarIniciais(convidado.nome)}
+                                    </div>
+                                    <ParagraphSmall className="text-(--cinza-500)">
+                                        {convidado.nome}
+                                    </ParagraphSmall>
+                                </div>
+                                <ParagraphSmall className="text-(--cinza-500)">
+                                    {convidado.cargo}
+                                </ParagraphSmall>
+                            </div>
+                        ))}
+                        <div className="flex items-center w-full justify-center p-2">
+                            <IconButton>Novo Participante</IconButton>
+                        </div>
                     </div>
                 </div>
             </div>
