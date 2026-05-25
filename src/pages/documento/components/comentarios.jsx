@@ -1,26 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, ChevronsLeft, Menu, Send, X } from 'lucide-react';
+import { ChevronsLeft, Menu, Send, X } from 'lucide-react';
 import logotipoMobile from '../../../assets/logotipo-mobile.svg';
 import { createDocumentComment, getDocumentComments } from '../../../services/api';
 
-function primeiroValor(objeto, campos, fallback = '') {
+const META_KEY = 'documentCommentMeta';
+
+function valor(objeto, campos, fallback = '') {
     for (const campo of campos) {
-        if (objeto?.[campo] !== undefined && objeto?.[campo] !== null && objeto?.[campo] !== '') {
-            return objeto[campo];
+        const valorCampo = objeto?.[campo];
+
+        if (valorCampo !== undefined && valorCampo !== null && valorCampo !== '') {
+            return valorCampo;
         }
     }
 
     return fallback;
 }
 
+function objeto(objetoBase, campos) {
+    const valorCampo = valor(objetoBase, campos, null);
+
+    return valorCampo && typeof valorCampo === 'object' && !Array.isArray(valorCampo)
+        ? valorCampo
+        : null;
+}
+
 function formatarDataHora(data) {
-    if (!data) {
-        return { data: '', horario: '' };
-    }
+    const dataObj = data ? new Date(data) : null;
 
-    const dataObj = new Date(data);
-
-    if (Number.isNaN(dataObj.getTime())) {
+    if (!dataObj || Number.isNaN(dataObj.getTime())) {
         return { data: '', horario: '' };
     }
 
@@ -43,83 +51,284 @@ function iniciais(nome) {
         .toUpperCase();
 }
 
-function normalizarBooleano(valor) {
-    if (typeof valor === 'boolean') {
-        return valor;
-    }
-
-    if (typeof valor === 'number') {
-        return valor === 1;
-    }
-
-    if (typeof valor === 'string') {
-        return ['1', 'true', 'sim', 'concluido', 'concluído', 'resolvido'].includes(
-            valor.toLowerCase(),
-        );
-    }
-
-    return false;
-}
-
 function lerUsuarioAtual() {
     try {
         const usuario = JSON.parse(localStorage.getItem('authUser') || '{}');
 
         return {
-            nome: usuario?.nome || usuario?.name || usuario?.email || 'Usuário',
-            foto: usuario?.foto_perfil || usuario?.foto || '',
+            id: valor(usuario, ['id', 'usuario_id', 'usuarioId', 'user_id'], null),
+            nome: valor(usuario, ['nome', 'name', 'email'], 'Usuário'),
+            cargo: valor(
+                usuario,
+                ['cargo', 'perfil', 'papel', 'funcao', 'tipo_usuario', 'tipoUsuario', 'role'],
+                '',
+            ),
+            foto: valor(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
         };
     } catch {
-        return { nome: 'Usuário', foto: '' };
+        return { id: null, nome: 'Usuário', cargo: '', foto: '' };
     }
 }
 
+function autorDoComentario(comentario, fallback = 'Usuário') {
+    const usuario = objeto(comentario, [
+        'usuario',
+        'user',
+        'criador',
+        'autor',
+        'created_by',
+        'createdBy',
+    ]);
+    const autorDireto = valor(
+        comentario,
+        [
+            'nome_criador',
+            'criador_nome',
+            'nome_usuario',
+            'usuario_nome',
+            'autor_nome',
+            'nome_autor',
+            'nome',
+            'name',
+        ],
+        '',
+    );
+    const nome = typeof autorDireto === 'object' ? '' : autorDireto;
+
+    return {
+        nome: nome || valor(usuario, ['nome', 'name', 'email'], fallback),
+        cargo:
+            valor(
+                comentario,
+                ['cargo', 'perfil', 'papel', 'funcao', 'tipo_usuario', 'tipoUsuario', 'role'],
+                '',
+            ) ||
+            valor(
+                usuario,
+                ['cargo', 'perfil', 'papel', 'funcao', 'tipo_usuario', 'tipoUsuario', 'role'],
+                '',
+            ),
+        foto:
+            valor(comentario, ['foto_perfil', 'foto', 'avatar'], '') ||
+            valor(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
+    };
+}
+
+function textoDoComentario(comentario) {
+    return valor(comentario, ['conteudo', 'texto', 'comentario', 'mensagem'], '');
+}
+
+function idDoComentario(comentario) {
+    return valor(comentario, ['id', 'comentario_id', 'comentarioId'], null);
+}
+
+function parentIdDoComentario(comentario) {
+    const parent = valor(
+        comentario,
+        [
+            'parent_id',
+            'parentId',
+            'comentario_pai_id',
+            'comentarioPaiId',
+            'resposta_para_id',
+            'respostaParaId',
+        ],
+        null,
+    );
+
+    return parent && typeof parent === 'object' ? idDoComentario(parent) : parent;
+}
+
+function referenciaDoComentario(comentario) {
+    if (!comentario) {
+        return null;
+    }
+
+    const texto = textoDoComentario(comentario);
+
+    if (!texto) {
+        return null;
+    }
+
+    const autor = autorDoComentario(comentario, 'Comentário');
+
+    return {
+        autor: autor.nome,
+        cargo: autor.cargo,
+        texto,
+    };
+}
+
+function referenciaCamposPlanos(comentario) {
+    const textoCampo = valor(
+        comentario,
+        [
+            'parent_conteudo',
+            'parent_texto',
+            'comentario_pai_conteudo',
+            'comentario_pai_texto',
+            'comentario_respondido',
+            'comentarioRespondido',
+            'conteudo_comentario_pai',
+            'texto_comentario_pai',
+            'conteudo_comentario_respondido',
+            'texto_comentario_respondido',
+            'resposta_conteudo',
+            'resposta_texto',
+            'conteudo_resposta',
+            'texto_resposta',
+            'mensagem_respondida',
+        ],
+        '',
+    );
+    const texto =
+        textoCampo && typeof textoCampo === 'object' ? textoDoComentario(textoCampo) : textoCampo;
+
+    if (!texto) {
+        return null;
+    }
+
+    return {
+        autor: valor(
+            comentario,
+            [
+                'parent_nome',
+                'parent_nome_criador',
+                'comentario_pai_nome',
+                'nome_comentario_pai',
+                'resposta_nome',
+                'nome_resposta',
+                'nome_comentario_respondido',
+            ],
+            'Comentário',
+        ),
+        cargo: valor(
+            comentario,
+            [
+                'parent_cargo',
+                'comentario_pai_cargo',
+                'cargo_comentario_pai',
+                'resposta_cargo',
+                'cargo_resposta',
+                'cargo_comentario_respondido',
+                'tipo_usuario_comentario_respondido',
+                'tipoUsuarioComentarioRespondido',
+            ],
+            '',
+        ),
+        texto,
+    };
+}
+
+function referenciaResposta(comentario) {
+    if (!comentario?.texto) {
+        return null;
+    }
+
+    return {
+        autor: comentario.nome,
+        cargo: comentario.cargo,
+        texto: comentario.texto,
+    };
+}
+
+function lerMeta(documentoId) {
+    try {
+        const dados = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+
+        return dados[String(documentoId)] || {};
+    } catch {
+        return {};
+    }
+}
+
+function salvarMeta(documentoId, comentarioId, dadosComentario) {
+    if (!documentoId || comentarioId === null || comentarioId === undefined || !dadosComentario) {
+        return;
+    }
+
+    try {
+        const dados = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+        const documentoKey = String(documentoId);
+
+        dados[documentoKey] = {
+            ...(dados[documentoKey] || {}),
+            [String(comentarioId)]: {
+                ...(dados[documentoKey]?.[String(comentarioId)] || {}),
+                ...dadosComentario,
+            },
+        };
+
+        localStorage.setItem(META_KEY, JSON.stringify(dados));
+    } catch {
+        return;
+    }
+}
+
+function aplicarMeta(comentarios, documentoId) {
+    const meta = lerMeta(documentoId);
+
+    return comentarios.map((comentario) => {
+        const dados = meta[String(comentario.id)];
+
+        if (!dados) {
+            return comentario;
+        }
+
+        const autor = dados.autor || {};
+        const resposta = dados.resposta?.texto ? dados.resposta : comentario.resposta;
+        const nome = autor.nome || comentario.nome;
+
+        return {
+            ...comentario,
+            nome,
+            cargo: autor.cargo || comentario.cargo,
+            foto: autor.foto || comentario.foto,
+            avatar: iniciais(nome),
+            resposta,
+        };
+    });
+}
+
 function adaptarComentario(comentario, comentariosPorId) {
-    const id = primeiroValor(comentario, ['id', 'comentario_id', 'comentarioId']);
-    const parentId = primeiroValor(comentario, ['parent_id', 'parentId'], null);
-    const registroReferenciaId = primeiroValor(
+    const id = idDoComentario(comentario);
+    const parentId = parentIdDoComentario(comentario);
+    const parentInline = objeto(comentario, [
+        'parent',
+        'comentario_pai',
+        'comentarioPai',
+        'resposta',
+        'resposta_para',
+        'respostaPara',
+        'comentario_respondido',
+        'comentarioRespondido',
+    ]);
+    const parent = parentInline || (parentId ? comentariosPorId.get(String(parentId)) : null);
+    const autor = autorDoComentario(comentario);
+    const criadoEm = valor(comentario, ['criado_em', 'created_at', 'data_criacao']);
+    const { data, horario } = formatarDataHora(criadoEm);
+    const registroReferenciaId = valor(
         comentario,
         ['registro_referencia_id', 'registroReferenciaId'],
         null,
     );
     const tipoId = Number(
-        primeiroValor(comentario, ['comentario_tipo_id', 'tipo_comentario_id', 'tipoId'], 1),
+        valor(comentario, ['comentario_tipo_id', 'tipo_comentario_id', 'tipoId'], 1),
     );
-    const nome = primeiroValor(
-        comentario,
-        ['nome_criador', 'criador_nome', 'nome_usuario', 'usuario_nome', 'nome'],
-        'Usuário',
-    );
-    const criadoEm = primeiroValor(comentario, ['criado_em', 'created_at', 'data_criacao']);
-    const { data, horario } = formatarDataHora(criadoEm);
-    const parent = parentId ? comentariosPorId.get(String(parentId)) : null;
 
     return {
         id,
         parentId,
         registroReferenciaId,
         tipoId,
-        nome,
-        cargo: primeiroValor(
-            comentario,
-            ['cargo', 'perfil', 'papel', 'funcao', 'tipo_usuario'],
-            tipoId === 3 ? 'Registro' : '',
-        ),
+        nome: autor.nome,
+        cargo: autor.cargo || (tipoId === 3 ? 'Registro' : ''),
         data,
         horario,
-        texto: primeiroValor(comentario, ['conteudo', 'texto', 'comentario'], ''),
-        avatar: iniciais(nome),
-        foto: primeiroValor(comentario, ['foto_perfil', 'foto', 'avatar']),
-        concluido: normalizarBooleano(primeiroValor(comentario, ['concluido', 'resolvido'], false)),
-        resposta: parent && {
-            autor: primeiroValor(
-                parent,
-                ['nome_criador', 'criador_nome', 'nome_usuario', 'usuario_nome', 'nome'],
-                'Comentário',
-            ),
-            cargo: primeiroValor(parent, ['cargo', 'perfil', 'papel', 'funcao'], ''),
-            texto: primeiroValor(parent, ['conteudo', 'texto', 'comentario'], ''),
-        },
+        texto: textoDoComentario(comentario),
+        avatar: iniciais(autor.nome),
+        foto: autor.foto,
+        resposta: referenciaDoComentario(parent) || referenciaCamposPlanos(comentario),
         referencia:
             tipoId === 3 || registroReferenciaId
                 ? {
@@ -131,16 +340,71 @@ function adaptarComentario(comentario, comentariosPorId) {
     };
 }
 
-function prepararComentarios(comentariosApi) {
+function prepararComentarios(comentariosApi, documentoId) {
     const comentarios = Array.isArray(comentariosApi) ? comentariosApi : [];
     const comentariosPorId = new Map(
-        comentarios.map((comentario) => [
-            String(primeiroValor(comentario, ['id', 'comentario_id', 'comentarioId'])),
-            comentario,
-        ]),
+        comentarios.map((comentario) => [String(idDoComentario(comentario)), comentario]),
+    );
+    const comentariosAdaptados = comentarios.map((comentario) =>
+        adaptarComentario(comentario, comentariosPorId),
     );
 
-    return comentarios.map((comentario) => adaptarComentario(comentario, comentariosPorId));
+    return aplicarMeta(comentariosAdaptados, documentoId);
+}
+
+function comentarioCriadoDaApi(respostaApi) {
+    if (!respostaApi || Array.isArray(respostaApi) || typeof respostaApi !== 'object') {
+        return null;
+    }
+
+    return respostaApi.comentario || respostaApi.data || respostaApi;
+}
+
+function acharComentarioCriado(comentarios, comentarioRecente) {
+    if (!comentarioRecente) {
+        return null;
+    }
+
+    if (comentarioRecente.id !== null && comentarioRecente.id !== undefined) {
+        const encontradoPorId = comentarios.find(
+            (comentario) => String(comentario.id) === String(comentarioRecente.id),
+        );
+
+        if (encontradoPorId) {
+            return encontradoPorId;
+        }
+    }
+
+    for (let i = comentarios.length - 1; i >= 0; i -= 1) {
+        if (String(comentarios[i].texto || '').trim() === comentarioRecente.texto) {
+            return comentarios[i];
+        }
+    }
+
+    return null;
+}
+
+function aplicarComentarioRecente(comentarios, comentarioRecente) {
+    const criado = acharComentarioCriado(comentarios, comentarioRecente);
+
+    if (!criado) {
+        return comentarios;
+    }
+
+    return comentarios.map((comentario) => {
+        if (comentario.id !== criado.id) {
+            return comentario;
+        }
+
+        return {
+            ...comentario,
+            nome: comentarioRecente.autor.nome,
+            cargo: comentarioRecente.autor.cargo,
+            foto: comentarioRecente.autor.foto,
+            avatar: iniciais(comentarioRecente.autor.nome),
+            resposta: referenciaResposta(comentarioRecente.respostaPara) || comentario.resposta,
+        };
+    });
 }
 
 function Avatar({ comentario, className = '' }) {
@@ -159,18 +423,27 @@ function Avatar({ comentario, className = '' }) {
 
 function ComentarioCard({ comentario, mobile = false, onResponder }) {
     const referencia = comentario.resposta || comentario.referencia;
+    const textoCabecalho = mobile ? 'text-[16px]' : 'text-[20px]';
+    const textoCargo = mobile ? 'text-[15px]' : 'text-[18px]';
+    const estiloAcao = mobile
+        ? 'mt-2 flex h-8 justify-end'
+        : 'pointer-events-none mt-1 flex h-8 justify-end opacity-0 transition-opacity group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100';
 
     return (
-        <article className="flex gap-3">
-            <Avatar comentario={comentario} className={mobile ? 'h-12 w-12' : ''} />
+        <article className="group flex w-full min-w-0 items-start gap-3">
+            <Avatar comentario={comentario} className={mobile ? 'h-12 w-12' : 'h-16 w-16'} />
 
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 overflow-hidden">
                 <div className="mb-1 flex flex-wrap items-baseline gap-x-1 font-inter">
-                    <span className="font-semibold text-[var(--color-base)]">
+                    <span
+                        className={`${textoCabecalho} min-w-0 break-words font-semibold text-[var(--color-base)] [overflow-wrap:anywhere]`}
+                    >
                         {comentario.nome}
                     </span>
                     {comentario.cargo && (
-                        <span className="truncate font-semibold text-[var(--cinza-300)]">
+                        <span
+                            className={`${textoCargo} truncate font-semibold text-[var(--cinza-400)]`}
+                        >
                             {comentario.cargo}
                         </span>
                     )}
@@ -181,10 +454,10 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                     )}
                 </div>
 
-                <div className="rounded-xl border border-[var(--cinza-600)] px-4 py-2 font-inter text-[14px] leading-5 text-black">
+                <div className="max-w-full overflow-hidden rounded-[18px] border border-[var(--cinza-500)] px-4 py-3 font-inter text-[16px] leading-6 text-black">
                     {referencia && (
-                        <div className="mb-2 rounded bg-[var(--cinza-200)] px-3 py-2">
-                            <div className="mb-1 truncate text-[12px] text-[var(--color-base)]">
+                        <div className="mb-2 max-w-full overflow-hidden rounded-md bg-[var(--cinza-200)] px-4 py-2">
+                            <div className="mb-1 break-words text-[15px] text-[var(--color-base)] [overflow-wrap:anywhere]">
                                 {referencia.autor}{' '}
                                 {referencia.cargo && (
                                     <span className="text-[var(--cinza-400)]">
@@ -193,14 +466,16 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                                 )}
                             </div>
                             {referencia.texto && (
-                                <p className="line-clamp-3 text-[12px] leading-4 text-[var(--cinza-700)]">
+                                <p className="line-clamp-3 whitespace-pre-wrap break-words text-[14px] leading-5 text-[var(--cinza-700)] [overflow-wrap:anywhere]">
                                     {referencia.texto}
                                 </p>
                             )}
                         </div>
                     )}
 
-                    <p>{comentario.texto}</p>
+                    <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                        {comentario.texto}
+                    </p>
 
                     {!mobile && (
                         <div className="mt-1 text-right text-[14px] text-[var(--cinza-500)]">
@@ -209,20 +484,13 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                     )}
                 </div>
 
-                <div className="mt-1 flex justify-end gap-2">
+                <div className={estiloAcao}>
                     <button
                         type="button"
                         onClick={() => onResponder(comentario)}
-                        className="rounded border border-[var(--cinza-700)] px-2 py-1 font-inter text-[14px] text-black"
+                        className="rounded border border-[var(--cinza-500)] px-3 py-1 font-inter text-[14px] text-[var(--cinza-700)]"
                     >
                         Responder
-                    </button>
-                    <button
-                        type="button"
-                        className="flex h-7 w-7 items-center justify-center rounded border border-[var(--cinza-700)] text-[var(--cinza-700)]"
-                        aria-label="Concluir comentário"
-                    >
-                        <Check size={18} />
                     </button>
                 </div>
             </div>
@@ -327,16 +595,9 @@ function Comentarios({ documentoId, onFechar, onErro }) {
     const [erro, setErro] = useState('');
     const [texto, setTexto] = useState('');
     const [respostaPara, setRespostaPara] = useState(null);
-    const [filtro, setFiltro] = useState('abertos');
     const usuarioAtual = useMemo(() => lerUsuarioAtual(), []);
 
-    const comentariosFiltrados = useMemo(() => {
-        return comentarios.filter((comentario) =>
-            filtro === 'concluidos' ? comentario.concluido : !comentario.concluido,
-        );
-    }, [comentarios, filtro]);
-
-    async function carregarComentarios() {
+    async function carregarComentarios(comentarioRecente = null) {
         if (!documentoId) {
             setErro('Informe o ID do documento para carregar comentários.');
             setCarregando(false);
@@ -347,7 +608,19 @@ function Comentarios({ documentoId, onFechar, onErro }) {
             setCarregando(true);
             setErro('');
             const comentariosApi = await getDocumentComments(documentoId);
-            setComentarios(prepararComentarios(comentariosApi));
+            let novosComentarios = prepararComentarios(comentariosApi, documentoId);
+
+            if (comentarioRecente) {
+                novosComentarios = aplicarComentarioRecente(novosComentarios, comentarioRecente);
+                const criado = acharComentarioCriado(novosComentarios, comentarioRecente);
+
+                salvarMeta(documentoId, criado?.id, {
+                    autor: comentarioRecente.autor,
+                    resposta: referenciaResposta(comentarioRecente.respostaPara),
+                });
+            }
+
+            setComentarios(novosComentarios);
         } catch (error) {
             const mensagem = error.message || 'Erro ao carregar comentários.';
             setErro(mensagem);
@@ -375,7 +648,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                 const comentariosApi = await getDocumentComments(documentoId);
 
                 if (ativo) {
-                    setComentarios(prepararComentarios(comentariosApi));
+                    setComentarios(prepararComentarios(comentariosApi, documentoId));
                 }
             } catch (error) {
                 const mensagem = error.message || 'Erro ao carregar comentários.';
@@ -408,16 +681,42 @@ function Comentarios({ documentoId, onFechar, onErro }) {
         try {
             setEnviando(true);
             setErro('');
-            await createDocumentComment({
+
+            const conteudo = texto.trim();
+            const autor = {
+                id: usuarioAtual.id,
+                nome: usuarioAtual.nome,
+                cargo: usuarioAtual.cargo,
+                foto: usuarioAtual.foto,
+            };
+            const comentarioCriado = await createDocumentComment({
                 documento_id: documentoId,
-                conteudo: texto.trim(),
+                conteudo,
                 parent_id: respostaPara?.id || null,
                 registro_referencia_id: null,
                 comentario_tipo_id: respostaPara ? 2 : 1,
+                nome_criador: autor.nome,
+                usuario_id: autor.id,
+                cargo: autor.cargo,
+                tipo_usuario: autor.cargo,
+                foto_perfil: autor.foto,
             });
+            const comentarioApi = comentarioCriadoDaApi(comentarioCriado);
+            const comentarioRecente = {
+                id: idDoComentario(comentarioApi),
+                texto: conteudo,
+                autor,
+                respostaPara,
+            };
+
+            salvarMeta(documentoId, comentarioRecente.id, {
+                autor,
+                resposta: referenciaResposta(respostaPara),
+            });
+
             setTexto('');
             setRespostaPara(null);
-            await carregarComentarios();
+            await carregarComentarios(comentarioRecente);
         } catch (error) {
             const mensagem = error.message || 'Erro ao enviar comentário.';
             setErro(mensagem);
@@ -452,30 +751,6 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                         </button>
                     </div>
                     <div className="mt-2 border-b border-[var(--cinza-700)]" />
-                    <div className="mt-3 flex gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setFiltro('abertos')}
-                            className={`rounded-full px-4 py-1 font-inter text-[14px] ${
-                                filtro === 'abertos'
-                                    ? 'bg-[var(--roxo-light)] text-[var(--roxo-dark)]'
-                                    : 'bg-[var(--cinza-200)] text-[var(--cinza-400)]'
-                            }`}
-                        >
-                            Em aberto
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setFiltro('concluidos')}
-                            className={`rounded-full px-4 py-1 font-inter text-[14px] ${
-                                filtro === 'concluidos'
-                                    ? 'bg-[var(--roxo-light)] text-[var(--roxo-dark)]'
-                                    : 'bg-[var(--cinza-200)] text-[var(--cinza-400)]'
-                            }`}
-                        >
-                            Concluídos
-                        </button>
-                    </div>
                     {erro && (
                         <p className="mt-2 font-inter text-[12px] text-[var(--color-alert)]">
                             {erro}
@@ -485,7 +760,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
 
                 <div className="flex-1 overflow-y-auto px-4 py-8">
                     <ListaComentarios
-                        comentarios={comentariosFiltrados}
+                        comentarios={comentarios}
                         carregando={carregando}
                         onResponder={setRespostaPara}
                     />
@@ -526,7 +801,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
 
                 <div className="flex-1 overflow-y-auto px-4 pb-6">
                     <ListaComentarios
-                        comentarios={comentariosFiltrados}
+                        comentarios={comentarios}
                         carregando={carregando}
                         onResponder={setRespostaPara}
                         mobile

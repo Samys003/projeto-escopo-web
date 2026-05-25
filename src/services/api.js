@@ -148,21 +148,19 @@ export async function getDocumentComments(documento_id) {
     return parseResponse(response);
 }
 
-export async function createDocumentComment({
-    documento_id,
-    conteudo,
-    parent_id = null,
-    registro_referencia_id = null,
-    comentario_tipo_id = 1,
-}) {
+export async function createDocumentComment({ documento_id, ...comentario }) {
+    const parentId = comentario.parent_id || null;
     const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentario`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-            conteudo,
-            parent_id,
-            registro_referencia_id,
-            comentario_tipo_id,
+            parent_id: parentId,
+            parentId,
+            comentario_pai_id: parentId,
+            resposta_para_id: parentId,
+            registro_referencia_id: null,
+            comentario_tipo_id: 1,
+            ...comentario,
         }),
     });
     return parseResponse(response);
