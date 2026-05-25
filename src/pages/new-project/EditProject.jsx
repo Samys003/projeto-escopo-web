@@ -1,9 +1,5 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
-import ButtonText from '../../components/Typography/ButtonText.jsx';
-import { getUserByEmail } from '../../services/api.js';
-import Title4 from '../../components/Typography/Title4.jsx';
-import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createProject } from './services/new-project-endpoints';
