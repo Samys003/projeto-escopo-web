@@ -9,11 +9,12 @@ import Title2 from '../../components/Typography/Title2';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import IconButton from '../../components/IconButton';
 import ParagraphSmall from '../../components/Typography/ParagraphSmall';
+import user_default from '../project-details/assets/user_default.svg';
 
 function DetailsMeeting() {
     const { id } = useParams();
 
-    const [detalhesReuniao, setDetalhesReuniao] = useState([]);
+    const [detalhesReuniao, setDetalhesReuniao] = useState({});
 
     const navigate = useNavigate();
 
@@ -95,7 +96,26 @@ function DetailsMeeting() {
                     </div>
                 </div>
                 <div className="p-2">
-                    <ParagraphSmall>Participantes</ParagraphSmall>
+                    <div>
+                        <ParagraphSmall>Participantes</ParagraphSmall>
+                    </div>
+                    <div className="">
+                        {detalhesReuniao?.usuarios?.map((usuario) => (
+                            <div
+                                key={usuario.id}
+                                className="flex justify-between py-2 items-center w-full "
+                            >
+                                <div className="flex gap-1 items-center">
+                                    <img
+                                        className="w-10"
+                                        src={usuario.foto_perfil || user_default}
+                                    />
+                                    <ParagraphSmall>{usuario.nome}</ParagraphSmall>
+                                </div>
+                                <ParagraphSmall>{usuario.cargo}</ParagraphSmall>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
