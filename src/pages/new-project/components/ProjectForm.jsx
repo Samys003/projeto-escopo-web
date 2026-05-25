@@ -129,7 +129,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
         );
     }
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
             <FormInput
                 labelContent="Titulo do Projeto"
                 inputClassName="text-lg lg:text-xl"
@@ -156,8 +156,8 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 <Search></Search>
             </FormInput>
 
-            <div className="flex flex-col xl:gap-6">
-                <div className="xl:px-[20%]">
+            <div className="flex flex-col gap-4 xl:gap-6">
+                <div className="flex flex-col gap-2 xl:px-[20%]">
                     <div
                         className="flex px-14 justify-between
                     lg:justify-around"
@@ -188,7 +188,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                     </div>
                 </div>
                 {mode === 'edit' && (
-                    <div className="xl:px-[20%]">
+                    <div className="flex flex-col gap-2 xl:px-[20%]">
                         <div className="flex flex-col items-center">
                             <Title4
                                 className="text-(--cinza-500)
@@ -203,6 +203,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                                     key={pendente.id}
                                     integrante={pendente}
                                     onClose={() => onRemoveIntegrante(integrante.id)}
+                                    pendente={true}
                                     // TODO: Adicionar método para remover convite
                                     onNivelAcessoChange={handleNivelAcessoChange}
                                 ></ProjectMember>
