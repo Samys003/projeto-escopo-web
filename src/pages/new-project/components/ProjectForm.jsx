@@ -9,7 +9,7 @@ import ProjectMember from './ProjectMember.jsx';
 import { getProjectMembers } from '../services/new-project-endpoints';
 
 function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null }) {
-    const [integrantes, setIntegrantes] = useState([]);
+    const [integrantesAtuais, setIntegrantesAtuais] = useState([]);
     const [integrantesAdicionais, setIntegrantesAdicionais] = useState([]);
     const [pendentes, setPendentes] = useState([]);
     const [erro, setErro] = useState('');
@@ -32,7 +32,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
     async function submitForm(data) {
         const formData = {
             ...data,
-            integrantes,
+            integrantesAdicionais,
         };
 
         await onSubmit(formData);
@@ -54,30 +54,24 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 descricao: initialData.descricao,
             });
 
-            carregarParticipantes(projectId);
+            initListaParticipantes(projectId);
         }
 
         //TODO: Adicionar verificação do localStorage na página, desconectar usuário com acesso inválido
     }, [isEdit, initialData, reset, userEmail]);
 
     // Em editar projeto, carregar os participantes e convites pendentes
-    async function carregarParticipantes(projectId) {
+    async function initListaParticipantes(projectId) {
         const response = await getProjectMembers(projectId);
 
-        setIntegrantes(response.participantes);
+        setIntegrantesAtuais(response.participantes);
         setPendentes(response.pendentes);
     }
 
     //GERENCIAMENTO DE PARTICIPANTES:
 
-    //Remove um integrante da lista
-    function onRemoveIntegrante(integranteId) {
-        const newIntegrantes = integrantes.filter((integrante) => integrante.id != integranteId);
-        setIntegrantes(newIntegrantes);
-    }    //Por padrão ele vai executar recebendo o valor do emailBusca
-
     //Realiza busca de usuário para inserir como participante
-    // TODO: Revisar essa função, só é utilizada para lidar com o criador do projeto,
+    // TODO: Revisar essa função, só é utilizada para lidar com o criador do projeto quando cria um projeto.
     async function handleAdicionarIntegrante(emailParam = null) {
         // emailParam é usado para inserir o email do proprietario quando vai criar o projeto.
         var isOwner = emailParam;
@@ -104,7 +98,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
             };
 
             // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
-            setIntegrantes((prev) => {
+            setIntegrantesAtuais((prev) => {
                 // Busca uma correspondência do usuário encontrado na busca na lista de integrantes
                 const usuarioNaLista = prev.some((integrante) => integrante.id === usuario.id);
 
@@ -121,29 +115,89 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
         }
     }
 
-    async function handleBuscarAdicional(){
+    // Realiza busca de usuário e adiciona na lista como adicional
+    async function handleAddIntegranteAdicional() {
+        // Armazenando email para realizar a busca, usando o emailParams ou o do input
+        var emailBusca = getValues('email');
 
+        //Caso o campo de email esteja vazio
+        if (!emailBusca.trim()) {
+            setErro('Insira um email para buscar um usuário');
+            return;
+        }
+
+        try {
+            const response = await getUserByEmail(emailBusca);
+            const usuario = response;
+            const novoIntegrante = {
+                id: usuario.id,
+                nome: usuario.nome,
+                email: usuario.email,
+                fotoPerfil: usuario.foto_perfil,
+                nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), resolver o carregamento do select na tela
+            };
+
+            // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
+            setIntegrantesAdicionais((prev) => {
+                // Confere se o usuário a ser adicionado já participa do projeto
+                const usuarioParticipa = integrantesAtuais.some(
+                    (integrante) => integrante.id === usuario.id,
+                );
+
+                // Busca uma correspondência do usuário encontrado na busca na lista de integrantes
+                const usuarioNaLista = prev.some((integrante) => integrante.id === usuario.id);
+
+                // Se houve correspondência não adiciona a lista
+                if (usuarioNaLista || usuarioParticipa) {
+                    return prev;
+                    //TODO: Retornar uma mensagem para o usuário
+                }
+                //Limpando o campo emailBusca
+                emailBusca = null;
+
+                // Adiciona a lista de integrantes adicionais
+                return [...prev, novoIntegrante];
+            });
+        } catch (error) {
+            setErro('Usuário não encontrado');
+        }
     }
-
-
-
 
     //Quando o usuário mudar o nível de acesso de um integrante
-    function handleNivelAcessoChange(integranteId, novoNivel) {
-        //Atualizar a lista de integrantes atualizando o nível de acesso daquele integrante em específico
-        setIntegrantes((prev) =>
-            prev.map((integrante) =>
-                integrante.id === integranteId
-                    ? //Caso seja o integrante correspondente irá atualizar antes de inserir no array
-                      {
-                          ...integrante,
-                          nivelAcesso: Number(novoNivel),
-                      }
-                    : //Caso contrário mantém como está.
-                      integrante,
-            ),
-        );
+    function handleNivelAcessoChange(listaType, integranteId, novoNivel) {
+        // Lista 1: Integrante já participante do projeto
+        if (listaType === 'atuais') {
+            setIntegrantesAtuais((prev) =>
+                prev.map((integrante) =>
+                    integrante.id === integranteId
+                        ? //Caso seja o integrante correspondente irá atualizar antes de inserir no array
+                          {
+                              ...integrante,
+                              nivelAcesso: Number(novoNivel),
+                          }
+                        : //Caso contrário mantém como está.
+                          integrante,
+                ),
+            );
+        }
+
+        // Lista 2: Integrante adicional (a ser convidado pro projeto)
+        if (listaType === 'adicionais') {
+        }
+
+        // Lista 3: Integrante com convite pendente (ainda não aceitou o convite)
+        if (listaType === 'atuais') {
+        }
     }
+
+    //Remove um integrante da lista
+    function onRemoveIntegranteAtual(integranteId) {
+        const newIntegrantes = integrantesAtuais.filter(
+            (integrante) => integrante.id != integranteId,
+        );
+        setIntegrantesAtuais(newIntegrantes);
+    }
+
     return (
         <div className="flex flex-col gap-4">
             <FormInput
@@ -167,11 +221,15 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 placeholder="Buscar por email"
                 icon={<Search className="text-(--cinza-700)" />}
                 register={register('email')}
-                onInputSubmit={handleAdicionarIntegrante}
+                onInputSubmit={handleAddIntegranteAdicional}
             >
                 <Search></Search>
             </FormInput>
 
+            {/*VERSÃO 1.0(Atual): Só exibe os integrantes atuais e pendentes*/}
+            {/*VERSÃO 1.1: Para novo projeto exibir os adicionais depois dos atuais*/}
+            {/*VERSÃO 1.2: Adicionar verificação do isEdit para incluir os adicionais ANTES dos atuais*/}
+            {/*VERSÃO 1.3: Revisar para o isEdit validar quem é o proprietário do projeto */}
             <div className="flex flex-col gap-4 xl:gap-6">
                 <div className="flex flex-col gap-2 xl:px-[20%]">
                     <div
@@ -192,11 +250,29 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                         </Title4>
                     </div>
                     <div className="flex flex-col gap-1">
-                        {integrantes.map((integrante) => (
+                        {integrantesAtuais.map((integrante) => (
                             <ProjectMember
                                 key={integrante.id}
                                 integrante={integrante}
                                 isOwner={integrante.isOwner}
+                                onClose={() => onRemoveIntegrante(integrante.id)}
+                                onNivelAcessoChange={handleNivelAcessoChange}
+                            ></ProjectMember>
+                        ))}
+                    </div>
+                    <Title4
+                        className="text-(--cinza-700)
+                        lg:text-xl"
+                    >
+                        Adicionar Participantes
+                    </Title4>
+                    <div className="flex flex-col gap-1">
+                        {integrantesAdicionais.map((integrante) => (
+                            <ProjectMember
+                                key={integrante.id}
+                                integrante={integrante}
+                                isOwner={integrante.isOwner}
+                                adicional={true}
                                 onClose={() => onRemoveIntegrante(integrante.id)}
                                 onNivelAcessoChange={handleNivelAcessoChange}
                             ></ProjectMember>
