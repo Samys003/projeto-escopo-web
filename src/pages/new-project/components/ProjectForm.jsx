@@ -10,6 +10,7 @@ import { getProjectMembers } from '../services/new-project-endpoints';
 
 function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null }) {
     const [integrantes, setIntegrantes] = useState([]);
+    const [integrantesAdicionais, setIntegrantesAdicionais] = useState([]);
     const [pendentes, setPendentes] = useState([]);
     const [erro, setErro] = useState('');
     const isEdit = mode === 'edit';
@@ -37,12 +38,16 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
         await onSubmit(formData);
     }
 
+    //Inicia formulário
+    // - insere o proprietário caso seja um novo projeto
+    // - carrega os participantes caso esteja editando um existente
     useEffect(() => {
-        //Caso seja um novo projeto, irá adicionar o usuário como proprietário
+        // Em novo projeto, irá adicionar o usuário como proprietário e return early
         if (isEdit === false) {
             handleAdicionarIntegrante(userEmail);
             return;
         }
+        // Em editar, iremos recarregar o formulário inserindo os dados fornecidos
         if (initialData) {
             reset({
                 titulo: initialData.titulo,
@@ -53,9 +58,9 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
         }
 
         //TODO: Adicionar verificação do localStorage na página, desconectar usuário com acesso inválido
-        //Adicionando o primeiro usuario, o criador do projeto a lista
     }, [isEdit, initialData, reset, userEmail]);
 
+    // Em editar projeto, carregar os participantes e convites pendentes
     async function carregarParticipantes(projectId) {
         const response = await getProjectMembers(projectId);
 
@@ -63,12 +68,16 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
         setPendentes(response.pendentes);
     }
 
+    //GERENCIAMENTO DE PARTICIPANTES:
+
+    //Remove um integrante da lista
     function onRemoveIntegrante(integranteId) {
         const newIntegrantes = integrantes.filter((integrante) => integrante.id != integranteId);
         setIntegrantes(newIntegrantes);
-    }
+    }    //Por padrão ele vai executar recebendo o valor do emailBusca
 
-    //Por padrão ele vai executar recebendo o valor do emailBusca
+    //Realiza busca de usuário para inserir como participante
+    // TODO: Revisar essa função, só é utilizada para lidar com o criador do projeto,
     async function handleAdicionarIntegrante(emailParam = null) {
         // emailParam é usado para inserir o email do proprietario quando vai criar o projeto.
         var isOwner = emailParam;
@@ -90,7 +99,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 nome: usuario.nome,
                 email: usuario.email,
                 fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 3, // Gerente de projeto enquanto a lógica da seleção ainda não funciona
+                nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), resolver o carregamento do select
                 isOwner: isOwner,
             };
 
@@ -111,6 +120,13 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
             setErro('Usuário não encontrado');
         }
     }
+
+    async function handleBuscarAdicional(){
+
+    }
+
+
+
 
     //Quando o usuário mudar o nível de acesso de um integrante
     function handleNivelAcessoChange(integranteId, novoNivel) {
