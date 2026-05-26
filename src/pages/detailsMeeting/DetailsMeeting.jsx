@@ -10,7 +10,6 @@ import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import IconButton from '../../components/IconButton';
 import ParagraphSmall from '../../components/Typography/ParagraphSmall';
 import user_default from '../project-details/assets/user_default.svg';
-import FotoConvidado from './components/fotoconvidado';
 
 function DetailsMeeting() {
     const { id } = useParams();
@@ -78,8 +77,8 @@ function DetailsMeeting() {
                     {detalhesReuniao.links
                         ?.filter((link) => link.tipo_link === 'reuniao')
                         .map((link) => (
-                            <IconButton onClick={link.url} key={link.id} className="w-32">
-                                <ParagraphSmall>Acessar Gravação</ParagraphSmall>
+                            <IconButton key={link.id} className="w-35">
+                                Acessar Gravação
                             </IconButton>
                         ))}
                     <button className="w-22">
@@ -100,9 +99,7 @@ function DetailsMeeting() {
                             </div>
                         ))}
                     <div className="w-full flex items-center p-1 justify-center">
-                        <IconButton className="w-29">
-                            <ParagraphMedium>Adicionar link</ParagraphMedium>
-                        </IconButton>
+                        <IconButton className="w-29">Adicionar link</IconButton>
                     </div>
                 </div>
                 <div className="p-2">

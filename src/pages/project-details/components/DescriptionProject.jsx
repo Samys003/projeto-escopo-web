@@ -8,7 +8,10 @@ function DescriptionProject({ project, expand, setExpand }) {
         <div className=" w-full flex flex-col p-2">
             <div className="w-full flex items-center gap-2 ">
                 <Title2 className="text-2xl">{project?.titulo}</Title2>
-                <IconButton icon={<SquarePen />} />
+                <IconButton
+                    icon={<SquarePen />}
+                    className={project?.nivel_acesso_id === 1 ? '' : 'hidden'}
+                ></IconButton>
             </div>
             <div className="w-full flex flex-col  gap-2">
                 <div className="">

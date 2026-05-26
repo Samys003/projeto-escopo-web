@@ -27,10 +27,10 @@ function Meeting({ formatReunioes }) {
                                     <div className="">
                                         <ParagraphMedium>{reuniao.titulo}</ParagraphMedium>
                                         <div className="flex -space-x-4">
-                                            {reuniao.foto_usuarios.slice(0.4).map((foto) => {
+                                            {reuniao.foto_usuarios.slice(0.4).map((foto, index) => {
                                                 return (
                                                     <img
-                                                        key={foto}
+                                                        key={index}
                                                         className="w-10 rounded-full"
                                                         src={foto || user_default}
                                                     ></img>

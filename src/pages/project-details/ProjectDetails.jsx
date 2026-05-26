@@ -16,6 +16,7 @@ import {
     getProjectDocumentById,
     getRegisterById,
     newCategoria,
+    newMeeting,
 } from '../../services/api';
 import DescriptionProject from './components/DescriptionProject';
 import DesktopSidebar from '../../components/DesktopSidebar';
@@ -29,9 +30,11 @@ function ProjectDetails() {
     const [reunioes, setReunioes] = useState([]);
     const [currentTab, setCurrentTab] = useState('Documentos');
     const tabs = ['Documentos', 'Registros', 'Reuniões'];
-    const [openModal, setOpenModal] = useState(false);
+    const [openModalCategoria, setOpenModalCategoria] = useState(false);
+    const [openModalReuniao, setOpenModalReuniao] = useState(false);
     const [expand, setExpand] = useState(false);
     const [nomeCategoria, setNomeCategoria] = useState('');
+    const [nomeReuniao, setNomeReuniao] = useState('');
 
     useEffect(() => {
         async function carregarProjeto() {
@@ -62,7 +65,26 @@ function ProjectDetails() {
 
             setDocumentos(dataDoc);
 
-            setOpenModal(false);
+            setOpenModalCategoria(false);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function novaReuniao() {
+        try {
+            const nameMeeting = {
+                titulo: nomeReuniao,
+            };
+
+            const data = await newMeeting(id, nameMeeting);
+            const dataDoc = await getMeetingById(id);
+
+            setNomeReuniao(data);
+
+            setReunioes(dataDoc);
+
+            setOpenModalReuniao(false);
         } catch (error) {
             console.error(error);
         }
@@ -177,36 +199,60 @@ function ProjectDetails() {
                 ></ComponentMenu>
                 {currentTab === 'Documentos' && (
                     <div className="flex flex-col w-full items-center gap-4 pt-5 ">
-                        <IconButton
-                            onClick={() => setOpenModal(true)}
-                            className="w-40 gap-2"
-                            icon={<FolderPlus />}
-                        >
-                            Nova Categoria
-                        </IconButton>
-                        {openModal && (
+                        {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
+                            <IconButton
+                                onClick={() => setOpenModalCategoria(true)}
+                                className="w-40 gap-2"
+                                icon={<FolderPlus />}
+                            >
+                                Nova Categoria
+                            </IconButton>
+                        )}
+                        {openModalCategoria && (
                             <PopUp
-                                nomeCategoria={nomeCategoria}
-                                setNomeCategoria={setNomeCategoria}
-                                novaCategoria={novaCategoria}
-                                onClose={() => setOpenModal(false)}
+                                tituloNovo={'Adicionar Categoria'}
+                                tituloCategoria={'Titulo da Categoria'}
+                                value={nomeCategoria}
+                                placeholder={'Nova Categoria'}
+                                onClick={novaCategoria}
+                                onChange={(e) => setNomeCategoria(e.target.value)}
+                                onClose={() => setOpenModalCategoria(false)}
                             />
                         )}
                         <Documents
                             documentos={documentos}
                             deletarCategoria={deletarCategoria}
+                            project={project}
                         ></Documents>
                     </div>
                 )}
                 {currentTab === 'Registros' && (
                     <div className="pt-4">
-                        <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+                        {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
+                            <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+                        )}
                         <Register formatRegistros={formatRegistros}></Register>
                     </div>
                 )}
                 {currentTab === 'Reuniões' && (
                     <div className="pt-4">
-                        <ButtonRegistrer>+ Nova Reunião</ButtonRegistrer>
+                        {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
+                            <ButtonRegistrer onClick={() => setOpenModalReuniao(true)}>
+                                + Nova Reunião
+                            </ButtonRegistrer>
+                        )}
+                        {openModalReuniao && (
+                            <PopUp
+                                tituloNovo={'Nova Reunião'}
+                                tituloCategoria={'Titulo da Reunião'}
+                                value={nomeReuniao}
+                                placeholder={'Nova Reuniao'}
+                                onClick={novaReuniao}
+                                onChange={(e) => setNomeReuniao(e.target.value)}
+                                onClose={() => setOpenModalReuniao(false)}
+                            />
+                        )}
+
                         <Meeting formatReunioes={formatReunioes}></Meeting>
                     </div>
                 )}

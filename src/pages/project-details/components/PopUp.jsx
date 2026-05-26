@@ -1,43 +1,42 @@
-import IconButton from "../../../components/IconButton";
-import ParagraphMedium from "../../../components/Typography/ParagraphMedium";
-import Title4 from "../../../components/Typography/Title4";
-import { X } from "lucide-react"
+import IconButton from '../../../components/IconButton';
+import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
+import Title4 from '../../../components/Typography/Title4';
+import { X } from 'lucide-react';
 
-function PopUp({ onClose, nomeCategoria, setNomeCategoria, novaCategoria }) {
+function PopUp({ onClose, value, onChange, onClick, tituloNovo, tituloCategoria, placeholder }) {
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-            <div className="p-6 w-85.5 h-45 bg-white rounded-xl  ">
-                <div className="w-full flex flex-col gap-4">
-                    <div className="flex justify-between w-full">
-                        <Title4 className="text-black w-full">Adicionar Categoria</Title4>
+            <div className="p-4 w-85.5 h-44 bg-white rounded-xl">
+                <div className="w-full flex flex-col gap-1">
+                    <div className="flex justify-between">
+                        <Title4 className="text-center w-full text-(--cinza-700)">
+                            {tituloNovo}
+                        </Title4>
                         <button onClick={onClose} className="">
                             <X className="text-black" />
                         </button>
                     </div>
-                    <div className=" w-full h-full text-start">
-                        <ParagraphMedium className="text-(--cinza-700)">Titulo da Categoria</ParagraphMedium>
+                    <div className=" w-full h-full pl-2 py-2 flex flex-col gap-1">
+                        <ParagraphMedium className="text-(--cinza-700)">
+                            {tituloCategoria}
+                        </ParagraphMedium>
                         <form>
-                            <input type="text" className="border border-(--cinza-700) w-73.5 p-1 h-8 rounded-xl text-(--cinza-600)"
-                                placeholder="Nova Categoria"
-                                value={nomeCategoria}
-                                onChange={(e) => setNomeCategoria(e.target.value)}
-
-                            >
-                            </input>
+                            <input
+                                type="text"
+                                className="border border-(--cinza-700) w-73.5 p-1 h-8 rounded-xl text-(--cinza-600)"
+                                placeholder={placeholder}
+                                value={value}
+                                onChange={onChange}
+                            ></input>
                         </form>
-
                     </div>
-                    <div className="flex items-end justify-end">
-                        <IconButton onClick={novaCategoria}>Criar</IconButton>
+                    <div className="flex items-end justify-end py-2">
+                        <IconButton onClick={onClick}>Criar</IconButton>
                     </div>
                 </div>
             </div>
-
-
         </div>
-    )
-
+    );
 }
-
 
 export default PopUp;

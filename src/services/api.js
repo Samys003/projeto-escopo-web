@@ -149,3 +149,13 @@ export async function getDetailsMeetingById(id) {
     });
     return parseResponse(response);
 }
+
+export async function newMeeting(id, reuniao) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/reuniao`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(reuniao),
+    });
+
+    return parseResponse(response);
+}
