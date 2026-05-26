@@ -1,7 +1,7 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
 import { useNavigate } from 'react-router-dom';
-import { createProject } from './services/new-project-endpoints';
+import { createProject } from './services/new-project-endpoints.js';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
 

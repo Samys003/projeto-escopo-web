@@ -13,11 +13,12 @@ function ProjectMember({
         <div>
             <div
                 className={`
+                border-
                 flex bg-(--cinza-200) w-full px-1 py-2 rounded-lg justify-between items-center
                 lg:px-2
                 ${isOwner & 'bg-(--cinza-300)'}
                 ${pendente && 'opacity-75'}
-                ${adicional && 'bg-(--roxo-light) border-(--color-variant)'}
+                ${adicional && 'bg-(--roxo-light) border-(--color-variant) border-2 border-(--color-variant)'}
                 `}
             >
                 <img

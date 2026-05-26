@@ -32,7 +32,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
     async function submitForm(data) {
         const formData = {
             ...data,
-            integrantesAdicionais,
+            integrantes: integrantesAdicionais,
         };
 
         await onSubmit(formData);
@@ -226,8 +226,8 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 <Search></Search>
             </FormInput>
 
-            {/*VERSÃO 1.0(Atual): Só exibe os integrantes atuais e pendentes*/}
-            {/*VERSÃO 1.1: Para novo projeto exibir os adicionais depois dos atuais*/}
+            {/*VERSÃO 1.0: Só exibe os integrantes atuais e pendentes*/}
+            {/*VERSÃO 1.1 (Atual): Para novo projeto exibir os adicionais depois dos atuais*/}
             {/*VERSÃO 1.2: Adicionar verificação do isEdit para incluir os adicionais ANTES dos atuais*/}
             {/*VERSÃO 1.3: Revisar para o isEdit validar quem é o proprietário do projeto */}
             <div className="flex flex-col gap-4 xl:gap-6">
@@ -264,7 +264,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                         className="text-(--cinza-700)
                         lg:text-xl"
                     >
-                        Adicionar Participantes
+                        {integrantesAdicionais.length > 0 && 'Adicionar Participantes'}
                     </Title4>
                     <div className="flex flex-col gap-1">
                         {integrantesAdicionais.map((integrante) => (
@@ -281,26 +281,30 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 </div>
                 {mode === 'edit' && (
                     <div className="flex flex-col gap-2 xl:px-[20%]">
-                        <div className="flex flex-col items-center">
-                            <Title4
-                                className="text-(--cinza-500)
-                            lg:text-xl"
-                            >
-                                Convites Pendentes
-                            </Title4>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            {pendentes.map((pendente) => (
-                                <ProjectMember
-                                    key={pendente.id}
-                                    integrante={pendente}
-                                    onClose={() => onRemoveIntegrante(integrante.id)}
-                                    pendente={true}
-                                    // TODO: Adicionar método para remover convite
-                                    onNivelAcessoChange={handleNivelAcessoChange}
-                                ></ProjectMember>
-                            ))}
-                        </div>
+                        {pendentes.length > 0 && (
+                            <div>
+                                <div className="flex flex-col items-center">
+                                    <Title4
+                                        className="text-(--cinza-500)
+                                lg:text-xl"
+                                    >
+                                        Convites Pendentes
+                                    </Title4>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    {pendentes.map((pendente) => (
+                                        <ProjectMember
+                                            key={pendente.id}
+                                            integrante={pendente}
+                                            onClose={() => onRemoveIntegrante(integrante.id)}
+                                            pendente={true}
+                                            // TODO: Adicionar método para remover convite
+                                            onNivelAcessoChange={handleNivelAcessoChange}
+                                        ></ProjectMember>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -311,7 +315,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                     lg:py-3>"
                     onClick={() => handleSubmit(submitForm)()}
                 >
-                    Atualizar Projeto
+                    {isEdit ? 'Atualizar Projeto' : 'Criar Projeto'}
                 </button>
             </div>
         </div>

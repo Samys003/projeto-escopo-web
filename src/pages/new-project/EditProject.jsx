@@ -2,10 +2,10 @@ import MobileHeader from '../../components/MobileHeader.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createProject } from './services/new-project-endpoints';
+import { updateProject } from './services/new-project-endpoints';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
-import { getProjectById } from './services/new-project-endpoints';
+import { getProjectById } from './services/new-project-endpoints.js';
 
 function EditProject() {
     const navigate = useNavigate();
@@ -42,9 +42,9 @@ function EditProject() {
         try {
             const response = await createProject(payload);
             navigate(`/projeto/${response.id}`);
-        } catch (error) {}
-
-        //TODO: Está faltando tratativa pro response
+        } catch (error) {
+            //TODO: Está faltando tratativa pro response
+        }
     }
 
     return (
