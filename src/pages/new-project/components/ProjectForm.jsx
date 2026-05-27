@@ -93,15 +93,12 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 nome: usuario.nome,
                 email: usuario.email,
                 fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), resolver o carregamento do select
+                nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), falta resolver o carregamento do select
                 isOwner: isOwner,
             };
 
             // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
             setIntegrantesAtuais((prev) => {
-                // Busca uma correspondência do usuário encontrado na busca na lista de integrantes
-                const usuarioNaLista = prev.some((integrante) => integrante.id === usuario.id);
-
                 // Se houve correspondência não adiciona a lista
                 if (usuarioNaLista) {
                     return prev;
@@ -118,7 +115,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
     // Realiza busca de usuário e adiciona na lista como adicional
     async function handleAddIntegranteAdicional() {
         // Armazenando email para realizar a busca, usando o emailParams ou o do input
-        var emailBusca = getValues('email');
+        const emailBusca = getValues('email');
 
         //Caso o campo de email esteja vazio
         if (!emailBusca.trim()) {
@@ -126,6 +123,26 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
             return;
         }
 
+        // Busca na lista de integrantes uma correspondência de email inserido
+        const usuarioParticipa = integrantesAtuais.some(
+            (integrante) => integrante.email === emailBusca,
+        );
+
+        // Busca na lista de pendentes uma correspondência de email inserido
+        const usuarioConvidado = pendentes.some((pendente) => pendente.email === emailBusca);
+
+        // Busca na lista de adicionais uma correspondência de email inserido
+        const usuarioAdicionado = integrantesAdicionais.some(
+            (adicional) => adicional.email === emailBusca,
+        );
+
+        // Se encontrou alguma correspondência não realiza a requisição
+        if (usuarioParticipa || usuarioConvidado || usuarioAdicionado) {
+            return;
+            //TODO: Retornar uma mensagem para o usuário
+        }
+
+        // Realiza busca de usuário na API
         try {
             const response = await getUserByEmail(emailBusca);
             const usuario = response;
@@ -137,24 +154,10 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), resolver o carregamento do select na tela
             };
 
-            // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
+            //Limpando o campo de email
+            reset(email);
             setIntegrantesAdicionais((prev) => {
-                // Confere se o usuário a ser adicionado já participa do projeto
-                const usuarioParticipa = integrantesAtuais.some(
-                    (integrante) => integrante.id === usuario.id,
-                );
-
-                // Busca uma correspondência do usuário encontrado na busca na lista de integrantes
-                const usuarioNaLista = prev.some((integrante) => integrante.id === usuario.id);
-
-                // Se houve correspondência não adiciona a lista
-                if (usuarioNaLista || usuarioParticipa) {
-                    return prev;
-                    //TODO: Retornar uma mensagem para o usuário
-                }
-                //Limpando o campo emailBusca
-                emailBusca = null;
-
+                // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
                 // Adiciona a lista de integrantes adicionais
                 return [...prev, novoIntegrante];
             });
@@ -164,30 +167,20 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
     }
 
     //Quando o usuário mudar o nível de acesso de um integrante
-    function handleNivelAcessoChange(listaType, integranteId, novoNivel) {
-        // Lista 1: Integrante já participante do projeto
-        if (listaType === 'atuais') {
-            setIntegrantesAtuais((prev) =>
-                prev.map((integrante) =>
-                    integrante.id === integranteId
-                        ? //Caso seja o integrante correspondente irá atualizar antes de inserir no array
-                          {
-                              ...integrante,
-                              nivelAcesso: Number(novoNivel),
-                          }
-                        : //Caso contrário mantém como está.
-                          integrante,
-                ),
-            );
-        }
-
-        // Lista 2: Integrante adicional (a ser convidado pro projeto)
-        if (listaType === 'adicionais') {
-        }
-
-        // Lista 3: Integrante com convite pendente (ainda não aceitou o convite)
-        if (listaType === 'atuais') {
-        }
+    function atualizarNivelAcesso(setLista, integranteId, novoNivel) {
+        setLista((prev) =>
+            prev.map((integrante) => {
+                // Caso não seja o integrante que estamos atualizando o nivel de acesso
+                if (integrante.id !== integranteId) {
+                    return integrante;
+                }
+                // caso contrário, iremos atualizar e inserir o array
+                return {
+                    ...integrante,
+                    nivelAcesso: Number(novoNivel),
+                };
+            }),
+        );
     }
 
     //Remove um integrante da lista
@@ -256,7 +249,13 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                                 integrante={integrante}
                                 isOwner={integrante.isOwner}
                                 onClose={() => onRemoveIntegrante(integrante.id)}
-                                onNivelAcessoChange={handleNivelAcessoChange}
+                                onNivelAcessoChange={(integranteId, novoNivel) =>
+                                    atualizarNivelAcesso(
+                                        setIntegrantesAtuais,
+                                        integranteId,
+                                        novoNivel,
+                                    )
+                                }
                             ></ProjectMember>
                         ))}
                     </div>
@@ -274,7 +273,13 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                                 isOwner={integrante.isOwner}
                                 adicional={true}
                                 onClose={() => onRemoveIntegrante(integrante.id)}
-                                onNivelAcessoChange={handleNivelAcessoChange}
+                                onNivelAcessoChange={(integranteId, novoNivel) =>
+                                    atualizarNivelAcesso(
+                                        setIntegrantesAdicionais,
+                                        integranteId,
+                                        novoNivel,
+                                    )
+                                }
                             ></ProjectMember>
                         ))}
                     </div>
@@ -299,7 +304,13 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                                             onClose={() => onRemoveIntegrante(integrante.id)}
                                             pendente={true}
                                             // TODO: Adicionar método para remover convite
-                                            onNivelAcessoChange={handleNivelAcessoChange}
+                                            onNivelAcessoChange={(integranteId, novoNivel) =>
+                                                atualizarNivelAcesso(
+                                                    setPendentes,
+                                                    integranteId,
+                                                    novoNivel,
+                                                )
+                                            }
                                         ></ProjectMember>
                                     ))}
                                 </div>
