@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
@@ -30,6 +30,37 @@ function primeiroValor(objeto, campos, fallback = '') {
     }
 
     return fallback;
+}
+
+function ajustarAlturaTextarea(elemento) {
+    if (!elemento) {
+        return;
+    }
+
+    elemento.style.height = 'auto';
+    elemento.style.height = `${elemento.scrollHeight}px`;
+}
+
+function TituloDocumento({ valor, onChange, className }) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        ajustarAlturaTextarea(ref.current);
+    }, [valor]);
+
+    return (
+        <textarea
+            ref={ref}
+            value={valor}
+            onChange={(event) => {
+                onChange(event);
+                ajustarAlturaTextarea(event.currentTarget);
+            }}
+            rows={1}
+            aria-label="Título do documento"
+            className={className}
+        />
+    );
 }
 
 function Documento() {
@@ -187,6 +218,10 @@ function Documento() {
         }
     }
 
+    function alterarTitulo(event) {
+        setTitulo(event.target.value.replace(/\s*\n\s*/g, ' '));
+    }
+
     return (
         <div className="min-h-screen bg-[var(--fundo)] lg:flex">
             <MobileHeader />
@@ -199,87 +234,99 @@ function Documento() {
                     )}
 
                     <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2 lg:hidden">
-                        <div>
-                            <div className="mb-2 flex items-center gap-3">
-                                <Link to="/listadedocumento" aria-label="Voltar">
-                                    <ChevronsLeft
-                                        className="h-8 w-8 text-gray-900"
-                                        strokeWidth={3}
-                                    />
-                                </Link>
-
-                                <input
-                                    value={titulo}
-                                    onChange={(event) => setTitulo(event.target.value)}
-                                    className="w-full rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-black outline-none focus:border-[var(--cinza-600)]"
+                        <div className="mb-2 flex min-w-0 items-start gap-3">
+                            <Link
+                                to="/listadedocumento"
+                                aria-label="Voltar"
+                                className="shrink-0"
+                            >
+                                <ChevronsLeft
+                                    className="h-8 w-8 text-gray-900"
+                                    strokeWidth={3}
                                 />
-                            </div>
+                            </Link>
 
-                            {temAlteracao ? (
-                                <ParagraphMedium className="text-[var(--color-alert)]">
-                                    Alterações não salvas!
-                                </ParagraphMedium>
-                            ) : (
-                                <ParagraphMedium className="text-[var(--color-variant)]">
-                                    Última Alteração: {formatarData(ultimaAlteracao)}
-                                </ParagraphMedium>
-                            )}
+                            <TituloDocumento
+                                valor={titulo}
+                                onChange={alterarTitulo}
+                                className="min-w-0 flex-1 resize-none overflow-hidden rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-tight text-black outline-none [field-sizing:content] focus:border-[var(--cinza-600)]"
+                            />
                         </div>
 
-                        <div className="absolute bottom-2 right-3 flex items-center gap-7">
-                            <button type="button" onClick={abrirHistorico} aria-label="Historico">
-                                <ClockFading
-                                    className="h-10 w-10 cursor-pointer text-[var(--color-variant)]"
-                                    strokeWidth={2}
-                                />
-                            </button>
-                            <button
-                                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
-                                type="button"
-                                onClick={() => setComentariosAbertos(true)}
-                                aria-label="Comentarios"
-                            >
-                                <MessagesSquare className="h-6 w-6" strokeWidth={2} />
-                            </button>
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                                {temAlteracao ? (
+                                    <ParagraphMedium className="break-words text-[var(--color-alert)] [overflow-wrap:anywhere]">
+                                        Alterações não salvas!
+                                    </ParagraphMedium>
+                                ) : (
+                                    <ParagraphMedium className="break-words text-[var(--color-variant)] [overflow-wrap:anywhere]">
+                                        Última Alteração: {formatarData(ultimaAlteracao)}
+                                    </ParagraphMedium>
+                                )}
+                            </div>
+
+                            <div className="flex shrink-0 items-center gap-7">
+                                <button
+                                    type="button"
+                                    onClick={abrirHistorico}
+                                    aria-label="Historico"
+                                >
+                                    <ClockFading
+                                        className="h-10 w-10 cursor-pointer text-[var(--color-variant)]"
+                                        strokeWidth={2}
+                                    />
+                                </button>
+                                <button
+                                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
+                                    type="button"
+                                    onClick={() => setComentariosAbertos(true)}
+                                    aria-label="Comentarios"
+                                >
+                                    <MessagesSquare className="h-6 w-6" strokeWidth={2} />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <div className="relative z-30 hidden border-b border-[var(--cinza-400)] pb-3 lg:block lg:min-h-[84px]">
                         <div className="grid gap-4 lg:grid-cols-[minmax(360px,1fr)_260px_112px] lg:items-start">
-                            <div>
-                                <div className="mb-2 flex items-center gap-3 lg:mb-1 lg:pl-16">
-                                    <input
-                                        value={titulo}
-                                        onChange={(event) => setTitulo(event.target.value)}
-                                        className="w-full rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-none text-[var(--cinza-700)] outline-none focus:border-[var(--cinza-600)] lg:max-w-[560px] lg:text-[34px]"
+                            <div className="min-w-0">
+                                <div className="mb-2 flex min-w-0 items-start gap-3 lg:mb-1 lg:pl-16">
+                                    <TituloDocumento
+                                        valor={titulo}
+                                        onChange={alterarTitulo}
+                                        className="w-full max-w-[560px] resize-none overflow-hidden rounded-sm border border-transparent bg-transparent px-1 font-inter text-[26px] font-semibold leading-tight text-[var(--cinza-700)] outline-none [field-sizing:content] focus:border-[var(--cinza-600)] lg:text-[34px]"
                                     />
                                 </div>
 
                                 {temAlteracao ? (
-                                    <ParagraphMedium className="text-[var(--color-alert)] lg:ml-16">
+                                    <ParagraphMedium className="break-words text-[var(--color-alert)] [overflow-wrap:anywhere] lg:ml-16">
                                         Alterações não salvas!
                                     </ParagraphMedium>
                                 ) : (
                                     <button
                                         type="button"
                                         onClick={abrirHistorico}
-                                        className="flex h-8 w-full max-w-[420px] items-center justify-center gap-3 rounded-full border border-[var(--color-base)] px-4 font-inter text-[16px] text-[var(--color-base)] transition-colors hover:bg-[var(--roxo-light)] lg:ml-8"
+                                        className="flex min-h-8 w-full max-w-[420px] items-center justify-center gap-3 rounded-full border border-[var(--color-base)] px-4 py-1 text-center font-inter text-[16px] text-[var(--color-base)] transition-colors hover:bg-[var(--roxo-light)] lg:ml-8"
                                     >
-                                        <span>Última alteração: {formatarData(ultimaAlteracao)}</span>
+                                        <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+                                            Última alteração: {formatarData(ultimaAlteracao)}
+                                        </span>
                                         <ClockFading
-                                            className="h-6 w-6 text-[var(--color-base)]"
+                                            className="h-6 w-6 shrink-0 text-[var(--color-base)]"
                                             strokeWidth={2}
                                         />
                                     </button>
                                 )}
                             </div>
 
-                            <div className="font-inter text-[16px] leading-6 text-gray-900 lg:pt-2">
+                            <div className="min-w-0 break-words font-inter text-[16px] leading-6 text-gray-900 [overflow-wrap:anywhere] lg:pt-2">
                                 <p>{nomeProjeto}</p>
                                 <p>Setor: {setorDocumento}</p>
                             </div>
 
-                            <div className="flex items-center gap-6 lg:justify-end lg:pt-1">
+                            <div className="flex shrink-0 items-center gap-6 lg:justify-end lg:pt-1">
                                 <button
                                     className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
                                     type="button"

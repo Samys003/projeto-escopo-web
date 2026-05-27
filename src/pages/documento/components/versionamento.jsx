@@ -29,13 +29,15 @@ function ordenarVersoesPorData(versoesParaOrdenar) {
     return [...versoesParaOrdenar].sort((a, b) => timestampDaVersao(b) - timestampDaVersao(a));
 }
 
-function linhasDoConteudo(conteudo) {
-    return String(conteudo || '').split(/\r?\n/);
+function partesDoConteudo(conteudo) {
+    return String(conteudo || '')
+        .split(/(\s+)/)
+        .filter(Boolean);
 }
 
 function compararConteudos(conteudoAntigo, conteudoNovo) {
-    const antigas = linhasDoConteudo(conteudoAntigo);
-    const novas = linhasDoConteudo(conteudoNovo);
+    const antigas = partesDoConteudo(conteudoAntigo);
+    const novas = partesDoConteudo(conteudoNovo);
     const tabela = Array.from({ length: antigas.length + 1 }, () =>
         Array(novas.length + 1).fill(0)
     );
@@ -84,14 +86,15 @@ function classeDaLinhaDiff(tipo) {
     return 'text-black';
 }
 
-function LinhaDiff({ linha, index }) {
+function TextoDiff({ partes }) {
     return (
-        <span
-            className={`block min-h-5 whitespace-pre-wrap ${classeDaLinhaDiff(linha.tipo)}`}
-            key={`${linha.tipo}-${index}`}
-        >
-            {linha.texto || ' '}
-        </span>
+        <div className="min-h-5 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+            {partes.map((parte, index) => (
+                <span className={classeDaLinhaDiff(parte.tipo)} key={`${parte.tipo}-${index}`}>
+                    {parte.texto}
+                </span>
+            ))}
+        </div>
     );
 }
 
@@ -203,12 +206,12 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                             return (
                                 <div
                                     key={versao.id}
-                                    className="flex items-center justify-between gap-3"
+                                    className="flex min-w-0 items-start justify-between gap-3"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => selecionarVersao(versao)}
-                                        className={`text-left font-inter text-[14px] lg:text-[16px] ${
+                                        className={`min-w-0 flex-1 break-words text-left font-inter text-[14px] [overflow-wrap:anywhere] lg:text-[16px] ${
                                             selecionada
                                                 ? 'text-[var(--color-base)]'
                                                 : 'text-[var(--cinza-600)]'
@@ -225,6 +228,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                                                 ? 'Remover versão da comparação'
                                                 : 'Selecionar versão para comparar'
                                         }
+                                        className="shrink-0"
                                     >
                                         {selecionada ? (
                                             <X className="text-[var(--cinza-700)]" size={20} />
@@ -247,19 +251,13 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                     <div className="grid gap-8 lg:grid-cols-2">
                         {versoesComparadas[0] && (
                             <div className="min-w-0">
-                                <Title2 className="mb-4 text-center text-[16px] font-medium text-[var(--color-base)]">
+                                <Title2 className="mb-4 break-words text-center text-[16px] font-medium leading-snug text-[var(--color-base)] [overflow-wrap:anywhere]">
                                     {versoesComparadas[0].titulo} - {versoesComparadas[0].nome} -{' '}
                                     {formatarData(versoesComparadas[0].criado_em)}
                                 </Title2>
                                 <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2 lg:max-h-[46vh]">
                                     <div className="font-inter text-[13px] leading-4 lg:text-[16px] lg:leading-6">
-                                        {diffComparacao.novo.map((linha, index) => (
-                                            <LinhaDiff
-                                                key={`${linha.tipo}-${index}`}
-                                                linha={linha}
-                                                index={index}
-                                            />
-                                        ))}
+                                        <TextoDiff partes={diffComparacao.novo} />
                                     </div>
                                 </div>
                             </div>
@@ -267,19 +265,13 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
 
                         {versoesComparadas[1] && (
                             <div className="min-w-0">
-                                <Title2 className="mb-4 text-center text-[16px] font-medium text-[var(--color-base)]">
+                                <Title2 className="mb-4 break-words text-center text-[16px] font-medium leading-snug text-[var(--color-base)] [overflow-wrap:anywhere]">
                                     {versoesComparadas[1].titulo} - {versoesComparadas[1].nome} -{' '}
                                     {formatarData(versoesComparadas[1].criado_em)}
                                 </Title2>
                                 <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2 lg:max-h-[46vh]">
                                     <div className="font-inter text-[13px] leading-4 lg:text-[16px] lg:leading-6">
-                                        {diffComparacao.antigo.map((linha, index) => (
-                                            <LinhaDiff
-                                                key={`${linha.tipo}-${index}`}
-                                                linha={linha}
-                                                index={index}
-                                            />
-                                        ))}
+                                        <TextoDiff partes={diffComparacao.antigo} />
                                     </div>
                                 </div>
                             </div>

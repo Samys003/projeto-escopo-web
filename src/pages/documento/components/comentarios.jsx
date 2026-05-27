@@ -35,6 +35,18 @@ function pegarObjeto(objeto, campos) {
     return null;
 }
 
+function textoDoValor(valor) {
+    if (valor === undefined || valor === null || valor === '') {
+        return '';
+    }
+
+    if (typeof valor === 'object') {
+        return pegar(valor, ['nome', 'titulo', 'descricao', 'label'], '');
+    }
+
+    return String(valor);
+}
+
 function formatarDataHora(data) {
     const dataObj = data ? new Date(data) : null;
 
@@ -66,16 +78,37 @@ function lerUsuarioAtual() {
         const usuario = JSON.parse(localStorage.getItem('authUser') || '{}');
 
         return {
+            id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
             nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
+            cargo: textoDoValor(
+                pegar(
+                    usuario,
+                    [
+                        'cargo',
+                        'perfil',
+                        'papel',
+                        'funcao',
+                        'tipo_usuario',
+                        'tipoUsuario',
+                        'nivel_acesso',
+                        'nivel_acesso_nome',
+                    ],
+                    '',
+                ),
+            ),
             foto: pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
         };
     } catch {
-        return { nome: 'Usuário', foto: '' };
+        return { id: null, nome: 'Usuário', cargo: '', foto: '' };
     }
 }
 
 function idComentario(comentario) {
     return pegar(comentario, ['id', 'comentario_id', 'comentarioId', 'parent_id'], null);
+}
+
+function autorIdComentario(comentario) {
+    return pegar(comentario, ['autor_id', 'criador_id', 'usuario_id', 'user_id'], null);
 }
 
 function parentIdComentario(comentario) {
@@ -120,20 +153,42 @@ function autorComentario(comentario) {
         pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
     );
     const cargo =
-        pegar(
-            comentario,
-            [
-                'cargo',
-                'perfil',
-                'papel',
-                'funcao',
-                'tipo_usuario',
-                'tipoUsuario',
-                'parent_autor_nivel_acesso',
-            ],
-            '',
+        textoDoValor(
+            pegar(
+                comentario,
+                [
+                    'cargo',
+                    'perfil',
+                    'papel',
+                    'funcao',
+                    'tipo_usuario',
+                    'tipoUsuario',
+                    'nivel_acesso',
+                    'nivel_acesso_nome',
+                    'autor_cargo',
+                    'autor_nivel_acesso',
+                    'autor_nivel_acesso_nome',
+                    'parent_autor_nivel_acesso',
+                ],
+                '',
+            ),
         ) ||
-        pegar(usuario, ['cargo', 'perfil', 'papel', 'funcao', 'tipo_usuario', 'tipoUsuario'], '');
+        textoDoValor(
+            pegar(
+                usuario,
+                [
+                    'cargo',
+                    'perfil',
+                    'papel',
+                    'funcao',
+                    'tipo_usuario',
+                    'tipoUsuario',
+                    'nivel_acesso',
+                    'nivel_acesso_nome',
+                ],
+                '',
+            ),
+        );
 
     return {
         nome,
@@ -203,6 +258,7 @@ function referenciaRespostaDireta(comentario) {
             comentario,
             [
                 'parent_cargo',
+                'parent_autor_nivel_acesso',
                 'comentario_pai_cargo',
                 'cargo_comentario_pai',
                 'resposta_cargo',
@@ -214,8 +270,15 @@ function referenciaRespostaDireta(comentario) {
     };
 }
 
-function adaptarComentario(comentario, comentariosPorId) {
+function adaptarComentario(
+    comentario,
+    comentariosPorId,
+    usuarioAtual,
+    cargosPorComentarioId,
+    cargosPorAutorId,
+) {
     const id = idComentario(comentario);
+    const autorId = autorIdComentario(comentario);
     const parentId = parentIdComentario(comentario);
     const comentarioPai =
         pegarObjeto(comentario, [
@@ -242,6 +305,15 @@ function adaptarComentario(comentario, comentariosPorId) {
         null,
     );
     const registro = pegarObjeto(comentario, ['registro']);
+    const cargo =
+        autor.cargo ||
+        cargosPorComentarioId.get(String(id)) ||
+        cargosPorAutorId.get(String(autorId)) ||
+        (String(autorId) === String(usuarioAtual?.id) ? usuarioAtual?.cargo : '') ||
+        (tipoId === 3 ? 'Registro' : '');
+    const tituloRegistro = textoDoValor(
+        pegar(registro, ['registro_titulo', 'titulo', 'nome'], ''),
+    );
 
     return {
         id,
@@ -249,7 +321,7 @@ function adaptarComentario(comentario, comentariosPorId) {
         tipoId,
         registroReferenciaId,
         nome: autor.nome,
-        cargo: autor.cargo || (tipoId === 3 ? 'Registro' : ''),
+        cargo,
         data,
         horario,
         texto: textoComentario(comentario),
@@ -260,22 +332,47 @@ function adaptarComentario(comentario, comentariosPorId) {
             tipoId === 3 || registroReferenciaId || registro?.registro_id
                 ? {
                       autor: 'Sugestão de Requisito',
-                      cargo:
-                          registro?.registro_titulo ||
-                          `Registro ${registroReferenciaId || registro?.registro_id}`,
+                      cargo: tituloRegistro || 'deletado',
                       texto: '',
                   }
                 : null,
     };
 }
 
-function prepararComentarios(comentariosApi) {
+function prepararComentarios(comentariosApi, usuarioAtual) {
     const comentarios = Array.isArray(comentariosApi) ? comentariosApi : [];
     const comentariosPorId = new Map(
         comentarios.map((comentario) => [String(idComentario(comentario)), comentario]),
     );
+    const cargosPorComentarioId = new Map();
+    const cargosPorAutorId = new Map();
 
-    return comentarios.map((comentario) => adaptarComentario(comentario, comentariosPorId));
+    comentarios.forEach((comentario) => {
+        const parent = pegarObjeto(comentario, ['parent']);
+        const parentId = pegar(parent, ['parent_id'], null);
+        const parentAutorId = pegar(parent, ['parent_autor_id'], null);
+        const parentCargo = textoDoValor(
+            pegar(parent, ['parent_autor_nivel_acesso', 'parent_cargo', 'cargo'], ''),
+        );
+
+        if (parentId && parentCargo) {
+            cargosPorComentarioId.set(String(parentId), parentCargo);
+        }
+
+        if (parentAutorId && parentCargo) {
+            cargosPorAutorId.set(String(parentAutorId), parentCargo);
+        }
+    });
+
+    return comentarios.map((comentario) =>
+        adaptarComentario(
+            comentario,
+            comentariosPorId,
+            usuarioAtual,
+            cargosPorComentarioId,
+            cargosPorAutorId,
+        ),
+    );
 }
 
 function Avatar({ comentario, className = '' }) {
@@ -305,21 +402,27 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
             <Avatar comentario={comentario} className={mobile ? 'h-12 w-12' : 'h-16 w-16'} />
 
             <div className="min-w-0 flex-1 overflow-hidden">
-                <div className="mb-1 flex flex-wrap items-baseline gap-x-1 font-inter">
-                    <span
-                        className={`${textoNome} min-w-0 break-words font-semibold text-[var(--color-base)] [overflow-wrap:anywhere]`}
-                    >
-                        {comentario.nome}
-                    </span>
-                    {comentario.cargo && (
+                <div className="mb-1 flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1 font-inter">
+                    <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
                         <span
-                            className={`${textoCargo} truncate font-semibold text-[var(--cinza-400)]`}
+                            className={`${textoNome} min-w-0 break-words font-semibold text-[var(--color-base)] [overflow-wrap:anywhere]`}
                         >
-                            {comentario.cargo}
+                            {comentario.nome}
                         </span>
-                    )}
-                    {mobile && (
-                        <span className="ml-auto shrink-0 text-[12px] text-[var(--cinza-400)]">
+                        {comentario.cargo && (
+                            <span
+                                className={`${textoCargo} min-w-0 break-words font-semibold text-[var(--cinza-400)] [overflow-wrap:anywhere]`}
+                            >
+                                {comentario.cargo}
+                            </span>
+                        )}
+                    </div>
+                    {(comentario.horario || comentario.data) && (
+                        <span
+                            className={`shrink-0 text-[var(--cinza-400)] ${
+                                mobile ? 'text-[12px]' : 'text-[18px]'
+                            }`}
+                        >
                             {comentario.horario} · {comentario.data}
                         </span>
                     )}
@@ -328,10 +431,12 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                 <div className="max-w-full overflow-hidden rounded-[18px] border border-[var(--cinza-500)] px-4 py-3 font-inter text-[16px] leading-6 text-black">
                     {referencia && (
                         <div className="mb-2 max-w-full overflow-hidden rounded-md bg-[var(--cinza-200)] px-4 py-2">
-                            <div className="mb-1 break-words text-[15px] text-[var(--color-base)] [overflow-wrap:anywhere]">
-                                {referencia.autor}{' '}
+                            <div className="mb-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px]">
+                                <span className="break-words text-[var(--color-base)] [overflow-wrap:anywhere]">
+                                    {referencia.autor}
+                                </span>
                                 {referencia.cargo && (
-                                    <span className="text-[var(--cinza-400)]">
+                                    <span className="break-words text-[var(--cinza-400)] [overflow-wrap:anywhere]">
                                         {referencia.cargo}
                                     </span>
                                 )}
@@ -347,12 +452,6 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                     <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                         {comentario.texto}
                     </p>
-
-                    {!mobile && (
-                        <div className="mt-1 text-right text-[14px] text-[var(--cinza-500)]">
-                            {comentario.horario} · {comentario.data}
-                        </div>
-                    )}
                 </div>
 
                 <div className={classeAcoes}>
@@ -480,7 +579,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
             setErro('');
             const comentariosApi = await getDocumentComments(documentoId);
 
-            setComentarios(prepararComentarios(comentariosApi));
+            setComentarios(prepararComentarios(comentariosApi, usuarioAtual));
         } catch (error) {
             const mensagem = error.message || 'Erro ao carregar comentários.';
             setErro(mensagem);
@@ -508,7 +607,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                 const comentariosApi = await getDocumentComments(documentoId);
 
                 if (ativo) {
-                    setComentarios(prepararComentarios(comentariosApi));
+                    setComentarios(prepararComentarios(comentariosApi, usuarioAtual));
                 }
             } catch (error) {
                 const mensagem = error.message || 'Erro ao carregar comentários.';
@@ -529,7 +628,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
         return () => {
             ativo = false;
         };
-    }, [documentoId, onErro]);
+    }, [documentoId, onErro, usuarioAtual]);
 
     async function enviarComentario(event) {
         event.preventDefault();
