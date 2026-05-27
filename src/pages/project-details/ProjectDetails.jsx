@@ -198,11 +198,11 @@ function ProjectDetails() {
                     tabs={tabs}
                 ></ComponentMenu>
                 {currentTab === 'Documentos' && (
-                    <div className="flex flex-col w-full items-center gap-4 pt-5 ">
+                    <div className="flex flex-col w-full items-center gap-4 pt-5 lg:items-start lg:gap-5">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                             <IconButton
                                 onClick={() => setOpenModalCategoria(true)}
-                                className="w-40 gap-2"
+                                className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex "
                                 icon={<FolderPlus />}
                             >
                                 Nova Categoria
