@@ -20,7 +20,10 @@ function DesktopSidebar({ onLogout }) {
     };
 
     return (
-        <aside className="hidden min-h-screen w-[280px] shrink-0 flex-col bg-[var(--color-base)] px-8 py-10 text-white lg:flex xl:w-[356px]">
+        <aside
+            className="hidden min-h-screen w-[280px] shrink-0 flex-col bg-cover bg-no-repeat px-8 py-10 text-white lg:flex xl:w-[356px]"
+            style={{ backgroundImage: 'var(--bar-background)' }}
+        >
             <Link to="/dashboard" className="mb-12 inline-flex w-fit" aria-label="Escopo">
                 <img src={logotipoDesktop} alt="Escopo" className="h-auto w-56 xl:w-60" />
             </Link>
