@@ -21,35 +21,41 @@ function ProjectMember({
                 ${adicional && 'bg-(--roxo-light) border-(--color-variant) border-2 border-(--color-variant)'}
                 `}
             >
-                <img
-                    // TODO: Incluir a verificação de integrante.foto e subsituir pela do assets se estiver vazia
-                    src="https://upload.wikimedia.org/wikipedia/commons/2/2f/No-photo-m.png"
-                    alt=""
-                    className="w-8 h-8 rounded-full"
-                />
-                <div>
-                    <ParagraphMedium
-                        className={`truncate text-(--cinza-700)
+                <div
+                    className="flex items-center
+                lg:gap-3"
+                >
+                    <img
+                        // TODO: Incluir a verificação de integrante.foto e subsituir pela do assets se estiver vazia
+                        src="https://upload.wikimedia.org/wikipedia/commons/2/2f/No-photo-m.png"
+                        alt=""
+                        className="w-8 h-8 rounded-full"
+                    />
+                    <div>
+                        <ParagraphMedium
+                            className={`truncate text-(--cinza-700)
                             ${pendente && 'text-(--cinza-500)'}
                             ${adicional && 'text-(--color-dark)'}`}
-                    >
-                        {integrante.nome}
-                    </ParagraphMedium>
+                        >
+                            {integrante.nome}
+                        </ParagraphMedium>
 
-                    {isOwner && (
-                        <ParagraphMedium className="text-(--cinza-500)">
-                            Proprietário(a)
-                        </ParagraphMedium>
-                    )}
-                    {pendente && (
-                        <ParagraphMedium className="text-(--cinza-800)">
-                            (Convite pendente)
-                        </ParagraphMedium>
-                    )}
+                        {isOwner && (
+                            <ParagraphMedium className="text-(--cinza-500)">
+                                Proprietário(a)
+                            </ParagraphMedium>
+                        )}
+                        {pendente && (
+                            <ParagraphMedium className="text-(--cinza-800)">
+                                (Convite pendente)
+                            </ParagraphMedium>
+                        )}
+                    </div>
                 </div>
                 <div className="flex">
                     <select
                         disabled={isOwner}
+                        defaultValue={integrante.nivel_acesso_id || 3}
                         className={`
                         text-(--cinza-700) border border-(--cinza-400) rounded-xl px-1 py-2
                         ${isOwner && 'opacity-50 cursor-not-allowed'}
