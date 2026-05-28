@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { GitCompare, Undo2, X } from 'lucide-react';
+import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title2 from '../../../components/Typography/Title2';
 import { getDocumentVersionById } from '../../../services/api';
@@ -90,9 +91,13 @@ function TextoDiff({ partes }) {
     return (
         <div className="min-h-5 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
             {partes.map((parte, index) => (
-                <span className={classeDaLinhaDiff(parte.tipo)} key={`${parte.tipo}-${index}`}>
+                <ParagraphLarge
+                    as="span"
+                    className={`text-[13px] leading-4 lg:text-[16px] lg:leading-6 ${classeDaLinhaDiff(parte.tipo)}`}
+                    key={`${parte.tipo}-${index}`}
+                >
                     {parte.texto}
-                </span>
+                </ParagraphLarge>
             ))}
         </div>
     );
@@ -211,14 +216,19 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                                     <button
                                         type="button"
                                         onClick={() => selecionarVersao(versao)}
-                                        className={`min-w-0 flex-1 break-words text-left font-inter text-[14px] [overflow-wrap:anywhere] lg:text-[16px] ${
+                                        className="min-w-0 flex-1 text-left"
+                                    >
+                                        <ParagraphLarge
+                                            as="span"
+                                            className={`block min-w-0 break-words text-[14px] [overflow-wrap:anywhere] lg:text-[16px] ${
                                             selecionada
                                                 ? 'text-[var(--color-base)]'
                                                 : 'text-[var(--cinza-600)]'
                                         }`}
-                                    >
-                                        {titulo} - {nomeDaVersao(index, versoes.length)} -{' '}
-                                        {formatarData(versao.criado_em)}
+                                        >
+                                            {titulo} - {nomeDaVersao(index, versoes.length)} -{' '}
+                                            {formatarData(versao.criado_em)}
+                                        </ParagraphLarge>
                                     </button>
                                     <button
                                         type="button"
@@ -256,7 +266,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                                     {formatarData(versoesComparadas[0].criado_em)}
                                 </Title2>
                                 <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2 lg:max-h-[46vh]">
-                                    <div className="font-inter text-[13px] leading-4 lg:text-[16px] lg:leading-6">
+                                    <div>
                                         <TextoDiff partes={diffComparacao.novo} />
                                     </div>
                                 </div>
@@ -270,7 +280,7 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                                     {formatarData(versoesComparadas[1].criado_em)}
                                 </Title2>
                                 <div className="max-h-[230px] overflow-y-auto rounded-xl border border-[var(--cinza-400)] px-3 py-2 lg:max-h-[46vh]">
-                                    <div className="font-inter text-[13px] leading-4 lg:text-[16px] lg:leading-6">
+                                    <div>
                                         <TextoDiff partes={diffComparacao.antigo} />
                                     </div>
                                 </div>
@@ -282,9 +292,11 @@ function VersionamentoPopup({ onFechar, versoes, titulo, onErro }) {
                         <button
                             type="button"
                             onClick={voltarParaHistorico}
-                            className="flex items-center gap-3 rounded-lg border border-[var(--cinza-300)] px-5 py-3 font-inter text-[16px] text-[var(--color-base)]"
+                            className="flex items-center gap-3 rounded-lg border border-[var(--cinza-300)] px-5 py-3 text-[var(--color-base)]"
                         >
-                            Voltar
+                            <ParagraphLarge as="span" className="text-[var(--color-base)]">
+                                Voltar
+                            </ParagraphLarge>
                             <Undo2 size={22} />
                         </button>
                     </div>

@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronsLeft, Menu, Send, X } from 'lucide-react';
 import logotipoMobile from '../../../assets/logotipo-mobile.svg';
+import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
+import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
+import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
+import Title2 from '../../../components/Typography/Title2';
 import { createDocumentComment, getDocumentComments } from '../../../services/api';
 
 function pegar(objeto, campos, fallback = '') {
@@ -378,12 +382,17 @@ function prepararComentarios(comentariosApi, usuarioAtual) {
 function Avatar({ comentario, className = '' }) {
     return (
         <div
-            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-base)] bg-[var(--cinza-200)] font-inter text-[14px] font-semibold text-[var(--color-base)] ${className}`}
+            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-base)] bg-[var(--cinza-200)] ${className}`}
         >
             {comentario.foto ? (
                 <img src={comentario.foto} alt="" className="h-full w-full object-cover" />
             ) : (
-                comentario.avatar
+                <ParagraphMedium
+                    as="span"
+                    className="font-semibold text-[var(--color-base)]"
+                >
+                    {comentario.avatar}
+                </ParagraphMedium>
             )}
         </div>
     );
@@ -402,65 +411,74 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
             <Avatar comentario={comentario} className={mobile ? 'h-12 w-12' : 'h-16 w-16'} />
 
             <div className="min-w-0 flex-1 overflow-hidden">
-                <div className="mb-1 flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1 font-inter">
+                <div className="mb-1 flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
-                        <span
+                        <ParagraphLarge
+                            as="span"
                             className={`${textoNome} min-w-0 break-words font-semibold text-[var(--color-base)] [overflow-wrap:anywhere]`}
                         >
                             {comentario.nome}
-                        </span>
+                        </ParagraphLarge>
                         {comentario.cargo && (
-                            <span
+                            <ParagraphLarge
+                                as="span"
                                 className={`${textoCargo} min-w-0 break-words font-semibold text-[var(--cinza-400)] [overflow-wrap:anywhere]`}
                             >
                                 {comentario.cargo}
-                            </span>
+                            </ParagraphLarge>
                         )}
                     </div>
                     {(comentario.horario || comentario.data) && (
-                        <span
+                        <ParagraphMedium
+                            as="span"
                             className={`shrink-0 text-[var(--cinza-400)] ${
                                 mobile ? 'text-[12px]' : 'text-[18px]'
                             }`}
                         >
                             {comentario.horario} · {comentario.data}
-                        </span>
+                        </ParagraphMedium>
                     )}
                 </div>
 
-                <div className="max-w-full overflow-hidden rounded-[18px] border border-[var(--cinza-500)] px-4 py-3 font-inter text-[16px] leading-6 text-black">
+                <div className="max-w-full overflow-hidden rounded-[18px] border border-[var(--cinza-500)] px-4 py-3 text-black">
                     {referencia && (
                         <div className="mb-2 max-w-full overflow-hidden rounded-md bg-[var(--cinza-200)] px-4 py-2">
                             <div className="mb-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px]">
-                                <span className="break-words text-[var(--color-base)] [overflow-wrap:anywhere]">
+                                <ParagraphMedium
+                                    as="span"
+                                    className="break-words text-[var(--color-base)] [overflow-wrap:anywhere]"
+                                >
                                     {referencia.autor}
-                                </span>
+                                </ParagraphMedium>
                                 {referencia.cargo && (
-                                    <span className="break-words text-[var(--cinza-400)] [overflow-wrap:anywhere]">
+                                    <ParagraphMedium
+                                        as="span"
+                                        className="break-words text-[var(--cinza-400)] [overflow-wrap:anywhere]"
+                                    >
                                         {referencia.cargo}
-                                    </span>
+                                    </ParagraphMedium>
                                 )}
                             </div>
                             {referencia.texto && (
-                                <p className="line-clamp-3 whitespace-pre-wrap break-words text-[14px] leading-5 text-[var(--cinza-700)] [overflow-wrap:anywhere]">
+                                <ParagraphMedium className="line-clamp-3 whitespace-pre-wrap break-words leading-5 text-[var(--cinza-700)] [overflow-wrap:anywhere]">
                                     {referencia.texto}
-                                </p>
+                                </ParagraphMedium>
                             )}
                         </div>
                     )}
 
-                    <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                    <ParagraphLarge className="whitespace-pre-wrap break-words leading-6 [overflow-wrap:anywhere]">
                         {comentario.texto}
-                    </p>
+                    </ParagraphLarge>
                 </div>
 
                 <div className={classeAcoes}>
                     <button
                         type="button"
                         onClick={() => onResponder(comentario)}
-                        className="rounded border border-[var(--cinza-500)] px-3 py-1 font-inter text-[14px] text-[var(--cinza-700)]"
+                        className="rounded border border-[var(--cinza-500)] px-3 py-1 text-[var(--cinza-700)]"
                     >
-                        Responder
+                        <ParagraphMedium as="span">Responder</ParagraphMedium>
                     </button>
                 </div>
             </div>
@@ -480,10 +498,10 @@ function CampoComentario({
     return (
         <form className="space-y-2" onSubmit={onSubmit}>
             {respostaPara && (
-                <div className="flex items-center justify-between rounded bg-[var(--cinza-200)] px-3 py-2 font-inter text-[12px] text-[var(--cinza-700)]">
-                    <span className="truncate">
+                <div className="flex items-center justify-between rounded bg-[var(--cinza-200)] px-3 py-2 text-[var(--cinza-700)]">
+                    <ParagraphSmall as="span" className="truncate">
                         Respondendo {respostaPara.nome}: {respostaPara.texto}
-                    </span>
+                    </ParagraphSmall>
                     <button
                         type="button"
                         onClick={onCancelarResposta}
@@ -504,7 +522,9 @@ function CampoComentario({
                     className="h-12 w-12"
                 />
                 <label className="relative flex-1">
-                    <span className="sr-only">Escreva seu comentário</span>
+                    <ParagraphSmall as="span" className="sr-only">
+                        Escreva seu comentário
+                    </ParagraphSmall>
                     <input
                         value={valor}
                         onChange={(event) => onChange(event.target.value)}
@@ -530,17 +550,17 @@ function CampoComentario({
 function ListaComentarios({ comentarios, carregando, onResponder, mobile }) {
     if (carregando) {
         return (
-            <p className="font-inter text-[14px] text-[var(--cinza-500)]">
+            <ParagraphMedium className="text-[var(--cinza-500)]">
                 Carregando comentários...
-            </p>
+            </ParagraphMedium>
         );
     }
 
     if (comentarios.length === 0) {
         return (
-            <p className="font-inter text-[14px] text-[var(--cinza-500)]">
+            <ParagraphMedium className="text-[var(--cinza-500)]">
                 Nenhum comentário encontrado.
-            </p>
+            </ParagraphMedium>
         );
     }
 
@@ -677,18 +697,18 @@ function Comentarios({ documentoId, onFechar, onErro }) {
             <aside className="fixed bottom-0 right-0 top-0 z-50 hidden w-[430px] flex-col border-l border-[var(--cinza-300)] bg-white shadow-[var(--external-shadow)] lg:flex">
                 <header className="px-5 pt-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="font-inter text-[26px] font-semibold text-[var(--cinza-700)]">
+                        <Title2 className="text-[26px] text-[var(--cinza-700)]">
                             Comentários
-                        </h2>
+                        </Title2>
                         <button type="button" onClick={onFechar} aria-label="Fechar comentários">
                             <X className="text-[var(--cinza-700)]" size={26} />
                         </button>
                     </div>
                     <div className="mt-2 border-b border-[var(--cinza-700)]" />
                     {erro && (
-                        <p className="mt-2 font-inter text-[12px] text-[var(--color-alert)]">
+                        <ParagraphSmall className="mt-2 text-[var(--color-alert)]">
                             {erro}
-                        </p>
+                        </ParagraphSmall>
                     )}
                 </header>
 
@@ -722,15 +742,15 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                     >
                         <ChevronsLeft size={30} strokeWidth={3} />
                     </button>
-                    <h2 className="font-inter text-[26px] font-semibold text-[var(--cinza-700)]">
+                    <Title2 className="text-[26px] text-[var(--cinza-700)]">
                         Comentários
-                    </h2>
+                    </Title2>
                 </div>
 
                 {erro && (
-                    <p className="px-4 pb-2 font-inter text-[12px] text-[var(--color-alert)]">
+                    <ParagraphSmall className="px-4 pb-2 text-[var(--color-alert)]">
                         {erro}
-                    </p>
+                    </ParagraphSmall>
                 )}
 
                 <div className="flex-1 overflow-y-auto px-4 pb-6">

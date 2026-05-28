@@ -1,7 +1,9 @@
-function ParagraphLarge(props) {
+function ParagraphLarge({ as: Component = 'p', className = '', children, ...props }) {
     return (
-        <p className={`text-[16px] font-inter ${props.className} font-regular`}>{props.children}</p>
-    )
+        <Component className={`text-[16px] font-inter ${className} font-regular`} {...props}>
+            {children}
+        </Component>
+    );
 }
 
 export default ParagraphLarge;
