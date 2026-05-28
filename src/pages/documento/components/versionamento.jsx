@@ -30,47 +30,83 @@ function ordenarVersoesPorData(versoesParaOrdenar) {
     return [...versoesParaOrdenar].sort((a, b) => timestampDaVersao(b) - timestampDaVersao(a));
 }
 
-function partesDoConteudo(conteudo) {
-    return String(conteudo || '')
-        .split(/(\s+)/)
-        .filter(Boolean);
+function caracteresDoConteudo(conteudo) {
+    return Array.from(String(conteudo || ''));
+}
+
+function adicionarParte(partes, texto, tipo) {
+    if (!texto) {
+        return;
+    }
+
+    const ultimaParte = partes[partes.length - 1];
+
+    if (ultimaParte?.tipo === tipo) {
+        ultimaParte.texto += texto;
+        return;
+    }
+
+    partes.push({ texto, tipo });
+}
+
+function adicionarCaracteres(partes, caracteres, tipo) {
+    adicionarParte(partes, caracteres.join(''), tipo);
 }
 
 function compararConteudos(conteudoAntigo, conteudoNovo) {
-    const antigas = partesDoConteudo(conteudoAntigo);
-    const novas = partesDoConteudo(conteudoNovo);
-    const tabela = Array.from({ length: antigas.length + 1 }, () =>
-        Array(novas.length + 1).fill(0)
-    );
-
-    for (let i = 1; i <= antigas.length; i += 1) {
-        for (let j = 1; j <= novas.length; j += 1) {
-            tabela[i][j] =
-                antigas[i - 1] === novas[j - 1]
-                    ? tabela[i - 1][j - 1] + 1
-                    : Math.max(tabela[i - 1][j], tabela[i][j - 1]);
-        }
-    }
-
+    const antigas = caracteresDoConteudo(conteudoAntigo);
+    const novas = caracteresDoConteudo(conteudoNovo);
     const antigo = [];
     const novo = [];
-    let i = antigas.length;
-    let j = novas.length;
 
-    while (i > 0 || j > 0) {
-        if (i > 0 && j > 0 && antigas[i - 1] === novas[j - 1]) {
-            antigo.unshift({ texto: antigas[i - 1], tipo: 'igual' });
-            novo.unshift({ texto: novas[j - 1], tipo: 'igual' });
-            i -= 1;
-            j -= 1;
-        } else if (j > 0 && (i === 0 || tabela[i][j - 1] >= tabela[i - 1][j])) {
-            novo.unshift({ texto: novas[j - 1], tipo: 'novo' });
-            j -= 1;
+    let inicioIgual = 0;
+    const menorTamanho = Math.min(antigas.length, novas.length);
+
+    while (
+        inicioIgual < menorTamanho &&
+        antigas[inicioIgual] === novas[inicioIgual]
+    ) {
+        inicioIgual += 1;
+    }
+
+    let fimAntigo = antigas.length - 1;
+    let fimNovo = novas.length - 1;
+
+    while (
+        fimAntigo >= inicioIgual &&
+        fimNovo >= inicioIgual &&
+        antigas[fimAntigo] === novas[fimNovo]
+    ) {
+        fimAntigo -= 1;
+        fimNovo -= 1;
+    }
+
+    adicionarCaracteres(antigo, antigas.slice(0, inicioIgual), 'igual');
+    adicionarCaracteres(novo, novas.slice(0, inicioIgual), 'igual');
+
+    const meioAntigo = antigas.slice(inicioIgual, fimAntigo + 1);
+    const meioNovo = novas.slice(inicioIgual, fimNovo + 1);
+    const maiorMeio = Math.max(meioAntigo.length, meioNovo.length);
+
+    for (let index = 0; index < maiorMeio; index += 1) {
+        const caractereAntigo = meioAntigo[index];
+        const caractereNovo = meioNovo[index];
+
+        if (
+            caractereAntigo !== undefined &&
+            caractereNovo !== undefined &&
+            caractereAntigo === caractereNovo
+        ) {
+            adicionarParte(antigo, caractereAntigo, 'igual');
+            adicionarParte(novo, caractereNovo, 'igual');
         } else {
-            antigo.unshift({ texto: antigas[i - 1], tipo: 'removido' });
-            i -= 1;
+            adicionarParte(antigo, caractereAntigo, 'removido');
+            adicionarParte(novo, caractereNovo, 'novo');
         }
     }
+
+    adicionarCaracteres(antigo, antigas.slice(fimAntigo + 1), 'igual');
+    adicionarCaracteres(novo, novas.slice(fimNovo + 1), 'igual');
 
     return { antigo, novo };
 }
