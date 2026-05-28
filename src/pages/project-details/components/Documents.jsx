@@ -28,7 +28,7 @@ function Documents({ documentos, deletarCategoria, project }) {
                                 </IconButton>
                             )}
                         </div>
-                        <div className="border w-full flex flex-col p-10.5 lg:gap-4 lg:p-10 items-center gap-2.5 rounded-lg border-(--cinza-300)  lg:justify-between">
+                        <div className="border w-full flex flex-col p-10.5 lg:gap-4 lg:p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) lg:items-start  lg:justify-between">
                             {doc.documentos.map((subdoc) => {
                                 return (
                                     <div key={subdoc.id} className="flex p-1 w-full">
@@ -63,7 +63,7 @@ function Documents({ documentos, deletarCategoria, project }) {
                                 );
                             })}
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
-                                <IconButton className={`gap-2`} icon={<FilePlus />}>
+                                <IconButton className={`gap-2 lg:p-3`} icon={<FilePlus />}>
                                     Novo Documento
                                 </IconButton>
                             )}

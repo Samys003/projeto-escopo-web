@@ -5,7 +5,7 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
 function DescriptionProjectDesktop({ project }) {
     return (
-        <div className="flex w-full justify-between">
+        <div className="lg:flex hidden w-full justify-between">
             <div className="w-[50%]">
                 <div className="flex items-center justify-between w-full mb-2">
                     <Title2 className="text-2xl text-(--cinza-700">{project?.titulo}</Title2>
