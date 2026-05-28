@@ -18,8 +18,9 @@ import {
     newCategoria,
     newMeeting,
 } from '../../services/api';
-import DescriptionProject from './components/DescriptionProject';
 import DesktopSidebar from '../../components/DesktopSidebar';
+import DescriptionProjectMobile from './components/DescriptionProjectMobile';
+import DescriptionProjectDesktop from './components/DescriptionProjectDesktop';
 
 function ProjectDetails() {
     const { id } = useParams();
@@ -191,7 +192,8 @@ function ProjectDetails() {
             <DesktopSidebar />
             <MobileHeader />
             <div className="w-full p-4 ">
-                <DescriptionProject project={project} expand={expand} setExpand={setExpand} />
+                <DescriptionProjectMobile project={project} expand={expand} setExpand={setExpand} />
+                <DescriptionProjectDesktop project={project} />
                 <ComponentMenu
                     currentTab={currentTab}
                     setCurrentTab={setCurrentTab}

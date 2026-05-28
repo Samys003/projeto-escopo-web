@@ -3,9 +3,9 @@ import IconButton from '../../../components/IconButton';
 import { SquarePen, ChevronUp, ChevronDown } from 'lucide-react';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
-function DescriptionProject({ project, expand, setExpand }) {
+function DescriptionProjectMobile({ project, expand, setExpand }) {
     return (
-        <div className=" w-full flex flex-col p-2">
+        <div className="lg:hidden w-full flex flex-col p-2">
             <div className="w-full flex items-center gap-2 ">
                 <Title2 className="text-2xl">{project?.titulo}</Title2>
                 <IconButton
@@ -59,4 +59,4 @@ function DescriptionProject({ project, expand, setExpand }) {
     );
 }
 
-export default DescriptionProject;
+export default DescriptionProjectMobile;
