@@ -1,6 +1,7 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
 import Title2 from '../../components/Typography/Title2.jsx';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { createProject } from './services/new-project-endpoints.js';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
@@ -9,6 +10,7 @@ function NewProject() {
     const navigate = useNavigate();
     const authUser = JSON.parse(localStorage.getItem('authUser'));
     const userEmail = authUser.email;
+    const [submitError, setSubmitError] = useState('');
 
     async function handleCriarProjeto(formData) {
         const payload = {
@@ -23,7 +25,9 @@ function NewProject() {
         try {
             const response = await createProject(payload);
             navigate(`/projeto/${response.id}`);
-        } catch (error) {}
+        } catch (error) {
+            setSubmitError('Não foi possível criar o projeto');
+        }
 
         //TODO: Está faltando tratativa pro response do create
     }
@@ -44,6 +48,7 @@ function NewProject() {
                     initialData={null}
                     onSubmit={handleCriarProjeto}
                     userEmail={userEmail}
+                    submitError={submitError}
                 ></ProjectForm>
             </main>
         </div>

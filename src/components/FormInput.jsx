@@ -9,17 +9,25 @@ function FormInput({
     icon,
     onInputSubmit,
 
+    error,
     // React hook form
     register,
 }) {
     return (
         <div className="flex flex-col">
-            <label
-                className={`font-inter font-medium text-lg text-(--cinza-700)
-            lg:text-2xl`}
-            >
-                {labelContent}
-            </label>
+            <div className="flex items-center gap-2">
+                <label
+                    className={`font-inter font-medium text-lg text-(--cinza-700)
+                    lg:text-2xl`}
+                >
+                    {labelContent}
+                </label>
+                {error && (
+                    <span className="text-base items-center text-red-500 font-medium ">
+                        {error}
+                    </span>
+                )}
+            </div>
             <div className={`flex justify-between border rounded-xl px-4 py-3`}>
                 <textarea
                     {...register}

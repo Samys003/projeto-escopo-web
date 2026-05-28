@@ -8,11 +8,12 @@ import Title4 from '../../../components/Typography/Title4.jsx';
 import ProjectMember from './ProjectMember.jsx';
 import { getProjectMembers } from '../services/new-project-endpoints';
 
-function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null }) {
+function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null, submitError }) {
     const [integrantesAtuais, setIntegrantesAtuais] = useState([]);
     const [integrantesAdicionais, setIntegrantesAdicionais] = useState([]);
     const [pendentes, setPendentes] = useState([]);
     const [erro, setErro] = useState('');
+    const [emailError, setEmailError] = useState('');
     const isEdit = mode === 'edit';
 
     const {
@@ -44,7 +45,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
     useEffect(() => {
         // Em novo projeto, irá adicionar o usuário como proprietário e return early
         if (isEdit === false) {
-            handleAdicionarIntegrante(userEmail);
+            inserirProprietario();
             return;
         }
         // Em editar, iremos recarregar o formulário inserindo os dados fornecidos
@@ -58,7 +59,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
         }
 
         //TODO: Adicionar verificação do localStorage na página, desconectar usuário com acesso inválido
-    }, [isEdit, initialData, reset, userEmail]);
+    }, [isEdit, initialData, reset]);
 
     // Em editar projeto, carregar os participantes e convites pendentes
     async function initListaParticipantes(projectId) {
@@ -70,45 +71,35 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
 
     //GERENCIAMENTO DE PARTICIPANTES:
 
-    //Realiza busca de usuário para inserir como participante
-    // TODO: Revisar essa função, só é utilizada para lidar com o criador do projeto quando cria um projeto.
-    async function handleAdicionarIntegrante(emailParam = null) {
-        // emailParam é usado para inserir o email do proprietario quando vai criar o projeto.
-        var isOwner = emailParam;
-
-        // Armazenando email para realizar a busca, usando o emailParams ou o do input
-        var emailBusca = emailParam || getValues('email');
-
-        //Caso o campo de email esteja vazio
-        if (!emailBusca.trim()) {
-            setErro('Insira um email para buscar um usuário');
-            return;
-        }
-
+    //Realiza busca de usuário para inserir como participante em novoProjeto
+    async function inserirProprietario() {
         try {
-            const response = await getUserByEmail(emailBusca);
+            //TODO: Se colocar o fotoPerfil no authUser dá pra remover essa requisição, puxa tudo do authUser mesmo
+            const response = await getUserByEmail(userEmail);
             const usuario = response;
             const novoIntegrante = {
                 id: usuario.id,
                 nome: usuario.nome,
                 email: usuario.email,
                 fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), falta resolver o carregamento do select
-                isOwner: isOwner,
+                isOwner: true,
+                nivel_acesso_id: 1,
             };
 
             // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
             setIntegrantesAtuais((prev) => {
+                // Busca uma correspondência do usuário encontrado na busca na lista de integrantes
+                const usuarioNaLista = prev.some((integrante) => integrante.id === usuario.id);
+
                 // Se houve correspondência não adiciona a lista
                 if (usuarioNaLista) {
                     return prev;
                 }
-                //Limpando o campo emailBusca
-                emailBusca = null;
+
                 return [...prev, novoIntegrante];
             });
         } catch (error) {
-            setErro('Usuário não encontrado');
+            setErro('Ocorreu uma falha na requisição');
         }
     }
 
@@ -119,7 +110,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
 
         //Caso o campo de email esteja vazio
         if (!emailBusca.trim()) {
-            setErro('Insira um email para buscar um usuário');
+            setEmailError('Insira um email para realizar a busca.');
             return;
         }
 
@@ -138,31 +129,30 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
 
         // Se encontrou alguma correspondência não realiza a requisição
         if (usuarioParticipa || usuarioConvidado || usuarioAdicionado) {
+            setEmailError('Esse usuário já foi adicionado');
             return;
-            //TODO: Retornar uma mensagem para o usuário
         }
 
         // Realiza busca de usuário na API
         try {
-            const response = await getUserByEmail(emailBusca);
-            const usuario = response;
+            const usuario = await getUserByEmail(emailBusca);
             const novoIntegrante = {
                 id: usuario.id,
                 nome: usuario.nome,
                 email: usuario.email,
                 fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 3, // Por padrão são adicionados como nivel de acesso 3 (cliente), resolver o carregamento do select na tela
+                nivelAcesso: 4, // Por padrão são adicionados como nivel de acesso 3 (cliente)
             };
 
             //Limpando o campo de email
-            reset(email);
+            reset({ email: '' });
             setIntegrantesAdicionais((prev) => {
                 // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
                 // Adiciona a lista de integrantes adicionais
                 return [...prev, novoIntegrante];
             });
         } catch (error) {
-            setErro('Usuário não encontrado');
+            setErro('Usuário não encontrado ou ocorreu uma falha na requisição');
         }
     }
 
@@ -193,11 +183,16 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
 
     return (
         <div className="flex flex-col gap-4">
+            {/* TODO: Montar popup de alerta caso ocorra uma falha com a API */}
+            {submitError && <AlertMessage>{submitError}</AlertMessage>}
             <FormInput
                 labelContent="Titulo do Projeto"
                 inputClassName="text-lg lg:text-xl"
                 placeholder="Novo Projeto"
                 register={register('titulo', { required: true })}
+                error={
+                    errors?.titulo?.type === 'required' ? 'O título precisa ser preenchido' : null
+                }
             ></FormInput>
 
             <FormInput
@@ -205,7 +200,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 inputClassName="lg:text-base font-normal"
                 placeholder="Insira uma breve descrição sobre o projeto"
                 allowEnter={true}
-                register={register('descricao', { required: true })}
+                register={register('descricao')}
                 textRows={3}
             ></FormInput>
 
@@ -213,8 +208,9 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null 
                 labelContent="Integrantes"
                 placeholder="Buscar por email"
                 icon={<Search className="text-(--cinza-700)" />}
-                register={register('email')}
+                register={register('email', { onChange: () => setEmailError('') })}
                 onInputSubmit={handleAddIntegranteAdicional}
+                error={emailError}
             >
                 <Search></Search>
             </FormInput>
