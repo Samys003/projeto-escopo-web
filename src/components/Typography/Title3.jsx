@@ -1,9 +1,5 @@
-function Title3({ as: Component = 'h3', className = '', children, ...props }) {
-    return (
-        <Component className={`text-xl font-inter ${className} font-medium`} {...props}>
-            {children}
-        </Component>
-    );
+function Title3(props) {
+    return <h3 className={`text-xl font-inter ${props.className}`}> {props.children}</h3>;
 }
 
 export default Title3;

@@ -1,8 +1,9 @@
-function ParagraphSmall({ as: Component = 'p', className = '', children, ...props }) {
+function ParagraphSmall(props) {
     return (
-        <Component className={`text-[12px] font-inter ${className} font-regular`} {...props}>
-            {children}
-        </Component>
+        <p className={`text-[12px] font-inter ${props.className} font-regular`}>
+            {' '}
+            {props.children}
+        </p>
     );
 }
 

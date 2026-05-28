@@ -1,0 +1,10 @@
+import { API_URL, getAuthHeaders, parseResponse } from '../../../services/api';
+
+export async function createProject({ titulo, descricao, integrantes }) {
+    const response = await fetch(`${API_URL}/api/v1/projeto`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo, descricao, integrantes }),
+    });
+    return parseResponse(response);
+}

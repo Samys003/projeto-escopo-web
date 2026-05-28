@@ -1,35 +1,124 @@
-import MobileHeader from "../../components/MobileHeader.jsx";
-import Title2 from "../../components/Typography/Title2.jsx";
-import QuickAccessListHorizontal from "./components/QuickAccessListHorizontal.jsx";
-import InviteList from "./components/InviteList.jsx";
+import MobileHeader from '../../components/MobileHeader.jsx';
+import DesktopSidebar from '../../components/DesktopSideBar.jsx';
+import { getDashboard, answerInvite } from './services/dashboard-endpoints.js';
+import { useEffect, useState } from 'react';
+import iconFolder from '../../assets/icons/icon-folder.svg';
+
+import Title2 from '../../components/Typography/Title2.jsx';
+import Title4 from '../../components/Typography/Title4.jsx';
+import Title3 from '../../components/Typography/Title3.jsx';
+
+import ParagraphLarge from '../../components/Typography/ParagraphLarge';
+import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
+import { formatDate } from '../../utils/formatters';
+
+import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
+import Invite from './components/Invite';
+import EmptyRecentsMessage from './components/EmptyRecentsMessage.jsx';
+import EmptyInvitesMessage from './components/EmptyInvitesMessage.jsx';
 
 function Dashboard() {
-    const documentos = [
-        { id: 1, projeto: "Meu Projeto", categoria: "Documentação", documento: "Página Inicial" },
-        { id: 2, projeto: "Meu Projeto", categoria: "Documentação", documento: "Página Inicial" },
-        { id: 3, projeto: "Meu Projeto", categoria: "Documentação", documento: "Página Inicial" },
-        { id: 4, projeto: "Meu Projeto", categoria: "Documentação", documento: "Página Inicial" },
-        { id: 5, projeto: "Meu Projeto", categoria: "Documentação", documento: "Página Inicial" }
-    ]
-    
-    const convites = [
-        { id: 1, nome_remetente: "Bruno Dias", nome_projeto: "Projeto Integrado", criado_em: "2026-04-14 09:34", status: {id: 1, nome: "pendente"}, },
-        { id: 2, nome_remetente: "Ana Paula", nome_projeto: "Revisão Anual", criado_em: "2026-04-14 09:34", status: {id: 1, nome: "recusado"}, },
-        { id: 3, nome_remetente: "Manuel Gomes", nome_projeto: "Meu Projeto", criado_em: "2026-04-13 09:34", status: {id: 4, nome: "não-lido"}, },
-        { id: 4, nome_remetente: "Ana Paula", nome_projeto: "Projeto Integrado", criado_em: "2026-04-15 09:34", status: {id: 1, nome: "pendente"}, },
-    ]
+    const [documentos, setDocumentos] = useState([]);
+    const [convites, setConvites] = useState([]);
 
-return (
-    <div className="bg-[var(--fundo)]">
-        <MobileHeader></MobileHeader>
-        <main className="flex flex-col gap-[12px] px-[16px] py-[12px]">
-            <Title2 className="text-[var(--cinza-700)]">Continue de onde parou</Title2>
-            <QuickAccessListHorizontal documentos={documentos}></QuickAccessListHorizontal>
-            
-            <Title2 className="text-[var(--cinza-700)]">Convites</Title2>
-            <InviteList convites = {convites}></InviteList>
-        </main>
-    </div>
-)
+    useEffect(() => {
+        async function loadDashboard() {
+            try {
+                const data = await getDashboard();
+
+                setDocumentos(data.documentos);
+                setConvites(data.convites);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        loadDashboard();
+    }, []);
+
+    //TODO: Criar uma função model, ordenar por data também pode ser utilizado em notificações
+    const convitesOrdenados = [];
+    convites.forEach((convite) => {
+        const dia = convite.criado_em.split('T')[0];
+
+        if (!convitesOrdenados[dia]) {
+            //caso não exista uma data correspondente no novo array, ele cria
+            convitesOrdenados[dia] = [];
+        }
+
+        //Adicionando convite a data correspondente
+        convitesOrdenados[dia].push(convite);
+    });
+
+    async function handleAnswerInvite(conviteId, statusId) {
+        try {
+            await answerInvite(conviteId, statusId);
+
+            //Removendo convite da lista
+            setConvites((prev) => prev.filter((convite) => convite.id !== conviteId));
+        } catch (error) {}
+    }
+
+    return (
+        <div
+            className="h-screen
+        bg-(--fundo) 
+        lg:flex
+        "
+        >
+            <MobileHeader></MobileHeader>
+            <DesktopSidebar></DesktopSidebar>
+            <main
+                className="flex flex-col gap-3 px-4 py-3 overflow-y-auto
+            lg:gap-10 lg:px-12 lg:py-8"
+            >
+                <Title2
+                    className="text-(--cinza-700)
+                lg:text-3xl"
+                >
+                    Continue de onde parou
+                </Title2>
+
+                <div
+                    className="overflow-x-auto border-b border-(--cinza-500) pb-3
+                lg:pb-4"
+                >
+                    <div className="flex gap-[10px] w-max">
+                        {documentos?.length > 0 ? (
+                            documentos.map((documento) => (
+                                <DocumentQuickAccess
+                                    key={documento.id}
+                                    documento={documento}
+                                ></DocumentQuickAccess>
+                            ))
+                        ) : (
+                            <EmptyRecentsMessage></EmptyRecentsMessage>
+                        )}
+                    </div>
+                </div>
+
+                <Title2 className="text-(--cinza-700)">Convites</Title2>
+                <div className="flex flex-col gap-[10px]">
+                    {convites?.length > 0 ? (
+                        Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
+                            <div key={data} className="flex flex-col gap-[10px]">
+                                <ParagraphLarge className="text-(--cinza-700) lg:hidden">
+                                    {formatDate(data)}
+                                </ParagraphLarge>
+                                {convitesDia.map((convite) => (
+                                    <Invite
+                                        key={convite.id}
+                                        convite={convite}
+                                        onAnswerInvite={handleAnswerInvite}
+                                    ></Invite>
+                                ))}
+                            </div>
+                        ))
+                    ) : (
+                        <EmptyInvitesMessage></EmptyInvitesMessage>
+                    )}
+                </div>
+            </main>
+        </div>
+    );
 }
-export default Dashboard
+export default Dashboard;
