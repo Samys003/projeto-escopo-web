@@ -7,7 +7,6 @@ const sidebarLinks = [
     { label: 'Dashboard', path: '/dashboard', Icon: Home },
     { label: 'Novo Projeto', path: '/novo-projeto', Icon: FolderPlus },
     { label: 'Lista de projetos', path: '/projetos', Icon: List },
-    { label: 'Documento', path: '/documento', Icon: Dock }, // DELETAR, PROVISORIO
 ];
 
 function DesktopSidebar({ onLogout }) {
