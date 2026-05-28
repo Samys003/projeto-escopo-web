@@ -231,7 +231,9 @@ function ProjectDetails() {
                 {currentTab === 'Registros' && (
                     <div className="pt-4">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
-                            <ButtonRegistrer>+ Novo Registro</ButtonRegistrer>
+                            <ButtonRegistrer className="w-84 h-15 p-5">
+                                + Novo Registro
+                            </ButtonRegistrer>
                         )}
                         <Register formatRegistros={formatRegistros}></Register>
                     </div>

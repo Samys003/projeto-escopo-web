@@ -1,3 +1,5 @@
+import { ChevronDown } from 'lucide-react';
+import IconButton from '../../../components/IconButton';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title2 from '../../../components/Typography/Title2';
 
@@ -13,6 +15,10 @@ function Register({ formatRegistros }) {
                         <div key={mes} className="flex flex-col gap-4 mb-2 ">
                             <div className="flex border-b border-(--cinza-300) pb-1 ">
                                 <Title2 className="text-(--color-base)">{mes}</Title2>
+                                <IconButton
+                                    icon={<ChevronDown className="text-(--color-base) " />}
+                                    className="bg-transparent "
+                                ></IconButton>
                             </div>
                             {registros.map((registro) => (
                                 <div
