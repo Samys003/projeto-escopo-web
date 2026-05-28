@@ -1,75 +1,87 @@
-import LogoImg from '../../assets/logo(1).svg';
+import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link } from 'react-router-dom';
+import { Undo2 } from 'lucide-react';
+import Title2 from '../../components/Typography/Title2';
+import Title3 from '../../components/Typography/Title3';
+import Title4 from '../../components/Typography/Title4';
 
 function Senha() {
     return (
-        <div className="min-h-screen bg-white px-6 py-8 flex flex-col items-center">
-            <div className="w-full max-w-md">
-                <div className="flex justify-center mb-8">
-                    <img src={LogoImg} className="w-64 h-auto" alt="Escopo" />
+        <div
+            className="flex min-h-screen flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-5 py-8 sm:px-6 lg:px-10 lg:py-12"
+            style={{ backgroundImage: 'var(--login-background)' }}
+        >
+            <div className="w-full max-w-[30.25rem]">
+                <div className="mb-8 flex justify-center lg:mb-14">
+                    <img
+                        src={LogoImg}
+                        className="h-auto w-[clamp(12rem,23vw,21rem)] max-w-full"
+                        alt="Escopo"
+                    />
                 </div>
 
-                <div className="rounded-4xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
-                    <h1 className="text-3xl font-semibold text-center text-black! mb-4">
+                <div className="rounded-[2.25rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:px-[3.625rem] lg:py-11">
+                    <Title2 className="mb-6 text-center text-3xl font-bold text-gray-800">
                         Redefinir Senha
-                    </h1>
+                    </Title2>
 
-                    <p className="text-center text-sm text-gray-600 mb-6 leading-6">
+                    <p className="mb-5 text-center text-sm leading-6 text-black">
                         Você receberá um código de verificação em seu e-mail
                     </p>
 
                     <form className="space-y-5">
                         <div>
+                            <label className="mb-2 block font-medium text-gray-800"></label>
                             <input
                                 type="email"
-                                placeholder="Digite seu email"
-                                className="w-full px-4 py-4 border-2 border-gray-300 rounded-3xl focus:outline-none focus:border-[#552ba9] text-gray-700 placeholder:text-gray-400 transition"
+                                placeholder="Digite seu e-mail"
+                                className="w-full rounded-lg border-2 border-[var(--cinza-300)] px-4 py-3 text-[var(--cinza-700)] transition placeholder:text-gray-400 focus:border-[var(--color-base)] focus:outline-none"
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(8.5rem,1fr)_minmax(6.25rem,0.75fr)]">
                             <button
                                 type="button"
-                                className="w-full py-3 rounded-2xl bg-[#552ba9] text-white font-semibold hover:bg-[#42257c] transition"
+                                className="h-11 rounded-lg bg-[var(--color-base)] px-4 font-semibold text-white transition hover:bg-[var(--color-dark)]"
                             >
                                 Enviar Código
                             </button>
                             <button
                                 type="button"
-                                className="w-full py-3 rounded-2xl bg-purple-200 text-[#42257c] font-semibold hover:bg-[#7645d787] transition"
+                                className="h-11 rounded-lg bg-[var(--color-variant)] px-4 font-semibold text-white transition hover:bg-[#7645d787]"
                             >
                                 Reenviar
                             </button>
                         </div>
 
-                        <div className="flex justify-center gap-2 ">
+                        <div className="flex justify-center gap-3">
                             {Array.from({ length: 5 }).map((_, index) => (
                                 <input
                                     key={index}
                                     type="text"
                                     maxLength="1"
-                                    className="w-14  h-14 text-center text-xl font-semibold border-2 border-black text-black! rounded-xl focus:border-[#552ba9] focus:outline-none"
+                                    className="h-10 w-10 rounded-none border border-black text-center text-xl font-semibold text-black focus:border-[#552ba9] focus:outline-none"
                                 />
                             ))}
                         </div>
-                        <div className="flex justify-center gap-2 pt-4 text-center">
+
+                        <div className="flex flex-col-reverse gap-4 pt-7 sm:flex-row sm:items-center sm:justify-between">
+                            <Link
+                                type="button"
+                                to="/Login"
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 px-5 font-semibold text-[#552ba9] transition hover:bg-gray-50 sm:min-w-[7rem]"
+                            >
+                                <span>Voltar</span>
+                                <Undo2 size={20} strokeWidth={2.2} />
+                            </Link>
                             <Link
                                 type="submit"
                                 to="/Redefinir"
-                                className=" py-3 w-30 mt-2 rounded-2xl bg-[#552ba9] text-white text-base font-semibold hover:bg-[#42257c] transition"
+                                className="inline-flex h-11 items-center justify-center rounded-lg bg-[#552ba9] px-6 text-base font-semibold text-white transition hover:bg-[#42257c] sm:min-w-[6.75rem]"
                             >
                                 Confirmar
                             </Link>
                         </div>
-
-                        <Link
-                            type="button"
-                            to="/Login"
-                            className="mt-8 inline-flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-[#552ba9] font-semibold hover:bg-gray-50 transition"
-                        >
-                            <span>Voltar</span>
-                            <span className="text-xl">↩︎</span>
-                        </Link>
                     </form>
                 </div>
             </div>

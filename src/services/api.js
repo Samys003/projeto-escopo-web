@@ -90,27 +90,80 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     return parseResponse(response);
 }
 
-// export async function createProject({ titulo, descricao, integrantes }) {
-//     const response = await fetch(`${API_URL}/api/v1/projeto`, {
-//         method: 'POST',
-//         headers: getAuthHeaders(),
-//         body: JSON.stringify({ titulo, descricao, integrantes }),
-//     });
-//     return parseResponse(response);
-// }
+export async function updateDocumentTitle({ documento_id, titulo }) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo }),
+    });
+    return parseResponse(response);
+}
 
-// export async function getDashboard() {
-//     const response = await fetch(`${API_URL}/api/v1/dashboard/`, {
-//         method: 'GET',
-//         headers: getAuthHeaders(),
-//     });
-//     return parseResponse(response);
-// }
+export async function getDocumentById(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
 
-// export async function getProjects() {
-//     const response = await fetch(`${API_URL}/api/v1/projetos/`, {
-//         method: 'GET',
-//         headers: getAuthHeaders(),
-//     });
-//     return parseResponse(response);
-// }
+export async function deleteDocument(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createDocumentVersion({ documento_id, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/conteudo`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentVersions(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/versoes`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentVersionById(documento_versao_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/versao/${documento_versao_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentComments(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentarios`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createDocumentComment({
+    documento_id,
+    conteudo,
+    parent_id = null,
+    registro_referencia_id = null,
+    comentario_tipo_id = 1,
+}) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentario`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+            conteudo,
+            parent_id,
+            registro_referencia_id,
+            comentario_tipo_id,
+        }),
+    });
+    return parseResponse(response);
+}

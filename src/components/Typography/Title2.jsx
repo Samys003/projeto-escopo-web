@@ -1,7 +1,9 @@
-function Title2(props){
-    return(
-        <h2 className= {`text-2xl font-inter ${props.className} font-semibold`}> {props.children}</h2>
-    )
+function Title2({ as: Component = 'h2', className = '', children, ...props }) {
+    return (
+        <Component className={`text-2xl font-inter ${className} font-semibold`} {...props}>
+            {children}
+        </Component>
+    );
 }
 
 export default Title2;

@@ -540,7 +540,7 @@ function Configuracao() {
                         <button
                             type="button"
                             onClick={() => setShowPlanos(true)}
-                            className="flex w-full items-center justify-between gap-4 bg-[var(--cinza-100)] px-6 py-7 text-left sm:px-10 sm:py-8"
+                            className="flex w-full items-center justify-between gap-4 bg-[var(--cinza-200)] px-6 py-7 text-left sm:px-10 sm:py-8"
                         >
                             <Title4 className="text-[22px] text-[var(--color-variant)] sm:text-[28px]">
                                 {currentPlan.name}
