@@ -8,11 +8,19 @@ import Title4 from '../../../components/Typography/Title4.jsx';
 import ProjectMember from './ProjectMember.jsx';
 import { getProjectMembers } from '../services/new-project-endpoints';
 
-function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null, submitError }) {
+function ProjectForm({
+    mode,
+    initialData,
+    onSubmit,
+    userEmail,
+    projectId = null,
+    submitError,
+    onError,
+}) {
     const [integrantesAtuais, setIntegrantesAtuais] = useState([]);
     const [integrantesAdicionais, setIntegrantesAdicionais] = useState([]);
     const [pendentes, setPendentes] = useState([]);
-    const [erro, setErro] = useState('');
+    // const [erro, setErro] = useState('');
     const [emailError, setEmailError] = useState('');
     const isEdit = mode === 'edit';
 
@@ -66,7 +74,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
                 return [...prev, novoIntegrante];
             });
         } catch (error) {
-            setErro('Ocorreu uma falha na requisição');
+            onError?.('Ocorreu uma falha na requisição');
         }
     }
 
@@ -150,7 +158,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
                 return [...prev, novoIntegrante];
             });
         } catch (error) {
-            setErro('Usuário não encontrado ou ocorreu uma falha na requisição');
+            onError('Usuário não encontrado ou ocorreu uma falha na requisição');
         }
     }
 

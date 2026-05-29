@@ -6,13 +6,17 @@ import { createProject } from './services/new-project-endpoints.js';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
 import Alert from './components/Alert.jsx';
-import { CircleX } from 'lucide-react';
 
 function NewProject() {
+    const [showAlert, setShowAlert] = useState(false);
     const navigate = useNavigate();
     const authUser = JSON.parse(localStorage.getItem('authUser'));
     const userEmail = authUser.email;
     const [submitError, setSubmitError] = useState('');
+
+    function showError(message) {
+        setSubmitError(message);
+    }
 
     async function handleCriarProjeto(formData) {
         const payload = {
@@ -44,22 +48,20 @@ function NewProject() {
                 className="flex flex-col px-4 py-[10px] gap-3 relative
                 lg:gap-10 lg:px-12 lg:py-8 lg:w-full"
             >
-                <Alert
-                    message={submitError}
-                    positionClass="bottom-6 left-6"
-                    current={{
-                        icon: CircleX,
-                        container: 'bg-green-600',
-                        text: 'text-white',
-                    }}
-                ></Alert>
+                {submitError && (
+                    <Alert
+                        message={submitError}
+                        onClose={() => setSubmitError('')}
+                        positionClass="bottom-6"
+                    ></Alert>
+                )}
                 <Title2 className="3xl">Novo Projeto</Title2>
                 <ProjectForm
                     mode="create"
                     initialData={null}
                     onSubmit={handleCriarProjeto}
                     userEmail={userEmail}
-                    submitError={submitError}
+                    onError={showError}
                 ></ProjectForm>
             </main>
         </div>
