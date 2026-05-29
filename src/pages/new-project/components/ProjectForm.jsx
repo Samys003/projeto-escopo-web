@@ -39,44 +39,11 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
         await onSubmit(formData);
     }
 
-    //Inicia formulário
-    // - insere o proprietário caso seja um novo projeto
-    // - carrega os participantes caso esteja editando um existente
-    useEffect(() => {
-        // Em novo projeto, irá adicionar o usuário como proprietário e return early
-        if (isEdit === false) {
-            inserirProprietario();
-            return;
-        }
-        // Em editar, iremos recarregar o formulário inserindo os dados fornecidos
-        if (initialData) {
-            reset({
-                titulo: initialData.titulo,
-                descricao: initialData.descricao,
-            });
-
-            initListaParticipantes(projectId);
-        }
-
-        //TODO: Adicionar verificação do localStorage na página, desconectar usuário com acesso inválido
-    }, [isEdit, initialData, reset]);
-
-    // Em editar projeto, carregar os participantes e convites pendentes
-    async function initListaParticipantes(projectId) {
-        const response = await getProjectMembers(projectId);
-
-        setIntegrantesAtuais(response.participantes);
-        setPendentes(response.pendentes);
-    }
-
-    //GERENCIAMENTO DE PARTICIPANTES:
-
     //Realiza busca de usuário para inserir como participante em novoProjeto
     async function inserirProprietario() {
         try {
             //TODO: Se colocar o fotoPerfil no authUser dá pra remover essa requisição, puxa tudo do authUser mesmo
-            const response = await getUserByEmail(userEmail);
-            const usuario = response;
+            const usuario = await getUserByEmail(userEmail);
             const novoIntegrante = {
                 id: usuario.id,
                 nome: usuario.nome,
@@ -103,6 +70,37 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
         }
     }
 
+    //Inicia formulário
+    // - insere o proprietário caso seja um novo projeto
+    // - carrega os participantes caso esteja editando um existente
+    useEffect(() => {
+        // Em novo projeto, irá adicionar o usuário como proprietário e return early
+        if (!isEdit) {
+            inserirProprietario();
+            return;
+        }
+        // Em editar, iremos recarregar o formulário inserindo os dados fornecidos
+        if (initialData) {
+            reset({
+                titulo: initialData.titulo,
+                descricao: initialData.descricao,
+            });
+
+            initListaParticipantes(projectId);
+        }
+
+        //TODO: Adicionar verificação do localStorage na página, desconectar usuário com acesso inválido
+    }, [isEdit, initialData, reset]);
+
+    // Em editar projeto, carregar os participantes e convites pendentes
+    async function initListaParticipantes(projectId) {
+        const response = await getProjectMembers(projectId);
+
+        setIntegrantesAtuais(response.participantes);
+        setPendentes(response.pendentes);
+    }
+
+    //GERENCIAMENTO DE PARTICIPANTES:
     // Realiza busca de usuário e adiciona na lista como adicional
     async function handleAddIntegranteAdicional() {
         // Armazenando email para realizar a busca, usando o emailParams ou o do input
@@ -141,7 +139,7 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
                 nome: usuario.nome,
                 email: usuario.email,
                 fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 4, // Por padrão são adicionados como nivel de acesso 3 (cliente)
+                nivelAcesso: 4, // Por padrão são adicionados como nivel de acesso 4 (cliente)
             };
 
             //Limpando o campo de email
@@ -173,12 +171,9 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
         );
     }
 
-    //Remove um integrante da lista
-    function onRemoveIntegranteAtual(integranteId) {
-        const newIntegrantes = integrantesAtuais.filter(
-            (integrante) => integrante.id != integranteId,
-        );
-        setIntegrantesAtuais(newIntegrantes);
+    //Para remover um integrante da lista
+    function onRemoveIntegrante(setLista, integranteId) {
+        setLista((prev) => prev.filter((integrante) => integrante.id !== integranteId));
     }
 
     return (
@@ -244,7 +239,9 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
                                 key={integrante.id}
                                 integrante={integrante}
                                 isOwner={integrante.isOwner}
-                                onClose={() => onRemoveIntegrante(integrante.id)}
+                                onClose={() =>
+                                    onRemoveIntegrante(setIntegrantesAtuais, integrante.id)
+                                }
                                 onNivelAcessoChange={(integranteId, novoNivel) =>
                                     atualizarNivelAcesso(
                                         setIntegrantesAtuais,
@@ -262,13 +259,15 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
                         {integrantesAdicionais.length > 0 && 'Adicionar Participantes'}
                     </Title4>
                     <div className="flex flex-col gap-1">
-                        {integrantesAdicionais.map((integrante) => (
+                        {integrantesAdicionais.map((adicional) => (
                             <ProjectMember
-                                key={integrante.id}
-                                integrante={integrante}
-                                isOwner={integrante.isOwner}
+                                key={adicional.id}
+                                integrante={adicional}
+                                isOwner={adicional.isOwner}
                                 adicional={true}
-                                onClose={() => onRemoveIntegrante(integrante.id)}
+                                onClose={() =>
+                                    onRemoveIntegrante(setIntegrantesAdicionais, adicional.id)
+                                }
                                 onNivelAcessoChange={(integranteId, novoNivel) =>
                                     atualizarNivelAcesso(
                                         setIntegrantesAdicionais,
@@ -297,7 +296,9 @@ function ProjectForm({ mode, initialData, onSubmit, userEmail, projectId = null,
                                         <ProjectMember
                                             key={pendente.id}
                                             integrante={pendente}
-                                            onClose={() => onRemoveIntegrante(integrante.id)}
+                                            onClose={() =>
+                                                onRemoveIntegrante(setPendentes, pendente.id)
+                                            }
                                             pendente={true}
                                             // TODO: Adicionar método para remover convite
                                             onNivelAcessoChange={(integranteId, novoNivel) =>
