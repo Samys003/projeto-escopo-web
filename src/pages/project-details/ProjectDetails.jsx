@@ -36,6 +36,8 @@ function ProjectDetails() {
     const [expand, setExpand] = useState(false);
     const [nomeCategoria, setNomeCategoria] = useState('');
     const [nomeReuniao, setNomeReuniao] = useState('');
+    const [expandRegsister, setExpandRegister] = useState({});
+    const [expandReuniao, setExpandReuniao] = useState({});
 
     useEffect(() => {
         async function carregarProjeto() {
@@ -231,17 +233,24 @@ function ProjectDetails() {
                 {currentTab === 'Registros' && (
                     <div className="pt-4">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
-                            <ButtonRegistrer className="w-84 h-15 p-5">
+                            <ButtonRegistrer className="lg:w-84 lg:h-15 lg:p-5">
                                 + Novo Registro
                             </ButtonRegistrer>
                         )}
-                        <Register formatRegistros={formatRegistros}></Register>
+                        <Register
+                            expandRegsister={expandRegsister}
+                            setExpandRegister={setExpandRegister}
+                            formatRegistros={formatRegistros}
+                        ></Register>
                     </div>
                 )}
                 {currentTab === 'Reuniões' && (
                     <div className="pt-4">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
-                            <ButtonRegistrer onClick={() => setOpenModalReuniao(true)}>
+                            <ButtonRegistrer
+                                className="lg:w-84 lg:h-15 lg:p-5"
+                                onClick={() => setOpenModalReuniao(true)}
+                            >
                                 + Nova Reunião
                             </ButtonRegistrer>
                         )}
@@ -257,7 +266,11 @@ function ProjectDetails() {
                             />
                         )}
 
-                        <Meeting formatReunioes={formatReunioes}></Meeting>
+                        <Meeting
+                            expandReuniao={expandReuniao}
+                            setExpandReuniao={setExpandReuniao}
+                            formatReunioes={formatReunioes}
+                        ></Meeting>
                     </div>
                 )}
             </div>

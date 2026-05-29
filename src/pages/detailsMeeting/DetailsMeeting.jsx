@@ -23,8 +23,6 @@ function DetailsMeeting() {
             try {
                 const data = await getDetailsMeetingById(id);
 
-                console.log(data);
-
                 setDetalhesReuniao(data);
             } catch (error) {
                 console.error(error);
@@ -47,7 +45,7 @@ function DetailsMeeting() {
         <div className="w-full lg:flex ">
             <DesktopSidebar></DesktopSidebar>
             <MobileHeader></MobileHeader>
-            <div className="flex flex-col px-4 ">
+            <div className="flex flex-col px-4 w-full">
                 <div className="flex gap-2 lg:items-start p-2 border-b ">
                     <button>
                         <ChevronsLeft
@@ -92,8 +90,8 @@ function DetailsMeeting() {
                     {detalhesReuniao?.links
                         ?.filter((link) => link.tipo_link === 'link_adicional')
                         .map((link) => (
-                            <div className="pl-2 text-(--color-base) underline">
-                                <button key={link.id}>
+                            <div key={link.id} className="pl-2 text-(--color-base) underline">
+                                <button>
                                     <ParagraphSmall>{link.nome}</ParagraphSmall>
                                 </button>
                             </div>
@@ -106,10 +104,10 @@ function DetailsMeeting() {
                     <div>
                         <ParagraphSmall>Participantes</ParagraphSmall>
                     </div>
-                    <div className="">
-                        {detalhesReuniao?.usuarios?.map((usuario) => (
+                    <div className="lg:border-b border-(--cinza-400)">
+                        {detalhesReuniao?.usuarios?.map((usuario, index) => (
                             <div
-                                key={usuario.id}
+                                key={`${usuario.id}-${index}`}
                                 className="flex justify-between py-2 items-center w-full "
                             >
                                 <div className="flex gap-1 items-center">

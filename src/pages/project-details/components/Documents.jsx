@@ -28,17 +28,17 @@ function Documents({ documentos, deletarCategoria, project }) {
                                 </IconButton>
                             )}
                         </div>
-                        <div className="border w-full flex flex-col p-10.5 lg:gap-4 lg:p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) lg:items-start  lg:justify-between">
+                        <div className="border w-full flex flex-col p-10 lg:gap-4 lg:p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) lg:items-start justify-between">
                             {doc.documentos.map((subdoc) => {
                                 return (
-                                    <div key={subdoc.id} className="flex p-1 w-full">
+                                    <div key={subdoc.id} className="flex  p-1 w-full ">
                                         <button className="flex w-full justify-between gap-3 ">
-                                            <div className="w-full items-center flex text-start">
+                                            <div className="w-full items-start flex flex-col  text-start">
                                                 <ParagraphLarge className="line-clamp-2">
                                                     {subdoc.titulo}
                                                 </ParagraphLarge>
 
-                                                <ParagraphMedium className="text-(--cinza-500) lg:hidden">
+                                                <ParagraphMedium className="text-(--cinza-500) w-full  lg:hidden ">
                                                     Última Alteração:{' '}
                                                     {new Date(
                                                         subdoc.ultima_alteracao,
@@ -50,8 +50,8 @@ function Documents({ documentos, deletarCategoria, project }) {
                                                     {subdoc.quantidade_versoes}
                                                 </ParagraphMedium>
                                             </div>
-                                            <div className="flex w-[60%] items-center gap-1 justify-end">
-                                                <ParagraphMedium className="hidden text-(--cinza-500)  lg:block">
+                                            <div className="flex lg:w-[60%] items-center gap-1 justify-end">
+                                                <ParagraphMedium className="hidden text-(--cinza-500) lg:block">
                                                     Última Alteração:{' '}
                                                     {new Date(
                                                         subdoc.ultima_alteracao,
