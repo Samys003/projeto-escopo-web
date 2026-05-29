@@ -92,7 +92,7 @@ function Dashboard() {
                     </div>
                 </div>
 
-                <Title2 className="text-(--cinza-700)">Convites</Title2>
+                {convites.length > 0 && <Title2 className="text-(--cinza-700)">Convites</Title2>}
                 <div className="flex flex-col gap-[10px]">
                     {convites?.length > 0 ? (
                         Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
