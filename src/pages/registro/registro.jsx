@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronsLeft, ClockFading, Lightbulb, Save, Trash2 } from 'lucide-react';
+import { ChevronsLeft, Save, Trash2 } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
@@ -8,35 +8,26 @@ import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
 import Title3 from '../../components/Typography/Title3';
 import Title4 from '../../components/Typography/Title4';
+import { createDocumentComment } from '../../services/api';
+import { getDashboard } from '../dashboard/services/dashboard-endpoints';
 import Sugestao from './components/sugestao';
 
 const registroPadrao = {
-    titulo: 'Registro de reunião',
+    titulo: 'Registro 01',
     conteudo:
-        '## Pauta\n\n- Alinhamento sobre escopo inicial\n- Decisões pendentes\n- Próximos passos\n\n## Decisões\n\nRegistre aqui os pontos definidos durante a reunião.',
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam nec est ac odio ultrices hendrerit. Sed nunc massa, volutpat nec porttitor non, ullamcorper sed lectus. Nulla nec ex nec ipsum commodo lacinia eget quis justo. Nam semper, justo convallis porttitor rutrum, mi risus condimentum purus, et pulvinar velit elit a ante. Donec venenatis massa eget euismod pulvinar. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur ac maximus libero, rutrum mattis turpis.',
     nome_projeto: 'Projeto Integrado',
     setor: 'Página Web',
     responsavel: 'Equipe Escopo',
-    ultima_alteracao: '2026-05-28T10:00:00Z',
+    data_criacao: '2026-03-17T10:00:00Z',
+    ultima_alteracao: '2026-05-16T10:00:00Z',
 };
 
-const sugestoesPadrao = [
-    {
-        id: 1,
-        titulo: 'Criar requisito a partir da decisão principal',
-        descricao:
-            'Transformar a decisão registrada na seção de decisões em um requisito funcional vinculado ao documento.',
-        origem: 'Registro',
-        status: 'pendente',
-    },
-    {
-        id: 2,
-        titulo: 'Validar pendências com o responsável',
-        descricao:
-            'Conferir se os próximos passos possuem responsável e prazo antes de fechar o registro.',
-        origem: 'Registro',
-        status: 'pendente',
-    },
+const documentosDestinoPadrao = [
+    { id: '1', titulo: 'Requisito Funcional', setor: 'Web' },
+    { id: '2', titulo: 'Requisito Não Funcional', setor: 'Web' },
+    { id: '3', titulo: 'Requisito Funcional', setor: 'Mobile' },
+    { id: '4', titulo: 'Requisito Não Funcional', setor: 'Mobile' },
 ];
 
 function formatarData(data) {
@@ -65,6 +56,49 @@ function primeiroValor(objeto, campos, fallback = '') {
 
 function linkSeguro(url) {
     return /^(https?:|mailto:|\/)/i.test(url) ? url : '#';
+}
+
+function normalizarIdUrl(valor) {
+    return String(valor || '').replace(/^:/, '');
+}
+
+function normalizarDocumentoDestino(documento) {
+    const id = normalizarIdUrl(primeiroValor(documento, ['id', 'documento_id', 'documentoId'], ''));
+
+    if (!id) {
+        return null;
+    }
+
+    return {
+        id,
+        titulo: primeiroValor(
+            documento,
+            ['titulo', 'documento', 'nome', 'nome_documento'],
+            'Documento',
+        ),
+        setor: primeiroValor(
+            documento,
+            ['setor', 'setor_nome', 'nome_setor', 'categoria', 'categoria_nome'],
+            'Web',
+        ),
+    };
+}
+
+function textoSelecionadoDentro(elemento) {
+    const selecao = window.getSelection?.();
+
+    if (!selecao || selecao.isCollapsed) {
+        return '';
+    }
+
+    const origemDentro = elemento.contains(selecao.anchorNode);
+    const fimDentro = elemento.contains(selecao.focusNode);
+
+    if (!origemDentro || !fimDentro) {
+        return '';
+    }
+
+    return selecao.toString().trim().replace(/\s+/g, ' ');
 }
 
 function renderizarInline(texto, chaveBase) {
@@ -278,12 +312,13 @@ function MarkdownPreview({ valor }) {
     return <div className="max-w-none">{elementos}</div>;
 }
 
-function EditorMarkdown({ valor, onChange, onBlur }) {
+function EditorMarkdown({ valor, onChange, onBlur, onContextMenu }) {
     return (
         <textarea
             value={valor}
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
+            onContextMenu={onContextMenu}
             className="min-h-[520px] w-full resize-none bg-transparent font-inter text-[16px] leading-7 text-black outline-none placeholder:text-[var(--cinza-500)] lg:min-h-[calc(100vh-340px)]"
             placeholder="Use Markdown: ## tópico, **decisão**, - pendência..."
         />
@@ -354,44 +389,35 @@ function Registro() {
     const navigate = useNavigate();
     const { registroId: registroIdParam } = useParams();
     const [searchParams] = useSearchParams();
-    const registroId = registroIdParam || searchParams.get('id') || searchParams.get('registroId');
+    const registroId = normalizarIdUrl(
+        registroIdParam || searchParams.get('id') || searchParams.get('registroId'),
+    );
 
     const [registro, setRegistro] = useState(registroPadrao);
     const [titulo, setTitulo] = useState(registroPadrao.titulo);
     const [conteudo, setConteudo] = useState(registroPadrao.conteudo);
     const [tituloOriginal, setTituloOriginal] = useState(registroPadrao.titulo);
     const [conteudoOriginal, setConteudoOriginal] = useState(registroPadrao.conteudo);
-    const [sugestoes, setSugestoes] = useState(sugestoesPadrao);
-    const [sugestoesOriginal, setSugestoesOriginal] = useState(sugestoesPadrao);
+    const [documentosDestino, setDocumentosDestino] = useState(documentosDestinoPadrao);
     const [erro, setErro] = useState('');
+    const [aviso, setAviso] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
     const [excluindo, setExcluindo] = useState(false);
     const [editandoConteudo, setEditandoConteudo] = useState(false);
-    const [sugestoesAbertas, setSugestoesAbertas] = useState(false);
+    const [sugestaoAberta, setSugestaoAberta] = useState(false);
+    const [trechoSelecionado, setTrechoSelecionado] = useState('');
 
-    const sugestoesSerializadas = useMemo(() => JSON.stringify(sugestoes), [sugestoes]);
-    const sugestoesOriginaisSerializadas = useMemo(
-        () => JSON.stringify(sugestoesOriginal),
-        [sugestoesOriginal],
-    );
-
-    const temAlteracao =
-        titulo !== tituloOriginal ||
-        conteudo !== conteudoOriginal ||
-        sugestoesSerializadas !== sugestoesOriginaisSerializadas;
+    const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
     const conteudoEmEdicao = editandoConteudo || conteudo !== conteudoOriginal;
-
-    const nomeProjeto = primeiroValor(
+    const dataCriacao = primeiroValor(
         registro,
-        ['nome_projeto', 'projeto_nome', 'projeto'],
-        'Projeto Integrado',
+        ['data_criacao', 'criado_em', 'created_at', 'criacao'],
+        registroPadrao.data_criacao,
     );
-    const setorRegistro = primeiroValor(registro, ['setor_nome', 'nome_setor', 'setor'], 'Página Web');
-    const responsavelRegistro = primeiroValor(
-        registro,
-        ['responsavel', 'nome_responsavel', 'autor'],
-        'Equipe Escopo',
+    const documentosDisponiveis = useMemo(
+        () => (documentosDestino.length > 0 ? documentosDestino : documentosDestinoPadrao),
+        [documentosDestino],
     );
 
     useEffect(() => {
@@ -403,7 +429,6 @@ function Registro() {
                 const registroSalvo = localStorage.getItem(chaveRegistro(registroId));
                 const dados = registroSalvo ? JSON.parse(registroSalvo) : null;
                 const proximoRegistro = dados?.registro || registroPadrao;
-                const proximasSugestoes = dados?.sugestoes || sugestoesPadrao;
                 const proximoTitulo = proximoRegistro.titulo || 'Registro';
                 const proximoConteudo = proximoRegistro.conteudo || '';
 
@@ -412,8 +437,6 @@ function Registro() {
                 setConteudo(proximoConteudo);
                 setTituloOriginal(proximoTitulo);
                 setConteudoOriginal(proximoConteudo);
-                setSugestoes(proximasSugestoes);
-                setSugestoesOriginal(proximasSugestoes);
                 setEditandoConteudo(false);
             } catch (error) {
                 setErro(error.message || 'Erro ao carregar registro.');
@@ -425,32 +448,101 @@ function Registro() {
         carregarRegistro();
     }, [registroId]);
 
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarDocumentos() {
+            try {
+                const dashboard = await getDashboard();
+                const documentos = (dashboard?.documentos || [])
+                    .map(normalizarDocumentoDestino)
+                    .filter(Boolean);
+
+                if (ativo && documentos.length > 0) {
+                    setDocumentosDestino(documentos);
+                }
+            } catch {
+                if (ativo) {
+                    setDocumentosDestino(documentosDestinoPadrao);
+                }
+            }
+        }
+
+        carregarDocumentos();
+
+        return () => {
+            ativo = false;
+        };
+    }, []);
+
     function alterarTitulo(event) {
         setTitulo(event.target.value.replace(/\s*\n\s*/g, ' '));
     }
 
-    function adicionarSugestao(texto) {
-        const novaSugestao = {
-            id: crypto.randomUUID?.() || `${Date.now()}`,
-            titulo: texto,
-            descricao: 'Sugestão adicionada manualmente neste registro.',
-            origem: 'Registro',
-            status: 'pendente',
-        };
+    function abrirSugestaoComTrecho(trecho) {
+        if (!trecho.trim()) {
+            return;
+        }
 
-        setSugestoes((sugestoesAtuais) => [novaSugestao, ...sugestoesAtuais]);
+        setTrechoSelecionado(trecho.trim());
+        setSugestaoAberta(true);
+        setAviso('');
+        setErro('');
     }
 
-    function alternarStatusSugestao(sugestaoId) {
-        setSugestoes((sugestoesAtuais) =>
-            sugestoesAtuais.map((sugestao) =>
-                sugestao.id === sugestaoId
-                    ? {
-                          ...sugestao,
-                          status: sugestao.status === 'concluida' ? 'pendente' : 'concluida',
-                      }
-                    : sugestao,
+    function abrirSugestaoDoPreview(event) {
+        const trecho = textoSelecionadoDentro(event.currentTarget);
+
+        if (!trecho) {
+            return;
+        }
+
+        event.preventDefault();
+        abrirSugestaoComTrecho(trecho);
+    }
+
+    function abrirSugestaoDoEditor(event) {
+        const { selectionStart, selectionEnd, value } = event.currentTarget;
+        const trecho =
+            selectionStart !== selectionEnd ? value.slice(selectionStart, selectionEnd) : '';
+
+        if (!trecho.trim()) {
+            return;
+        }
+
+        event.preventDefault();
+        abrirSugestaoComTrecho(trecho);
+    }
+
+    async function enviarSugestao(destinos) {
+        const caminhoRegistro = registroId ? `/registro/${registroId}` : '/registro';
+        const linkRegistro = `${window.location.origin}${caminhoRegistro}`;
+        const conteudoSugestao = [
+            `Sugestão criada a partir de ${titulo || 'Registro'}.`,
+            '',
+            'Trecho selecionado:',
+            trechoSelecionado,
+            '',
+            `Origem: ${linkRegistro}`,
+        ].join('\n');
+
+        await Promise.all(
+            destinos.map((destino) =>
+                createDocumentComment({
+                    documento_id: destino.documentoId,
+                    conteudo: conteudoSugestao,
+                    parent_id: null,
+                    registro_referencia_id: registroId || null,
+                    comentario_tipo_id: 3,
+                }),
             ),
+        );
+
+        window.getSelection?.()?.removeAllRanges?.();
+        setAviso(
+            destinos.length > 1
+                ? 'Sugestão enviada para os comentários dos documentos.'
+                : 'Sugestão enviada para os comentários do documento.',
         );
     }
 
@@ -470,14 +562,12 @@ function Registro() {
                 chaveRegistro(registroId),
                 JSON.stringify({
                     registro: registroAtualizado,
-                    sugestoes,
                 }),
             );
 
             setRegistro(registroAtualizado);
             setTituloOriginal(titulo);
             setConteudoOriginal(conteudo);
-            setSugestoesOriginal(sugestoes);
             setEditandoConteudo(false);
         } catch (error) {
             setErro(error.message || 'Erro ao salvar registro.');
@@ -515,12 +605,8 @@ function Registro() {
 
             <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-7 lg:pb-8 lg:pt-10 xl:px-7">
                 <section className="relative mx-auto max-w-[700px] lg:max-w-none">
-                    {sugestoesAbertas && (
-                        <div className="fixed inset-0 z-20 bg-black/20 lg:left-[280px] xl:left-[356px]" />
-                    )}
-
                     <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2 lg:hidden">
-                        <div className="mb-2 flex min-w-0 items-center gap-3">
+                        <div className="mb-1 flex min-w-0 items-center gap-2">
                             <Link to="/dashboard" aria-label="Voltar" className="shrink-0">
                                 <ChevronsLeft className="h-8 w-8 text-gray-900" strokeWidth={3} />
                             </Link>
@@ -534,34 +620,36 @@ function Registro() {
                             />
                         </div>
 
-                        <div className="flex min-w-0 items-center justify-between gap-3">
-                            <div className="min-w-0 flex-1">
-                                {temAlteracao ? (
-                                    <ParagraphMedium className="break-words text-[var(--color-alert)] [overflow-wrap:anywhere]">
+                        <div className="min-w-0 pl-8">
+                            {temAlteracao ? (
+                                <div className="inline-flex max-w-full rounded-full bg-[#ffd6d6] px-4 py-0.5">
+                                    <ParagraphMedium className="truncate text-[var(--color-alert)]">
                                         Alterações não salvas!
                                     </ParagraphMedium>
-                                ) : (
-                                    <ParagraphMedium className="break-words text-[var(--color-variant)] [overflow-wrap:anywhere]">
-                                        Última alteração: {formatarData(registro.ultima_alteracao)}
+                                </div>
+                            ) : (
+                                <div className="inline-flex max-w-full rounded-full bg-[var(--roxo-light)] px-4 py-0.5">
+                                    <ParagraphMedium className="truncate text-[var(--color-variant)]">
+                                        Última Alteração: {formatarData(registro.ultima_alteracao)}
                                     </ParagraphMedium>
-                                )}
-                            </div>
-
-                            <button
-                                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
-                                type="button"
-                                onClick={() => setSugestoesAbertas(true)}
-                                aria-label="Sugestões"
-                            >
-                                <Lightbulb className="h-6 w-6" strokeWidth={2} />
-                            </button>
+                                </div>
+                            )}
+                            <ParagraphMedium className="mt-1 text-black">
+                                Data de criação: {formatarData(dataCriacao)}
+                            </ParagraphMedium>
                         </div>
                     </div>
 
-                    <div className="relative z-30 hidden border-b border-[var(--cinza-400)] pb-3 lg:block lg:min-h-[84px]">
-                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(190px,280px)_112px] lg:items-start">
+                    <div className="relative z-30 hidden border-b border-[var(--cinza-400)] pb-2 lg:block lg:min-h-[86px]">
+                        <div className="flex min-h-[76px] items-start justify-between gap-6">
                             <div className="min-w-0">
-                                <div className="mb-2 flex min-w-0 items-center gap-3 lg:mb-1 lg:pl-12 xl:pl-16">
+                                <div className="mb-1 flex min-w-0 items-center gap-3">
+                                    <Link to="/dashboard" aria-label="Voltar" className="shrink-0">
+                                        <ChevronsLeft
+                                            className="h-8 w-8 text-gray-900"
+                                            strokeWidth={3}
+                                        />
+                                    </Link>
                                     <TituloRegistro
                                         valor={titulo}
                                         onChange={alterarTitulo}
@@ -571,56 +659,36 @@ function Registro() {
                                     />
                                 </div>
 
-                                {temAlteracao ? (
-                                    <ParagraphMedium className="break-words text-[var(--color-alert)] [overflow-wrap:anywhere] lg:ml-12 xl:ml-16">
-                                        Alterações não salvas!
+                                <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+                                    {temAlteracao ? (
+                                        <div className="inline-flex min-h-5 max-w-[250px] items-center rounded-full bg-[#ffd6d6] px-6 text-center">
+                                            <ParagraphMedium className="truncate text-[var(--color-alert)]">
+                                                Alterações não salvas!
+                                            </ParagraphMedium>
+                                        </div>
+                                    ) : (
+                                        <div className="inline-flex min-h-5 max-w-[260px] items-center rounded-full bg-[var(--roxo-light)] px-6 text-center">
+                                            <ParagraphMedium className="truncate text-[var(--color-variant)]">
+                                                Última alteração:{' '}
+                                                {formatarData(registro.ultima_alteracao)}
+                                            </ParagraphMedium>
+                                        </div>
+                                    )}
+                                    <ParagraphMedium className="text-black">
+                                        Data de criação: {formatarData(dataCriacao)}
                                     </ParagraphMedium>
-                                ) : (
-                                    <div className="flex min-h-8 w-full max-w-[420px] items-center justify-center gap-3 rounded-full border border-[var(--color-base)] px-4 py-1 text-center text-[var(--color-base)] lg:ml-8 xl:ml-12">
-                                        <ParagraphLarge
-                                            as="span"
-                                            className="min-w-0 break-words text-[var(--color-base)] [overflow-wrap:anywhere]"
-                                        >
-                                            Última alteração: {formatarData(registro.ultima_alteracao)}
-                                        </ParagraphLarge>
-                                        <ClockFading
-                                            className="h-6 w-6 shrink-0 text-[var(--color-base)]"
-                                            strokeWidth={2}
-                                        />
-                                    </div>
-                                )}
+                                </div>
                             </div>
 
-                            <div className="min-w-0 break-words text-gray-900 [overflow-wrap:anywhere] lg:pt-2">
-                                <ParagraphLarge className="leading-6">{nomeProjeto}</ParagraphLarge>
-                                <ParagraphLarge className="leading-6">
-                                    Setor: {setorRegistro}
-                                </ParagraphLarge>
-                                <ParagraphLarge className="leading-6">
-                                    Responsável: {responsavelRegistro}
-                                </ParagraphLarge>
-                            </div>
-
-                            <div className="flex shrink-0 items-center gap-6 lg:justify-end lg:pt-1">
-                                <button
-                                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
-                                    type="button"
-                                    onClick={excluirRegistro}
-                                    disabled={excluindo}
-                                    aria-label="Excluir registro"
-                                >
-                                    <Trash2 className="h-6 w-6" strokeWidth={2} />
-                                </button>
-
-                                <button
-                                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
-                                    type="button"
-                                    onClick={() => setSugestoesAbertas(true)}
-                                    aria-label="Sugestões"
-                                >
-                                    <Lightbulb className="h-6 w-6" strokeWidth={2} />
-                                </button>
-                            </div>
+                            <button
+                                className="mt-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
+                                type="button"
+                                onClick={excluirRegistro}
+                                disabled={excluindo}
+                                aria-label="Excluir registro"
+                            >
+                                <Trash2 className="h-6 w-6" strokeWidth={2} />
+                            </button>
                         </div>
                     </div>
 
@@ -629,8 +697,13 @@ function Registro() {
                             {erro}
                         </ParagraphMedium>
                     )}
+                    {aviso && (
+                        <ParagraphMedium className="mt-2 text-[var(--color-verde)]">
+                            {aviso}
+                        </ParagraphMedium>
+                    )}
 
-                    <div className="relative z-10 mt-3 min-h-[610px] rounded-2xl border border-[var(--cinza-300)] bg-white px-4 py-4 text-black sm:px-6 lg:mt-[28px] lg:min-h-[calc(100vh-260px)] lg:px-8 lg:py-8">
+                    <div className="relative z-10 mt-3 min-h-[528px] rounded-[22px] border border-[var(--cinza-300)] bg-white px-9 py-8 text-black shadow-[var(--external-shadow)] sm:px-10 lg:mt-[48px] lg:min-h-[calc(100vh-260px)] lg:rounded-xl lg:px-8 lg:py-8 lg:shadow-none">
                         {carregando ? (
                             <ParagraphMedium className="text-[var(--cinza-600)]">
                                 Carregando registro...
@@ -644,19 +717,27 @@ function Registro() {
                                         setEditandoConteudo(false);
                                     }
                                 }}
+                                onContextMenu={abrirSugestaoDoEditor}
                             />
                         ) : (
                             <div
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setEditandoConteudo(true)}
+                                onClick={(event) => {
+                                    if (textoSelecionadoDentro(event.currentTarget)) {
+                                        return;
+                                    }
+
+                                    setEditandoConteudo(true);
+                                }}
+                                onContextMenu={abrirSugestaoDoPreview}
                                 onKeyDown={(event) => {
                                     if (event.key === 'Enter' || event.key === ' ') {
                                         event.preventDefault();
                                         setEditandoConteudo(true);
                                     }
                                 }}
-                                className="block min-h-[520px] w-full overflow-y-auto pb-20 text-left outline-none lg:min-h-[calc(100vh-340px)]"
+                                className="block min-h-[464px] w-full cursor-text select-text overflow-y-auto pb-20 text-left outline-none lg:min-h-[calc(100vh-340px)]"
                                 aria-label="Editar conteúdo do registro"
                             >
                                 <MarkdownPreview valor={conteudo} />
@@ -680,12 +761,12 @@ function Registro() {
                 </section>
             </main>
 
-            {sugestoesAbertas && (
+            {sugestaoAberta && (
                 <Sugestao
-                    sugestoes={sugestoes}
-                    onFechar={() => setSugestoesAbertas(false)}
-                    onAdicionarSugestao={adicionarSugestao}
-                    onAlternarStatus={alternarStatusSugestao}
+                    trecho={trechoSelecionado}
+                    documentos={documentosDisponiveis}
+                    onFechar={() => setSugestaoAberta(false)}
+                    onEnviar={enviarSugestao}
                 />
             )}
         </div>

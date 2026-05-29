@@ -1,163 +1,269 @@
-import { Check, Circle, Lightbulb, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Plus, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
-import logotipoMobile from '../../../assets/logotipo-mobile.svg';
 
-function SugestaoCard({ sugestao, onAlternarStatus }) {
-    const concluida = sugestao.status === 'concluida';
+function setoresDisponiveis(documentos) {
+    const setores = documentos
+        .map((documento) => documento.setor)
+        .filter(Boolean)
+        .filter((setor, index, lista) => lista.indexOf(setor) === index);
+
+    return setores.length > 0 ? setores : ['Web'];
+}
+
+function documentosDoSetor(documentos, setor) {
+    const filtrados = documentos.filter((documento) => documento.setor === setor);
+
+    return filtrados.length > 0 ? filtrados : documentos;
+}
+
+function criarDestino(documentos, indice, setorPreferido = '') {
+    const setores = setoresDisponiveis(documentos);
+    const setor = setores.includes(setorPreferido) ? setorPreferido : setores[0];
+    const documentosFiltrados = documentosDoSetor(documentos, setor);
+    const documento = documentosFiltrados[0] || documentos[0] || null;
+
+    return {
+        id: crypto.randomUUID?.() || `${Date.now()}-${indice}`,
+        setor,
+        documentoId: documento?.id || '',
+    };
+}
+
+function rotuloDocumento(documentoId, documentos) {
+    return (
+        documentos.find((documento) => String(documento.id) === String(documentoId))?.titulo || ''
+    );
+}
+
+function Destino({ destino, indice, documentos, setores, podeRemover, onAlterar, onRemover }) {
+    const documentosFiltrados = documentosDoSetor(documentos, destino.setor);
 
     return (
-        <article className="rounded-lg border border-[var(--cinza-300)] bg-white p-4">
-            <div className="flex items-start gap-3">
-                <button
-                    type="button"
-                    onClick={() => onAlternarStatus(sugestao.id)}
-                    className="mt-1 shrink-0 text-[var(--color-base)]"
-                    aria-label={concluida ? 'Marcar sugestão como pendente' : 'Concluir sugestão'}
-                >
-                    {concluida ? <Check size={22} strokeWidth={2.4} /> : <Circle size={22} />}
-                </button>
-
-                <div className="min-w-0 flex-1">
-                    <ParagraphLarge
-                        className={`break-words font-medium [overflow-wrap:anywhere] ${
-                            concluida ? 'text-[var(--cinza-500)] line-through' : 'text-black'
-                        }`}
+        <section className="border-t border-[var(--cinza-300)] pt-3 first:border-t-0 first:pt-0">
+            <div className="mb-3 flex min-h-8 items-center justify-between gap-3">
+                <ParagraphLarge className="font-medium text-[var(--cinza-700)]">
+                    Destino {indice + 1}
+                </ParagraphLarge>
+                {podeRemover && (
+                    <button
+                        type="button"
+                        onClick={() => onRemover(destino.id)}
+                        className="flex h-8 w-8 items-center justify-center text-black transition-colors hover:text-[var(--color-alert)]"
+                        aria-label={`Remover destino ${indice + 1}`}
                     >
-                        {sugestao.titulo}
-                    </ParagraphLarge>
-                    <ParagraphMedium className="mt-2 break-words text-[var(--cinza-600)] [overflow-wrap:anywhere]">
-                        {sugestao.descricao}
-                    </ParagraphMedium>
-                    <ParagraphSmall className="mt-3 text-[var(--cinza-500)]">
-                        {sugestao.origem}
-                    </ParagraphSmall>
+                        <X size={23} strokeWidth={2.2} />
+                    </button>
+                )}
+            </div>
+
+            <label className="mb-6 flex items-center gap-4 pl-7 sm:pl-8">
+                <ParagraphLarge as="span" className="text-black">
+                    Setor
+                </ParagraphLarge>
+                <select
+                    value={destino.setor}
+                    onChange={(event) => {
+                        const proximoSetor = event.target.value;
+                        const proximoDocumento = documentosDoSetor(documentos, proximoSetor)[0];
+
+                        onAlterar(destino.id, {
+                            setor: proximoSetor,
+                            documentoId: proximoDocumento?.id || '',
+                        });
+                    }}
+                    className="h-10 rounded-lg border border-[var(--cinza-400)] bg-white px-3 font-inter text-[15px] text-[var(--cinza-700)] outline-none focus:border-[var(--color-base)]"
+                >
+                    {setores.map((setor) => (
+                        <option key={setor} value={setor}>
+                            {setor}
+                        </option>
+                    ))}
+                </select>
+            </label>
+
+            <div>
+                <ParagraphLarge className="mb-2 text-black">Documento:</ParagraphLarge>
+                <div className="overflow-hidden rounded-lg border border-black bg-white">
+                    {documentosFiltrados.length > 0 ? (
+                        documentosFiltrados.map((documento) => {
+                            const selecionado =
+                                String(documento.id) === String(destino.documentoId);
+
+                            return (
+                                <button
+                                    key={`${destino.id}-${documento.id}`}
+                                    type="button"
+                                    onClick={() =>
+                                        onAlterar(destino.id, { documentoId: documento.id })
+                                    }
+                                    className={`block min-h-9 w-full px-3 py-2 text-left font-inter text-[16px] leading-5 transition-colors ${
+                                        selecionado
+                                            ? 'bg-[var(--roxo-light)] text-[var(--color-base)]'
+                                            : 'bg-white text-black hover:bg-[var(--cinza-100)]'
+                                    }`}
+                                >
+                                    {documento.titulo}
+                                </button>
+                            );
+                        })
+                    ) : (
+                        <ParagraphMedium className="px-3 py-3 text-[var(--cinza-500)]">
+                            Nenhum documento disponível.
+                        </ParagraphMedium>
+                    )}
                 </div>
             </div>
-        </article>
+        </section>
     );
 }
 
-function CampoSugestao({ valor, onChange, onSubmit }) {
-    return (
-        <form onSubmit={onSubmit} className="flex items-end gap-2">
-            <textarea
-                value={valor}
-                onChange={(event) => onChange(event.target.value)}
-                className="min-h-20 flex-1 resize-none rounded-lg border border-[var(--cinza-300)] px-3 py-2 font-inter text-[14px] text-black outline-none placeholder:text-[var(--cinza-500)] focus:border-[var(--color-base)]"
-                placeholder="Nova sugestão"
-                aria-label="Nova sugestão"
-            />
-            <button
-                type="submit"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
-                aria-label="Adicionar sugestão"
-            >
-                <Plus size={22} />
-            </button>
-        </form>
+function Sugestao({ trecho, documentos, onFechar, onEnviar }) {
+    const documentosNormalizados = useMemo(() => documentos || [], [documentos]);
+    const setores = useMemo(
+        () => setoresDisponiveis(documentosNormalizados),
+        [documentosNormalizados],
     );
-}
+    const [destinos, setDestinos] = useState(() => [
+        criarDestino(documentosNormalizados, 1, 'Web'),
+        criarDestino(documentosNormalizados, 2, 'Mobile'),
+    ]);
+    const [enviando, setEnviando] = useState(false);
+    const [erro, setErro] = useState('');
 
-function ListaSugestoes({ sugestoes, onAlternarStatus }) {
-    if (sugestoes.length === 0) {
-        return (
-            <ParagraphMedium className="text-[var(--cinza-500)]">
-                Nenhuma sugestão registrada.
-            </ParagraphMedium>
+    function alterarDestino(destinoId, alteracoes) {
+        setDestinos((destinosAtuais) =>
+            destinosAtuais.map((destino) =>
+                destino.id === destinoId ? { ...destino, ...alteracoes } : destino,
+            ),
         );
     }
 
-    return (
-        <div className="flex flex-col gap-4">
-            {sugestoes.map((sugestao) => (
-                <SugestaoCard
-                    key={sugestao.id}
-                    sugestao={sugestao}
-                    onAlternarStatus={onAlternarStatus}
-                />
-            ))}
-        </div>
-    );
-}
+    function removerDestino(destinoId) {
+        setDestinos((destinosAtuais) =>
+            destinosAtuais.length > 1
+                ? destinosAtuais.filter((destino) => destino.id !== destinoId)
+                : destinosAtuais,
+        );
+    }
 
-function Sugestao({ sugestoes, onFechar, onAdicionarSugestao, onAlternarStatus }) {
-    const [texto, setTexto] = useState('');
+    function adicionarDestino() {
+        setDestinos((destinosAtuais) => [
+            ...destinosAtuais,
+            criarDestino(documentosNormalizados, destinosAtuais.length + 1),
+        ]);
+    }
 
-    function enviarSugestao(event) {
+    async function enviarSugestao(event) {
         event.preventDefault();
 
-        if (!texto.trim()) {
+        const destinosValidos = destinos
+            .filter((destino) => destino.documentoId)
+            .map((destino) => ({
+                ...destino,
+                documentoTitulo: rotuloDocumento(destino.documentoId, documentosNormalizados),
+            }));
+
+        if (destinosValidos.length === 0) {
+            setErro('Selecione pelo menos um documento.');
             return;
         }
 
-        onAdicionarSugestao(texto.trim());
-        setTexto('');
+        try {
+            setEnviando(true);
+            setErro('');
+            await onEnviar(destinosValidos);
+            onFechar();
+        } catch (error) {
+            setErro(error.message || 'Erro ao enviar sugestão.');
+        } finally {
+            setEnviando(false);
+        }
     }
 
-    const campo = (
-        <CampoSugestao valor={texto} onChange={setTexto} onSubmit={enviarSugestao} />
-    );
-
     return (
-        <>
-            <aside className="fixed bottom-0 right-0 top-0 z-50 hidden w-[430px] flex-col border-l border-[var(--cinza-300)] bg-white shadow-[var(--external-shadow)] lg:flex">
-                <header className="px-5 pt-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <Lightbulb
-                                className="shrink-0 text-[var(--color-base)]"
-                                size={28}
-                            />
-                            <Title2 className="truncate text-[26px] text-[var(--cinza-700)]">
-                                Sugestões
-                            </Title2>
-                        </div>
-                        <button type="button" onClick={onFechar} aria-label="Fechar sugestões">
-                            <X className="text-[var(--cinza-700)]" size={26} />
-                        </button>
-                    </div>
-                    <div className="mt-2 border-b border-[var(--cinza-700)]" />
-                </header>
+        <div
+            className="fixed inset-0 z-50 bg-black/25 lg:left-[280px] xl:left-[356px]"
+            onMouseDown={(event) => {
+                if (event.target === event.currentTarget) {
+                    onFechar();
+                }
+            }}
+        >
+            <form
+                onSubmit={enviarSugestao}
+                className="absolute left-1/2 top-1/2 flex max-h-[calc(100vh-70px)] w-[calc(100%-48px)] max-w-[740px] -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto rounded-[22px] bg-white px-5 py-4 shadow-[var(--external-shadow)] sm:px-7 lg:max-h-[calc(100vh-120px)] lg:px-16 lg:py-5"
+            >
+                <button
+                    type="button"
+                    onClick={onFechar}
+                    className="mb-3 flex h-8 w-8 items-center justify-center text-black"
+                    aria-label="Voltar"
+                >
+                    <ArrowLeft size={26} strokeWidth={2.2} />
+                </button>
 
-                <div className="flex-1 overflow-y-auto px-4 py-8">
-                    <ListaSugestoes
-                        sugestoes={sugestoes}
-                        onAlternarStatus={onAlternarStatus}
-                    />
+                <div className="px-1 sm:px-3">
+                    <Title2 className="text-[24px] font-semibold text-black lg:text-[22px]">
+                        Criar Sugestão
+                    </Title2>
+                    <div className="mt-2 border-b-[3px] border-[var(--cinza-300)]" />
                 </div>
 
-                <footer className="border-t border-[var(--cinza-700)] px-4 py-3">{campo}</footer>
-            </aside>
+                <ParagraphSmall className="sr-only">
+                    Trecho selecionado para a sugestão: {trecho}
+                </ParagraphSmall>
 
-            <section className="fixed inset-0 z-50 flex flex-col bg-white lg:hidden">
-                <header className="flex h-[50px] items-center justify-between bg-[var(--color-base)] px-4">
-                    <img src={logotipoMobile} alt="Escopo" className="h-auto w-40" />
-                    <button type="button" onClick={onFechar} aria-label="Fechar sugestões">
-                        <X className="text-white" size={26} />
+                {erro && (
+                    <ParagraphSmall className="mt-3 text-[var(--color-alert)]">
+                        {erro}
+                    </ParagraphSmall>
+                )}
+
+                <div className="mt-3 flex flex-col gap-6 px-1 sm:px-3">
+                    {destinos.map((destino, indice) => (
+                        <Destino
+                            key={destino.id}
+                            destino={destino}
+                            indice={indice}
+                            documentos={documentosNormalizados}
+                            setores={setores}
+                            podeRemover={destinos.length > 1}
+                            onAlterar={alterarDestino}
+                            onRemover={removerDestino}
+                        />
+                    ))}
+                </div>
+
+                <div className="mt-7 flex justify-center">
+                    <button
+                        type="button"
+                        onClick={adicionarDestino}
+                        className="flex min-h-9 items-center gap-2 rounded-full border-2 border-[var(--color-base)] px-3 py-1 text-[var(--cinza-700)] transition-colors hover:bg-[var(--roxo-light)]"
+                    >
+                        <Plus size={21} className="text-[var(--color-base)]" />
+                        <ParagraphLarge as="span" className="font-medium text-[var(--cinza-700)]">
+                            Novo Destino
+                        </ParagraphLarge>
                     </button>
-                </header>
-
-                <div className="border-b border-[var(--cinza-300)] px-4 py-3">
-                    <div className="flex items-center gap-3">
-                        <Lightbulb className="text-[var(--color-base)]" size={26} />
-                        <Title2 className="text-[24px] text-[var(--cinza-700)]">Sugestões</Title2>
-                    </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 py-5">
-                    <ListaSugestoes
-                        sugestoes={sugestoes}
-                        onAlternarStatus={onAlternarStatus}
-                    />
+                <div className="mt-9 flex justify-center">
+                    <button
+                        type="submit"
+                        disabled={enviando}
+                        className="rounded-lg bg-[var(--color-base)] px-6 py-3 text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
+                    >
+                        <ParagraphMedium as="span" className="font-semibold text-white">
+                            {enviando ? 'Enviando...' : 'Enviar'}
+                        </ParagraphMedium>
+                    </button>
                 </div>
-
-                <footer className="border-t border-[var(--cinza-300)] px-4 py-3">{campo}</footer>
-            </section>
-        </>
+            </form>
+        </div>
     );
 }
 
