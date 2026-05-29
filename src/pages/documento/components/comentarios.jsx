@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronsLeft, Menu, Send, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logotipoMobile from '../../../assets/logotipo-mobile.svg';
 import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
@@ -315,8 +316,11 @@ function adaptarComentario(
         cargosPorAutorId.get(String(autorId)) ||
         (String(autorId) === String(usuarioAtual?.id) ? usuarioAtual?.cargo : '') ||
         (tipoId === 3 ? 'Registro' : '');
-    const tituloRegistro = textoDoValor(
-        pegar(registro, ['registro_titulo', 'titulo', 'nome'], ''),
+    const tituloRegistro = textoDoValor(pegar(registro, ['registro_titulo', 'titulo', 'nome'], ''));
+    const registroLinkId = pegar(
+        registro,
+        ['id', 'registro_id', 'registroId'],
+        registroReferenciaId,
     );
 
     return {
@@ -338,6 +342,7 @@ function adaptarComentario(
                       autor: 'Sugestão de Requisito',
                       cargo: tituloRegistro || 'deletado',
                       texto: '',
+                      href: registroLinkId ? `/registro/${registroLinkId}` : null,
                   }
                 : null,
     };
@@ -387,15 +392,99 @@ function Avatar({ comentario, className = '' }) {
             {comentario.foto ? (
                 <img src={comentario.foto} alt="" className="h-full w-full object-cover" />
             ) : (
-                <ParagraphMedium
-                    as="span"
-                    className="font-semibold text-[var(--color-base)]"
-                >
+                <ParagraphMedium as="span" className="font-semibold text-[var(--color-base)]">
                     {comentario.avatar}
                 </ParagraphMedium>
             )}
         </div>
     );
+}
+
+function ReferenciaComentario({ referencia }) {
+    const conteudo = (
+        <>
+            <div className="mb-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px]">
+                <ParagraphMedium
+                    as="span"
+                    className="break-words text-[var(--color-base)] [overflow-wrap:anywhere]"
+                >
+                    {referencia.autor}
+                </ParagraphMedium>
+                {referencia.cargo && (
+                    <ParagraphMedium
+                        as="span"
+                        className="break-words text-[var(--cinza-400)] [overflow-wrap:anywhere]"
+                    >
+                        {referencia.cargo}
+                    </ParagraphMedium>
+                )}
+            </div>
+            {referencia.texto && (
+                <ParagraphMedium className="line-clamp-3 whitespace-pre-wrap break-words leading-5 text-[var(--cinza-700)] [overflow-wrap:anywhere]">
+                    {referencia.texto}
+                </ParagraphMedium>
+            )}
+        </>
+    );
+    const className =
+        'mb-2 block max-w-full overflow-hidden rounded-md bg-[var(--cinza-200)] px-4 py-2';
+
+    if (referencia.href) {
+        return (
+            <Link
+                to={referencia.href}
+                className={`${className} transition-colors hover:bg-[var(--roxo-light)]`}
+            >
+                {conteudo}
+            </Link>
+        );
+    }
+
+    return <div className={className}>{conteudo}</div>;
+}
+
+function renderizarTextoComentario(texto) {
+    const valor = String(texto || '');
+    const partes = [];
+    const regex = /(\[[^\]]+\]\(([^)]+)\)|https?:\/\/[^\s]+)/g;
+    let ultimoIndice = 0;
+    let indice = 0;
+
+    for (const match of valor.matchAll(regex)) {
+        if (match.index > ultimoIndice) {
+            partes.push(valor.slice(ultimoIndice, match.index));
+        }
+
+        const trecho = match[0];
+        const chave = `comentario-link-${indice}`;
+        const markdown = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        const rotulo = markdown?.[1] || trecho;
+        const url = markdown?.[2] || trecho;
+        const className = 'text-[var(--color-base)] underline underline-offset-2';
+
+        if (url.startsWith('/')) {
+            partes.push(
+                <Link key={chave} to={url} className={className}>
+                    {rotulo}
+                </Link>,
+            );
+        } else {
+            partes.push(
+                <a key={chave} href={url} target="_blank" rel="noreferrer" className={className}>
+                    {rotulo}
+                </a>,
+            );
+        }
+
+        ultimoIndice = match.index + trecho.length;
+        indice += 1;
+    }
+
+    if (ultimoIndice < valor.length) {
+        partes.push(valor.slice(ultimoIndice));
+    }
+
+    return partes;
 }
 
 function ComentarioCard({ comentario, mobile = false, onResponder }) {
@@ -441,34 +530,10 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                 </div>
 
                 <div className="max-w-full overflow-hidden rounded-[18px] border border-[var(--cinza-500)] px-4 py-3 text-black">
-                    {referencia && (
-                        <div className="mb-2 max-w-full overflow-hidden rounded-md bg-[var(--cinza-200)] px-4 py-2">
-                            <div className="mb-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px]">
-                                <ParagraphMedium
-                                    as="span"
-                                    className="break-words text-[var(--color-base)] [overflow-wrap:anywhere]"
-                                >
-                                    {referencia.autor}
-                                </ParagraphMedium>
-                                {referencia.cargo && (
-                                    <ParagraphMedium
-                                        as="span"
-                                        className="break-words text-[var(--cinza-400)] [overflow-wrap:anywhere]"
-                                    >
-                                        {referencia.cargo}
-                                    </ParagraphMedium>
-                                )}
-                            </div>
-                            {referencia.texto && (
-                                <ParagraphMedium className="line-clamp-3 whitespace-pre-wrap break-words leading-5 text-[var(--cinza-700)] [overflow-wrap:anywhere]">
-                                    {referencia.texto}
-                                </ParagraphMedium>
-                            )}
-                        </div>
-                    )}
+                    {referencia && <ReferenciaComentario referencia={referencia} />}
 
                     <ParagraphLarge className="whitespace-pre-wrap break-words leading-6 [overflow-wrap:anywhere]">
-                        {comentario.texto}
+                        {renderizarTextoComentario(comentario.texto)}
                     </ParagraphLarge>
                 </div>
 
@@ -697,9 +762,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
             <aside className="fixed bottom-0 right-0 top-0 z-50 hidden w-[430px] flex-col border-l border-[var(--cinza-300)] bg-white shadow-[var(--external-shadow)] lg:flex">
                 <header className="px-5 pt-4">
                     <div className="flex items-center justify-between">
-                        <Title2 className="text-[26px] text-[var(--cinza-700)]">
-                            Comentários
-                        </Title2>
+                        <Title2 className="text-[26px] text-[var(--cinza-700)]">Comentários</Title2>
                         <button type="button" onClick={onFechar} aria-label="Fechar comentários">
                             <X className="text-[var(--cinza-700)]" size={26} />
                         </button>
@@ -742,9 +805,7 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                     >
                         <ChevronsLeft size={30} strokeWidth={3} />
                     </button>
-                    <Title2 className="text-[26px] text-[var(--cinza-700)]">
-                        Comentários
-                    </Title2>
+                    <Title2 className="text-[26px] text-[var(--cinza-700)]">Comentários</Title2>
                 </div>
 
                 {erro && (

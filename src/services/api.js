@@ -90,6 +90,57 @@ export async function updatePassword({ senha_atual, senha_nova }) {
     return parseResponse(response);
 }
 
+export async function getProjectRegisters(projeto_id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registros`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createRegister({ projeto_id, titulo, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registro`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo, conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function getRegisterById(registro_id) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function updateRegisterTitle({ registro_id, titulo }) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo }),
+    });
+    return parseResponse(response);
+}
+
+export async function updateRegisterContent({ registro_id, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}/conteudo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteRegister(registro_id) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
 export async function updateDocumentTitle({ documento_id, titulo }) {
     const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/titulo`, {
         method: 'PATCH',

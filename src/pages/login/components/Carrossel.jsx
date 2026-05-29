@@ -14,10 +14,10 @@ const Carrossel = () => {
         }, 3000);
 
         return () => clearInterval(interval);
-    }, [slides.length]);
+    }, []);
 
     return (
-        <div className="hidden w-full flex-col items-center md:flex">
+        <div className="hidden w-full flex-col items-center xl:flex">
             <div className="relative aspect-[558/466] w-full overflow-hidden rounded-[1.75rem] bg-white shadow-[var(--external-shadow)]">
                 <div
                     className="flex h-full transition-transform duration-700 ease-out"

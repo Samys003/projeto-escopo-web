@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
@@ -113,7 +113,7 @@ function MarkdownPreview({ valor }) {
             return;
         }
 
-        const texto = paragrafoAtual.join(' ');
+        const texto = paragrafoAtual.join('\n');
 
         elementos.push(
             <ParagraphLarge
@@ -258,7 +258,6 @@ function EditorMarkdown({ valor, onChange, onBlur }) {
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
             className="min-h-[520px] w-full resize-none bg-transparent font-inter text-[16px] leading-7 text-black outline-none placeholder:text-[var(--cinza-500)] lg:min-h-[calc(100vh-340px)]"
-            placeholder="Use Markdown: ## título, **negrito**, *itálico*, - lista..."
         />
     );
 }
@@ -483,6 +482,15 @@ function Documento() {
         setTitulo(event.target.value.replace(/\s*\n\s*/g, ' '));
     }
 
+    function voltarTelaAnterior() {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+
+        navigate('/dashboard');
+    }
+
     return (
         <div className="min-h-screen bg-[var(--fundo)] lg:flex">
             <MobileHeader />
@@ -496,9 +504,14 @@ function Documento() {
 
                     <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2 lg:hidden">
                         <div className="mb-2 flex min-w-0 items-center gap-3">
-                            <Link to="/listadedocumento" aria-label="Voltar" className="shrink-0">
+                            <button
+                                type="button"
+                                onClick={voltarTelaAnterior}
+                                aria-label="Voltar"
+                                className="shrink-0"
+                            >
                                 <ChevronsLeft className="h-8 w-8 text-gray-900" strokeWidth={3} />
-                            </Link>
+                            </button>
 
                             <TituloDocumento
                                 valor={titulo}
@@ -548,7 +561,19 @@ function Documento() {
                     <div className="relative z-30 hidden border-b border-[var(--cinza-400)] pb-3 lg:block lg:min-h-[84px]">
                         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(190px,260px)_112px] lg:items-start">
                             <div className="min-w-0">
-                                <div className="mb-2 flex min-w-0 items-center gap-3 lg:mb-1 lg:pl-12 xl:pl-16">
+                                <div className="mb-2 flex min-w-0 items-center gap-3 lg:mb-1">
+                                    <button
+                                        type="button"
+                                        onClick={voltarTelaAnterior}
+                                        aria-label="Voltar"
+                                        className="shrink-0"
+                                    >
+                                        <ChevronsLeft
+                                            className="h-8 w-8 text-gray-900"
+                                            strokeWidth={3}
+                                        />
+                                    </button>
+
                                     <TituloDocumento
                                         valor={titulo}
                                         onChange={alterarTitulo}
@@ -559,9 +584,11 @@ function Documento() {
                                 </div>
 
                                 {temAlteracao ? (
-                                    <ParagraphMedium className="break-words text-[var(--color-alert)] [overflow-wrap:anywhere] lg:ml-12 xl:ml-16">
-                                        Alterações não salvas!
-                                    </ParagraphMedium>
+                                    <div className="inline-flex min-h-5 max-w-[250px] items-center rounded-full bg-[#ffd6d6] px-6 text-center">
+                                        <ParagraphMedium className="truncate text-[var(--color-alert)]">
+                                            Alterações não salvas!
+                                        </ParagraphMedium>
+                                    </div>
                                 ) : (
                                     <button
                                         type="button"

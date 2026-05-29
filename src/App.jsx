@@ -6,6 +6,7 @@ import Redefinir from './pages/login/Redefinir';
 import Dashboard from './pages/dashboard/Dashboard';
 import Configuracao from './pages/configuracao/configuracao';
 import Documento from './pages/documento/documento';
+import Registro from './pages/registro/registro';
 function App() {
     return (
         <Router>
@@ -19,6 +20,8 @@ function App() {
                 <Route path="/configuracao" element={<Configuracao />} />
                 <Route path="/documento/:documentoId" element={<Documento />} />
                 <Route path="/documento" element={<Documento />} />
+                <Route path="/registro/:registroId" element={<Registro />} />
+                <Route path="/registro" element={<Registro />} />
             </Routes>
         </Router>
     );
