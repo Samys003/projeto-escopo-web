@@ -39,10 +39,25 @@ function ProjectForm({
     });
 
     async function submitForm(data) {
-        const formData = {
-            ...data,
-            integrantes: integrantesAdicionais,
-        };
+        let formData;
+
+        // Caso seja um novo projeto
+        if (!isEdit) {
+            formData = {
+                ...data,
+                integrantes: integrantesAdicionais,
+            };
+        }
+        // Caso esteja editando um projeto
+        else
+            formData = {
+                ...data,
+                integrantesAtuais: integrantesAtuais,
+                integrantesExcluidos: '' /*TODO*/,
+                convitesAdicionais: integrantesAdicionais,
+                convitesPendentes: pendentes,
+                convitesExcluidos: '' /*TODO*/,
+            };
 
         await onSubmit(formData);
     }
@@ -147,7 +162,7 @@ function ProjectForm({
                 nome: usuario.nome,
                 email: usuario.email,
                 fotoPerfil: usuario.foto_perfil,
-                nivelAcesso: 4, // Por padrão são adicionados como nivel de acesso 4 (cliente)
+                nivel_acesso_id: 4, // Por padrão são adicionados como nivel de acesso 4 (cliente)
             };
 
             //Limpando o campo de email

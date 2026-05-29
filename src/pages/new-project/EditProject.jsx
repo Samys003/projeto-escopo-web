@@ -33,10 +33,19 @@ function EditProject() {
         const payload = {
             titulo: formData.titulo,
             descricao: formData.descricao,
-            integrantes: formData.integrantes.map((integrante) => ({
-                id: integrante.id,
-                nivel_acesso_id: integrante.nivelAcesso,
-            })),
+            // integrantes:{
+            //     atuais: ,
+            //     excluidos:,
+
+            //     id: integrante.id,
+            //     nivel_acesso_id: integrante.nivelAcesso,
+            // },
+            // convites:{
+            //     adicionais:,
+            //     pendentes:,
+            //     excluidos:,
+            // }
+            // })),
         };
 
         try {

@@ -55,7 +55,7 @@ function ProjectMember({
                 <div className="flex">
                     <select
                         disabled={isOwner}
-                        defaultValue={integrante.nivel_acesso_id || 3}
+                        defaultValue={integrante.nivel_acesso_id || 4}
                         className={`
                         text-(--cinza-700) border border-(--cinza-400) rounded-xl px-1 py-2
                         ${isOwner && 'opacity-50 cursor-not-allowed'}
