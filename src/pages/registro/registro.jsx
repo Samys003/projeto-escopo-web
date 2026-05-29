@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronsLeft, Lightbulb, Save, Trash2 } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
@@ -174,7 +174,7 @@ function MarkdownPreview({ valor }) {
             return;
         }
 
-        const texto = paragrafoAtual.join(' ');
+        const texto = paragrafoAtual.join('\n');
 
         elementos.push(
             <ParagraphLarge
@@ -673,6 +673,15 @@ function Registro() {
         }
     }
 
+    function voltarTelaAnterior() {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+
+        navigate('/dashboard');
+    }
+
     return (
         <div className="min-h-screen bg-[var(--fundo)] lg:flex">
             <MobileHeader />
@@ -682,9 +691,14 @@ function Registro() {
                 <section className="relative mx-auto max-w-[700px] lg:max-w-none">
                     <div className="relative z-30 border-b border-[var(--cinza-400)] pb-2 lg:hidden">
                         <div className="mb-1 flex min-w-0 items-center gap-2">
-                            <Link to="/dashboard" aria-label="Voltar" className="shrink-0">
+                            <button
+                                type="button"
+                                onClick={voltarTelaAnterior}
+                                aria-label="Voltar"
+                                className="shrink-0"
+                            >
                                 <ChevronsLeft className="h-8 w-8 text-gray-900" strokeWidth={3} />
-                            </Link>
+                            </button>
 
                             <TituloRegistro
                                 valor={titulo}
@@ -719,12 +733,17 @@ function Registro() {
                         <div className="flex min-h-[76px] items-start justify-between gap-6">
                             <div className="min-w-0">
                                 <div className="mb-1 flex min-w-0 items-center gap-3">
-                                    <Link to="/dashboard" aria-label="Voltar" className="shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={voltarTelaAnterior}
+                                        aria-label="Voltar"
+                                        className="shrink-0"
+                                    >
                                         <ChevronsLeft
                                             className="h-8 w-8 text-gray-900"
                                             strokeWidth={3}
                                         />
-                                    </Link>
+                                    </button>
                                     <TituloRegistro
                                         valor={titulo}
                                         onChange={alterarTitulo}

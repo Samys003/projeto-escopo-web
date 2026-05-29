@@ -49,7 +49,7 @@ function Login() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 items-start justify-center gap-8 lg:grid-cols-[minmax(20rem,26.625rem)_minmax(31rem,34.875rem)] lg:gap-[clamp(4rem,9vw,9rem)]">
+                <div className="grid grid-cols-1 items-start justify-center gap-8 xl:grid-cols-[minmax(20rem,26.625rem)_minmax(31rem,34.875rem)] xl:gap-[clamp(4rem,9vw,9rem)]">
                     <section className="w-full">
                         <div className="flex min-h-[29rem] flex-col justify-center rounded-[2.25rem] bg-white p-6 shadow-[var(--external-shadow)] sm:p-8 lg:min-h-[32.25rem] lg:px-7 lg:py-12">
                             <h1 className="mx-auto mb-8 max-w-[23rem] text-center text-2xl font-bold leading-snug text-[var(--color-base)]">
@@ -125,7 +125,7 @@ function Login() {
                         </div>
                     </section>
 
-                    <div className="w-full">
+                    <div className="hidden w-full xl:block">
                         <Carrossel />
                     </div>
                 </div>

@@ -9,7 +9,7 @@ function DocumentQuickAccess(props) {
 
     // TODO: Onclick com o id ainda não feito, inserir ao completar a tela de documento
     return (
-        <Link to={`/documento/:${documento.id}`}>
+        <Link to={`/documento/${documento.id}`}>
             <div
                 className="grid gap-[10px] p-3 w-[196px] border-(--cinza-300) border-[2px] rounded-xl overflow-hidden
             lg:w-[352px] lg:h-min lg:max-h-23 lg:px-8 lg:py-2 lg:gap-0"
