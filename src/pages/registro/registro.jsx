@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronsLeft, Save, Trash2 } from 'lucide-react';
+import { ChevronsLeft, Lightbulb, Save, Trash2 } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
@@ -8,7 +8,14 @@ import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
 import Title3 from '../../components/Typography/Title3';
 import Title4 from '../../components/Typography/Title4';
-import { createDocumentComment } from '../../services/api';
+import {
+    createRegister,
+    createDocumentComment,
+    deleteRegister,
+    getRegisterById,
+    updateRegisterContent,
+    updateRegisterTitle,
+} from '../../services/api';
 import { getDashboard } from '../dashboard/services/dashboard-endpoints';
 import Sugestao from './components/sugestao';
 
@@ -22,13 +29,6 @@ const registroPadrao = {
     data_criacao: '2026-03-17T10:00:00Z',
     ultima_alteracao: '2026-05-16T10:00:00Z',
 };
-
-const documentosDestinoPadrao = [
-    { id: '1', titulo: 'Requisito Funcional', setor: 'Web' },
-    { id: '2', titulo: 'Requisito Não Funcional', setor: 'Web' },
-    { id: '3', titulo: 'Requisito Funcional', setor: 'Mobile' },
-    { id: '4', titulo: 'Requisito Não Funcional', setor: 'Mobile' },
-];
 
 function formatarData(data) {
     if (!data) {
@@ -381,10 +381,6 @@ function TituloRegistro({
     );
 }
 
-function chaveRegistro(registroId) {
-    return `registro:${registroId || 'rascunho'}`;
-}
-
 function Registro() {
     const navigate = useNavigate();
     const { registroId: registroIdParam } = useParams();
@@ -392,13 +388,18 @@ function Registro() {
     const registroId = normalizarIdUrl(
         registroIdParam || searchParams.get('id') || searchParams.get('registroId'),
     );
+    const projetoId = normalizarIdUrl(
+        searchParams.get('projetoId') ||
+            searchParams.get('projectId') ||
+            searchParams.get('projeto_id'),
+    );
 
     const [registro, setRegistro] = useState(registroPadrao);
     const [titulo, setTitulo] = useState(registroPadrao.titulo);
     const [conteudo, setConteudo] = useState(registroPadrao.conteudo);
     const [tituloOriginal, setTituloOriginal] = useState(registroPadrao.titulo);
     const [conteudoOriginal, setConteudoOriginal] = useState(registroPadrao.conteudo);
-    const [documentosDestino, setDocumentosDestino] = useState(documentosDestinoPadrao);
+    const [documentosDestino, setDocumentosDestino] = useState([]);
     const [erro, setErro] = useState('');
     const [aviso, setAviso] = useState('');
     const [carregando, setCarregando] = useState(true);
@@ -407,28 +408,43 @@ function Registro() {
     const [editandoConteudo, setEditandoConteudo] = useState(false);
     const [sugestaoAberta, setSugestaoAberta] = useState(false);
     const [trechoSelecionado, setTrechoSelecionado] = useState('');
+    const [gatilhoSugestao, setGatilhoSugestao] = useState(null);
 
-    const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
+    const registroNovo = !registroId && Boolean(projetoId);
+    const temAlteracao = registroNovo || titulo !== tituloOriginal || conteudo !== conteudoOriginal;
     const conteudoEmEdicao = editandoConteudo || conteudo !== conteudoOriginal;
+    const ultimaAlteracao = primeiroValor(
+        registro,
+        ['ultima_alteracao', 'atualizado_em', 'updated_at'],
+        registroPadrao.ultima_alteracao,
+    );
     const dataCriacao = primeiroValor(
         registro,
         ['data_criacao', 'criado_em', 'created_at', 'criacao'],
         registroPadrao.data_criacao,
     );
-    const documentosDisponiveis = useMemo(
-        () => (documentosDestino.length > 0 ? documentosDestino : documentosDestinoPadrao),
-        [documentosDestino],
-    );
+    const documentosDisponiveis = useMemo(() => documentosDestino, [documentosDestino]);
 
     useEffect(() => {
-        function carregarRegistro() {
+        async function carregarRegistro() {
+            if (!registroId) {
+                setRegistro(registroPadrao);
+                setTitulo(registroPadrao.titulo);
+                setConteudo(registroPadrao.conteudo);
+                setTituloOriginal(registroPadrao.titulo);
+                setConteudoOriginal(registroPadrao.conteudo);
+                setErro(projetoId ? '' : 'Informe o ID do registro na URL.');
+                setEditandoConteudo(false);
+                setCarregando(false);
+                return;
+            }
+
             try {
                 setCarregando(true);
                 setErro('');
 
-                const registroSalvo = localStorage.getItem(chaveRegistro(registroId));
-                const dados = registroSalvo ? JSON.parse(registroSalvo) : null;
-                const proximoRegistro = dados?.registro || registroPadrao;
+                const registroApi = await getRegisterById(registroId);
+                const proximoRegistro = registroApi || registroPadrao;
                 const proximoTitulo = proximoRegistro.titulo || 'Registro';
                 const proximoConteudo = proximoRegistro.conteudo || '';
 
@@ -446,7 +462,7 @@ function Registro() {
         }
 
         carregarRegistro();
-    }, [registroId]);
+    }, [projetoId, registroId]);
 
     useEffect(() => {
         let ativo = true;
@@ -463,7 +479,7 @@ function Registro() {
                 }
             } catch {
                 if (ativo) {
-                    setDocumentosDestino(documentosDestinoPadrao);
+                    setDocumentosDestino([]);
                 }
             }
         }
@@ -475,19 +491,52 @@ function Registro() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!gatilhoSugestao) {
+            return undefined;
+        }
+
+        function fecharGatilho() {
+            setGatilhoSugestao(null);
+        }
+
+        window.addEventListener('click', fecharGatilho);
+        window.addEventListener('scroll', fecharGatilho, true);
+
+        return () => {
+            window.removeEventListener('click', fecharGatilho);
+            window.removeEventListener('scroll', fecharGatilho, true);
+        };
+    }, [gatilhoSugestao]);
+
     function alterarTitulo(event) {
         setTitulo(event.target.value.replace(/\s*\n\s*/g, ' '));
     }
 
-    function abrirSugestaoComTrecho(trecho) {
+    function mostrarGatilhoSugestao({ trecho, x, y }) {
         if (!trecho.trim()) {
             return;
         }
 
         setTrechoSelecionado(trecho.trim());
-        setSugestaoAberta(true);
+        setGatilhoSugestao({ x, y });
         setAviso('');
         setErro('');
+    }
+
+    function abrirSugestaoComTrecho() {
+        if (!registroId) {
+            setGatilhoSugestao(null);
+            setErro('Abra um registro salvo antes de criar uma sugestão.');
+            return;
+        }
+
+        if (!trechoSelecionado.trim()) {
+            return;
+        }
+
+        setGatilhoSugestao(null);
+        setSugestaoAberta(true);
     }
 
     function abrirSugestaoDoPreview(event) {
@@ -498,7 +547,7 @@ function Registro() {
         }
 
         event.preventDefault();
-        abrirSugestaoComTrecho(trecho);
+        mostrarGatilhoSugestao({ trecho, x: event.clientX, y: event.clientY });
     }
 
     function abrirSugestaoDoEditor(event) {
@@ -511,20 +560,16 @@ function Registro() {
         }
 
         event.preventDefault();
-        abrirSugestaoComTrecho(trecho);
+        mostrarGatilhoSugestao({ trecho, x: event.clientX, y: event.clientY });
     }
 
     async function enviarSugestao(destinos) {
-        const caminhoRegistro = registroId ? `/registro/${registroId}` : '/registro';
-        const linkRegistro = `${window.location.origin}${caminhoRegistro}`;
-        const conteudoSugestao = [
-            `Sugestão criada a partir de ${titulo || 'Registro'}.`,
-            '',
-            'Trecho selecionado:',
-            trechoSelecionado,
-            '',
-            `Origem: ${linkRegistro}`,
-        ].join('\n');
+        if (!registroId) {
+            throw new Error('Abra um registro salvo antes de criar uma sugestão.');
+        }
+
+        const registroReferenciaId = Number(registroId);
+        const conteudoSugestao = trechoSelecionado.trim();
 
         await Promise.all(
             destinos.map((destino) =>
@@ -532,7 +577,9 @@ function Registro() {
                     documento_id: destino.documentoId,
                     conteudo: conteudoSugestao,
                     parent_id: null,
-                    registro_referencia_id: registroId || null,
+                    registro_referencia_id: Number.isNaN(registroReferenciaId)
+                        ? registroId
+                        : registroReferenciaId,
                     comentario_tipo_id: 3,
                 }),
             ),
@@ -547,27 +594,51 @@ function Registro() {
     }
 
     async function salvarRegistro() {
+        if (!registroId) {
+            if (!projetoId) {
+                setErro('Informe o ID do registro ou o ID do projeto na URL.');
+                return;
+            }
+
+            try {
+                setSalvando(true);
+                setErro('');
+                const novoRegistro = await createRegister({
+                    projeto_id: projetoId,
+                    titulo,
+                    conteudo,
+                });
+
+                navigate(`/registro/${novoRegistro.id}`);
+            } catch (error) {
+                setErro(error.message || 'Erro ao criar registro.');
+            } finally {
+                setSalvando(false);
+            }
+            return;
+        }
+
         try {
             setSalvando(true);
             setErro('');
 
-            const registroAtualizado = {
-                ...registro,
-                titulo,
-                conteudo,
-                ultima_alteracao: new Date().toISOString(),
-            };
+            if (titulo !== tituloOriginal) {
+                await updateRegisterTitle({ registro_id: registroId, titulo });
+            }
 
-            localStorage.setItem(
-                chaveRegistro(registroId),
-                JSON.stringify({
-                    registro: registroAtualizado,
-                }),
-            );
+            if (conteudo !== conteudoOriginal) {
+                await updateRegisterContent({ registro_id: registroId, conteudo });
+            }
+
+            const registroAtualizado = await getRegisterById(registroId);
+            const proximoTitulo = registroAtualizado?.titulo || titulo;
+            const proximoConteudo = registroAtualizado?.conteudo || '';
 
             setRegistro(registroAtualizado);
-            setTituloOriginal(titulo);
-            setConteudoOriginal(conteudo);
+            setTitulo(proximoTitulo);
+            setConteudo(proximoConteudo);
+            setTituloOriginal(proximoTitulo);
+            setConteudoOriginal(proximoConteudo);
             setEditandoConteudo(false);
         } catch (error) {
             setErro(error.message || 'Erro ao salvar registro.');
@@ -576,8 +647,11 @@ function Registro() {
         }
     }
 
-    function excluirRegistro() {
-        if (excluindo) {
+    async function excluirRegistro() {
+        if (!registroId || excluindo) {
+            if (!registroId) {
+                setErro('Informe o ID do registro na URL.');
+            }
             return;
         }
 
@@ -589,7 +663,8 @@ function Registro() {
 
         try {
             setExcluindo(true);
-            localStorage.removeItem(chaveRegistro(registroId));
+            setErro('');
+            await deleteRegister(registroId);
             navigate('/dashboard');
         } catch (error) {
             setErro(error.message || 'Erro ao excluir registro.');
@@ -630,7 +705,7 @@ function Registro() {
                             ) : (
                                 <div className="inline-flex max-w-full rounded-full bg-[var(--roxo-light)] px-4 py-0.5">
                                     <ParagraphMedium className="truncate text-[var(--color-variant)]">
-                                        Última Alteração: {formatarData(registro.ultima_alteracao)}
+                                        Última Alteração: {formatarData(ultimaAlteracao)}
                                     </ParagraphMedium>
                                 </div>
                             )}
@@ -669,8 +744,7 @@ function Registro() {
                                     ) : (
                                         <div className="inline-flex min-h-5 max-w-[260px] items-center rounded-full bg-[var(--roxo-light)] px-6 text-center">
                                             <ParagraphMedium className="truncate text-[var(--color-variant)]">
-                                                Última alteração:{' '}
-                                                {formatarData(registro.ultima_alteracao)}
+                                                Última alteração: {formatarData(ultimaAlteracao)}
                                             </ParagraphMedium>
                                         </div>
                                     )}
@@ -703,7 +777,7 @@ function Registro() {
                         </ParagraphMedium>
                     )}
 
-                    <div className="relative z-10 mt-3 min-h-[528px] rounded-[22px] border border-[var(--cinza-300)] bg-white px-9 py-8 text-black shadow-[var(--external-shadow)] sm:px-10 lg:mt-[48px] lg:min-h-[calc(100vh-260px)] lg:rounded-xl lg:px-8 lg:py-8 lg:shadow-none">
+                    <div className="relative z-10 mt-3 min-h-[528px] rounded-[22px] border border-[var(--cinza-300)] bg-white px-9 py-8 text-black  sm:px-10 lg:mt-[20px] lg:min-h-[calc(100vh-260px)] lg:rounded-xl lg:px-8 lg:py-8 lg:shadow-none">
                         {carregando ? (
                             <ParagraphMedium className="text-[var(--cinza-600)]">
                                 Carregando registro...
@@ -760,6 +834,28 @@ function Registro() {
                     </div>
                 </section>
             </main>
+
+            {gatilhoSugestao && (
+                <button
+                    type="button"
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        abrirSugestaoComTrecho();
+                    }}
+                    className="fixed z-40 flex min-h-10 items-center gap-2 rounded-full border border-[var(--color-base)] bg-white px-4 py-2 text-[var(--color-base)] shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--roxo-light)]"
+                    style={{
+                        left: `min(${gatilhoSugestao.x}px, calc(100vw - 190px))`,
+                        top: `min(${gatilhoSugestao.y}px, calc(100vh - 56px))`,
+                    }}
+                    aria-label="Criar sugestão com o trecho selecionado"
+                >
+                    <Lightbulb size={19} />
+                    <ParagraphMedium as="span" className="font-semibold text-[var(--color-base)]">
+                        Criar sugestão
+                    </ParagraphMedium>
+                </button>
+            )}
 
             {sugestaoAberta && (
                 <Sugestao

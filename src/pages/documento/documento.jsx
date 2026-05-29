@@ -258,7 +258,6 @@ function EditorMarkdown({ valor, onChange, onBlur }) {
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
             className="min-h-[520px] w-full resize-none bg-transparent font-inter text-[16px] leading-7 text-black outline-none placeholder:text-[var(--cinza-500)] lg:min-h-[calc(100vh-340px)]"
-            placeholder="Use Markdown: ## título, **negrito**, *itálico*, - lista..."
         />
     );
 }
@@ -548,7 +547,18 @@ function Documento() {
                     <div className="relative z-30 hidden border-b border-[var(--cinza-400)] pb-3 lg:block lg:min-h-[84px]">
                         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(190px,260px)_112px] lg:items-start">
                             <div className="min-w-0">
-                                <div className="mb-2 flex min-w-0 items-center gap-3 lg:mb-1 lg:pl-12 xl:pl-16">
+                                <div className="mb-2 flex min-w-0 items-center gap-3 lg:mb-1">
+                                    <Link
+                                        to="/listadedocumento"
+                                        aria-label="Voltar"
+                                        className="shrink-0"
+                                    >
+                                        <ChevronsLeft
+                                            className="h-8 w-8 text-gray-900"
+                                            strokeWidth={3}
+                                        />
+                                    </Link>
+
                                     <TituloDocumento
                                         valor={titulo}
                                         onChange={alterarTitulo}
@@ -559,9 +569,11 @@ function Documento() {
                                 </div>
 
                                 {temAlteracao ? (
-                                    <ParagraphMedium className="break-words text-[var(--color-alert)] [overflow-wrap:anywhere] lg:ml-12 xl:ml-16">
-                                        Alterações não salvas!
-                                    </ParagraphMedium>
+                                    <div className="inline-flex min-h-5 max-w-[250px] items-center rounded-full bg-[#ffd6d6] px-6 text-center">
+                                        <ParagraphMedium className="truncate text-[var(--color-alert)]">
+                                            Alterações não salvas!
+                                        </ParagraphMedium>
+                                    </div>
                                 ) : (
                                     <button
                                         type="button"

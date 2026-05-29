@@ -127,10 +127,7 @@ function Sugestao({ trecho, documentos, onFechar, onEnviar }) {
         () => setoresDisponiveis(documentosNormalizados),
         [documentosNormalizados],
     );
-    const [destinos, setDestinos] = useState(() => [
-        criarDestino(documentosNormalizados, 1, 'Web'),
-        criarDestino(documentosNormalizados, 2, 'Mobile'),
-    ]);
+    const [destinos, setDestinos] = useState(() => [criarDestino(documentosNormalizados, 1)]);
     const [enviando, setEnviando] = useState(false);
     const [erro, setErro] = useState('');
 

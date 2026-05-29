@@ -443,6 +443,50 @@ function ReferenciaComentario({ referencia }) {
     return <div className={className}>{conteudo}</div>;
 }
 
+function renderizarTextoComentario(texto) {
+    const valor = String(texto || '');
+    const partes = [];
+    const regex = /(\[[^\]]+\]\(([^)]+)\)|https?:\/\/[^\s]+)/g;
+    let ultimoIndice = 0;
+    let indice = 0;
+
+    for (const match of valor.matchAll(regex)) {
+        if (match.index > ultimoIndice) {
+            partes.push(valor.slice(ultimoIndice, match.index));
+        }
+
+        const trecho = match[0];
+        const chave = `comentario-link-${indice}`;
+        const markdown = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        const rotulo = markdown?.[1] || trecho;
+        const url = markdown?.[2] || trecho;
+        const className = 'text-[var(--color-base)] underline underline-offset-2';
+
+        if (url.startsWith('/')) {
+            partes.push(
+                <Link key={chave} to={url} className={className}>
+                    {rotulo}
+                </Link>,
+            );
+        } else {
+            partes.push(
+                <a key={chave} href={url} target="_blank" rel="noreferrer" className={className}>
+                    {rotulo}
+                </a>,
+            );
+        }
+
+        ultimoIndice = match.index + trecho.length;
+        indice += 1;
+    }
+
+    if (ultimoIndice < valor.length) {
+        partes.push(valor.slice(ultimoIndice));
+    }
+
+    return partes;
+}
+
 function ComentarioCard({ comentario, mobile = false, onResponder }) {
     const referencia = comentario.resposta || comentario.referencia;
     const textoNome = mobile ? 'text-[16px]' : 'text-[20px]';
@@ -489,7 +533,7 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                     {referencia && <ReferenciaComentario referencia={referencia} />}
 
                     <ParagraphLarge className="whitespace-pre-wrap break-words leading-6 [overflow-wrap:anywhere]">
-                        {comentario.texto}
+                        {renderizarTextoComentario(comentario.texto)}
                     </ParagraphLarge>
                 </div>
 
