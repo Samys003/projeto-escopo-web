@@ -1,8 +1,9 @@
-function Title2({ as: Component = 'h2', className = '', children, ...props }) {
+function Title2(props) {
     return (
-        <Component className={`text-2xl font-inter ${className} font-semibold`} {...props}>
-            {children}
-        </Component>
+        <h2 className={`text-2xl font-inter font-semibold ${props.className}`}>
+            {' '}
+            {props.children}
+        </h2>
     );
 }
 

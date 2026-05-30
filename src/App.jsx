@@ -5,12 +5,18 @@ import Senha from './pages/login/Senha';
 import Redefinir from './pages/login/Redefinir';
 import Dashboard from './pages/dashboard/Dashboard';
 import Configuracao from './pages/configuracao/configuracao';
+import ProjectDetails from './pages/project-details/ProjectDetails';
+import NewProject from './pages/new-project/NewProject';
+import ProjectList from './pages/project-list/ProjectList';
+import DetailsMeeting from './pages/detailsMeeting/DetailsMeeting';
 import Documento from './pages/documento/documento';
 import Registro from './pages/registro/registro';
 function App() {
     return (
         <Router>
             <Routes>
+                <Route path="/projeto/:id" element={<ProjectDetails />} />
+                <Route path="/reuniao/:id" element={<DetailsMeeting />} />
                 <Route path="/" element={<Login />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/senha" element={<Senha />} />
