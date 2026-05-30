@@ -9,7 +9,7 @@
     --fundo: #fafafa;
     --color-base: #552ba9;
     --color-verde: #19ad70;
-    --color-vermelho: #ef4444;
+    --color-alert: #ff3434;
     --cinza-700: #374151;
     --cinza-600: #4b5563;
     --cinza-500: #6b7280;
@@ -22,6 +22,10 @@
     --fundo: #fafafa;
     --color-dark: #42257c;
     --color-variant: #7645d787;
+
+    --login-background: linear-gradient(90deg, rgba(126, 34, 206, 1) 0%, rgba(85, 43, 169, 1) 100%);
+
+    --bar-background: linear-gradient(90deg, rgb(82, 44, 177) 0%, rgba(85, 43, 169, 1) 100%);
 
     /* Sombra */
     --external-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
