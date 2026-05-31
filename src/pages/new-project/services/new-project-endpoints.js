@@ -9,7 +9,7 @@ export async function createProject({ titulo, descricao, integrantes }) {
     return parseResponse(response);
 }
 
-export async function updateProject({ titulo, descricao, integrantes, projetoId }) {
+export async function updateProject({ projetoId, titulo, descricao, integrantes }) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${projetoId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),

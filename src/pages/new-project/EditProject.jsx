@@ -31,25 +31,23 @@ function EditProject() {
 
     async function handleAtualizarProjeto(formData) {
         const payload = {
+            projetoId: projetoId,
             titulo: formData.titulo,
             descricao: formData.descricao,
-            // integrantes:{
-            //     atuais: ,
-            //     excluidos:,
-
-            //     id: integrante.id,
-            //     nivel_acesso_id: integrante.nivelAcesso,
-            // },
-            // convites:{
-            //     adicionais:,
-            //     pendentes:,
-            //     excluidos:,
-            // }
-            // })),
+            integrantes: {
+                atuais: formData.integrantesAtuais,
+                excluidos: formData.integrantesExcluidos,
+            },
+            convites: {
+                adicionais: formData.integrantesAdicionais,
+                pendentes: formData.pendentes,
+                excluidos: formData.convitesExcluidos,
+            },
         };
 
         try {
-            const response = await createProject(payload);
+            const response = await updateProject(payload);
+            console.log(response);
             navigate(`/projeto/${response.id}`);
         } catch (error) {
             //TODO: Está faltando tratativa pro response

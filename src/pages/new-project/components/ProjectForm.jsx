@@ -20,8 +20,10 @@ function ProjectForm({
     const [integrantesAtuais, setIntegrantesAtuais] = useState([]);
     const [integrantesAdicionais, setIntegrantesAdicionais] = useState([]);
     const [pendentes, setPendentes] = useState([]);
-    // const [erro, setErro] = useState('');
+    const [erro, setErro] = useState('');
     const [emailError, setEmailError] = useState('');
+    const [integrantesExcluidos, setIntegrantesExcluidos] = useState([]);
+    const [convitesExcluidos, setConvitesExcluidos] = useState([]);
     const isEdit = mode === 'edit';
 
     const {
@@ -49,16 +51,18 @@ function ProjectForm({
             };
         }
         // Caso esteja editando um projeto
-        else
+        else {
             formData = {
                 ...data,
-                integrantesAtuais: integrantesAtuais,
-                integrantesExcluidos: '' /*TODO*/,
-                convitesAdicionais: integrantesAdicionais,
-                convitesPendentes: pendentes,
-                convitesExcluidos: '' /*TODO*/,
-            };
 
+                integrantesAtuais,
+                integrantesExcluidos,
+
+                integrantesAdicionais,
+                pendentes,
+                convitesExcluidos,
+            };
+        }
         await onSubmit(formData);
     }
 
@@ -194,9 +198,24 @@ function ProjectForm({
         );
     }
 
-    //Para remover um integrante da lista
-    function onRemoveIntegrante(setLista, integranteId) {
+    //Para remover um integrante da lista (Função substituida pelas especificas logo abaixo)
+    function onRemoveIntegrante(setLista, integranteId, setListaRemovidos = null) {
+        setListaRemovidos((prev) => [...removidos, integranteId]);
         setLista((prev) => prev.filter((integrante) => integrante.id !== integranteId));
+    }
+
+    function onRemoveIntegranteAtual(integranteId) {
+        setIntegrantesAtuais((prev) => prev.filter((integrante) => integrante.id !== integranteId));
+        setIntegrantesExcluidos((prev) => [...removidos, integranteId]);
+    }
+
+    function onRemovePendente(conviteId) {
+        setIntegrantesAtuais((prev) => prev.filter((convite) => convite.id !== conviteId));
+        setConvitesExcluidos((prev) => [...removidos, conviteId]);
+    }
+
+    function onRemoveAdicional(adicionalId) {
+        setIntegrantesAdicionais((prev) => prev.filter((adicional) => adicionalId !== adicionalId));
     }
 
     return (
@@ -262,9 +281,7 @@ function ProjectForm({
                                 key={integrante.id}
                                 integrante={integrante}
                                 isOwner={integrante.isOwner}
-                                onClose={() =>
-                                    onRemoveIntegrante(setIntegrantesAtuais, integrante.id)
-                                }
+                                onClose={() => onRemoveIntegranteAtual(integrante.id)}
                                 onNivelAcessoChange={(integranteId, novoNivel) =>
                                     atualizarNivelAcesso(
                                         setIntegrantesAtuais,
@@ -288,9 +305,7 @@ function ProjectForm({
                                 integrante={adicional}
                                 isOwner={adicional.isOwner}
                                 adicional={true}
-                                onClose={() =>
-                                    onRemoveIntegrante(setIntegrantesAdicionais, adicional.id)
-                                }
+                                onClose={() => onRemoveAdicional(adicional.id)}
                                 onNivelAcessoChange={(integranteId, novoNivel) =>
                                     atualizarNivelAcesso(
                                         setIntegrantesAdicionais,
@@ -319,9 +334,7 @@ function ProjectForm({
                                         <ProjectMember
                                             key={pendente.id}
                                             integrante={pendente}
-                                            onClose={() =>
-                                                onRemoveIntegrante(setPendentes, pendente.id)
-                                            }
+                                            onClose={() => onRemovePendente(pendente.id)}
                                             pendente={true}
                                             // TODO: Adicionar método para remover convite
                                             onNivelAcessoChange={(integranteId, novoNivel) =>
@@ -339,11 +352,12 @@ function ProjectForm({
                     </div>
                 )}
             </div>
-            <div className="w-full flex flex-col items-end">
+            <div className="w-full flex flex-col items-end ">
                 <button
                     className="
                     py-2 px-5 bg-(--color-base) text-white font-semibold rounded-lg text-xl w-min text-nowrap
-                    lg:py-3>"
+                    lg:py-3>
+                    hover:cursor-pointer"
                     onClick={() => handleSubmit(submitForm)()}
                 >
                     {isEdit ? 'Atualizar Projeto' : 'Criar Projeto'}

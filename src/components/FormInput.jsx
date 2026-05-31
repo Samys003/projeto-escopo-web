@@ -41,7 +41,9 @@ function FormInput({
                         }
                     }}
                 />
-                <button onClick={onInputSubmit}>{icon}</button>
+                <button onClick={onInputSubmit} className="hover:cursor-pointer">
+                    {icon}
+                </button>
             </div>
         </div>
     );
