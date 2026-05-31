@@ -65,6 +65,7 @@ function EditProject() {
             descricao: formData.descricao,
         };
 
+        // Iniciando integrantes no payload conforme a existencia de conteudo
         if (integrantesAtuais.length || integrantesExcluidos.length) {
             payload.integrantes = {};
 
@@ -77,6 +78,7 @@ function EditProject() {
             }
         }
 
+        // Iniciando integrantes no payload conforme a existencia de conteudo
         if (convitesAdicionais.length || convitesPendentes.length || convitesExcluidos.length) {
             payload.convites = {};
 

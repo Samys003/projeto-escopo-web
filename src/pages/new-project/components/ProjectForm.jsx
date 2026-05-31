@@ -123,7 +123,13 @@ function ProjectForm({
     async function initListaParticipantes(projectId) {
         const response = await getProjectMembers(projectId);
 
-        setIntegrantesAtuais(response.participantes);
+        const participantes = response.participantes.map((participante) => ({
+            ...participante,
+            isOwner: participante.usuario_id === initialData.criador_id,
+            nivel_acesso_id: Number(participante.nivel_acesso_id),
+        }));
+
+        setIntegrantesAtuais(participantes);
         setPendentes(response.pendentes);
     }
 
@@ -170,7 +176,7 @@ function ProjectForm({
             };
 
             //Limpando o campo de email
-            reset({ email: '' });
+            setValue('email', '');
             setIntegrantesAdicionais((prev) => {
                 // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
                 // Adiciona a lista de integrantes adicionais
@@ -179,23 +185,6 @@ function ProjectForm({
         } catch (error) {
             onError('Usuário não encontrado ou ocorreu uma falha na requisição');
         }
-    }
-
-    //Quando o usuário mudar o nível de acesso de um integrante (Função substituida pelas especificas logo abaixo)
-    function atualizarNivelAcesso(setLista, integranteId, novoNivel) {
-        setLista((prev) =>
-            prev.map((integrante) => {
-                // Caso não seja o integrante que estamos atualizando o nivel de acesso
-                if (integrante.id !== integranteId) {
-                    return integrante;
-                }
-                // caso contrário, iremos atualizar e inserir o array
-                return {
-                    ...integrante,
-                    nivel_acesso_id: Number(novoNivel),
-                };
-            }),
-        );
     }
 
     function atualizarNivelAcessoIntegrante(usuarioProjetoId, novoNivel) {
@@ -245,16 +234,7 @@ function ProjectForm({
         );
     }
 
-    //Para remover um integrante da lista (Função substituida pelas especificas logo abaixo)
-    function onRemoveIntegrante(setLista, integranteId, setListaRemovidos = null) {
-        setListaRemovidos((prev) => [...removidos, integranteId]);
-        setLista((prev) => prev.filter((integrante) => integrante.id !== integranteId));
-    }
-
     function onRemoveIntegranteAtual(integranteId) {
-        console.log('GAHH');
-        console.log(integranteId);
-        console.log(integrantesAtuais);
         setIntegrantesAtuais((prev) =>
             prev.filter((integrante) => integrante.usuario_projeto_id !== integranteId),
         );
@@ -274,8 +254,6 @@ function ProjectForm({
 
     return (
         <div className="flex flex-col gap-4">
-            {/* TODO: Montar popup de alerta caso ocorra uma falha com a API */}
-            {submitError && <AlertMessage>{submitError}</AlertMessage>}
             <FormInput
                 labelContent="Titulo do Projeto"
                 inputClassName="text-lg lg:text-xl"
