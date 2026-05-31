@@ -5,7 +5,9 @@ import Title4 from '../../../components/Typography/Title4';
 
 function Project({ projeto }) {
     return (
-        <Link to={`/projeto/${projeto.id}`}>
+        <Link
+            to={`/projeto/${projeto.id}`}
+        >
             <div
                 className="flex flex-col w-full h-[120px] p-2
                 rounded-lg shadow-(--external-shadow) justify-between
@@ -38,7 +40,7 @@ function Project({ projeto }) {
                     ></ChevronRight>
                 </div>
                 <div className="flex -space-x-2">
-                    {projeto.foto_usuarios.map((foto) =>
+                    {projeto.foto_usuarios.map((foto, index) =>
                         foto ? (
                             <img
 <<<<<<< integracao-tela-documentacao

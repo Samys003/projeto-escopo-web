@@ -2,14 +2,10 @@ import MobileHeader from '../../components/MobileHeader.jsx';
 import DesktopSidebar from '../../components/DesktopSideBar.jsx';
 import { getDashboard, answerInvite } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
-import iconFolder from '../../assets/icons/icon-folder.svg';
 
 import Title2 from '../../components/Typography/Title2.jsx';
-import Title4 from '../../components/Typography/Title4.jsx';
-import Title3 from '../../components/Typography/Title3.jsx';
 
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
-import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 import { formatDate } from '../../utils/formatters';
 
 import DocumentQuickAccess from './components/DocumentQuickAccess.jsx';
@@ -96,7 +92,7 @@ function Dashboard() {
                     </div>
                 </div>
 
-                <Title2 className="text-(--cinza-700)">Convites</Title2>
+                {convites.length > 0 && <Title2 className="text-(--cinza-700)">Convites</Title2>}
                 <div className="flex flex-col gap-[10px]">
                     {convites?.length > 0 ? (
                         Object.entries(convitesOrdenados).map(([data, convitesDia]) => (
