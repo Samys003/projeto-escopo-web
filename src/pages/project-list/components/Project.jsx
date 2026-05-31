@@ -6,8 +6,7 @@ import Title4 from '../../../components/Typography/Title4';
 function Project({ projeto }) {
     return (
         <Link
-            // to={`/projeto/${projeto.id}`}
-            to={`/projeto/${projeto.id}/editar-projeto`}
+            to={`/projeto/${projeto.id}`}
         >
             <div
                 className="flex flex-col w-full h-[120px] p-2
