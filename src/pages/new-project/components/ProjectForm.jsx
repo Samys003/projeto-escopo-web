@@ -181,7 +181,7 @@ function ProjectForm({
         }
     }
 
-    //Quando o usuário mudar o nível de acesso de um integrante
+    //Quando o usuário mudar o nível de acesso de um integrante (Função substituida pelas especificas logo abaixo)
     function atualizarNivelAcesso(setLista, integranteId, novoNivel) {
         setLista((prev) =>
             prev.map((integrante) => {
@@ -192,7 +192,54 @@ function ProjectForm({
                 // caso contrário, iremos atualizar e inserir o array
                 return {
                     ...integrante,
-                    nivelAcesso: Number(novoNivel),
+                    nivel_acesso_id: Number(novoNivel),
+                };
+            }),
+        );
+    }
+
+    function atualizarNivelAcessoIntegrante(usuarioProjetoId, novoNivel) {
+        setIntegrantesAtuais((prev) =>
+            prev.map((integrante) => {
+                // Caso não seja o integrante que estamos atualizando o nivel de acesso
+                if (integrante.usuario_projeto_id !== usuarioProjetoId) {
+                    return integrante;
+                }
+                // caso contrário, iremos atualizar e inserir o array
+                return {
+                    ...integrante,
+                    nivel_acesso_id: Number(novoNivel),
+                };
+            }),
+        );
+    }
+
+    function atualizarNivelAcessoConvite(conviteId, novoNivel) {
+        setPendentes((prev) =>
+            prev.map((pendente) => {
+                // Caso não seja o convite que estamos atualizando o nivel de acesso
+                if (pendente.convite_id !== conviteId) {
+                    return pendente;
+                }
+                // caso contrário, iremos atualizar e inserir o array
+                return {
+                    ...pendente,
+                    nivel_acesso_id: Number(novoNivel),
+                };
+            }),
+        );
+    }
+    function atualizarNivelAcessoAdicional(usuarioId, novoNivel) {
+        setIntegrantesAdicionais((prev) =>
+            prev.map((adicional) => {
+                // Caso não seja o convite que estamos atualizando o nivel de acesso
+                if (adicional.id !== usuarioId) {
+                    return adicional;
+                }
+                // caso contrário, iremos atualizar e inserir o array
+                return {
+                    ...adicional,
+                    nivel_acesso_id: Number(novoNivel),
                 };
             }),
         );
@@ -205,17 +252,24 @@ function ProjectForm({
     }
 
     function onRemoveIntegranteAtual(integranteId) {
-        setIntegrantesAtuais((prev) => prev.filter((integrante) => integrante.id !== integranteId));
-        setIntegrantesExcluidos((prev) => [...removidos, integranteId]);
+        console.log('GAHH');
+        console.log(integranteId);
+        console.log(integrantesAtuais);
+        setIntegrantesAtuais((prev) =>
+            prev.filter((integrante) => integrante.usuario_projeto_id !== integranteId),
+        );
+        setIntegrantesExcluidos((prev) => [...prev, integranteId]);
     }
 
     function onRemovePendente(conviteId) {
-        setIntegrantesAtuais((prev) => prev.filter((convite) => convite.id !== conviteId));
-        setConvitesExcluidos((prev) => [...removidos, conviteId]);
+        setPendentes((prev) => prev.filter((convite) => convite.convite_id !== conviteId));
+        setConvitesExcluidos((prev) => [...prev, conviteId]);
     }
 
     function onRemoveAdicional(adicionalId) {
-        setIntegrantesAdicionais((prev) => prev.filter((adicional) => adicionalId !== adicionalId));
+        setIntegrantesAdicionais((prev) =>
+            prev.filter((adicional) => adicional.id !== adicionalId),
+        );
     }
 
     return (
@@ -278,16 +332,15 @@ function ProjectForm({
                     <div className="flex flex-col gap-1">
                         {integrantesAtuais.map((integrante) => (
                             <ProjectMember
-                                key={integrante.id}
+                                key={integrante.usuario_projeto_id}
                                 integrante={integrante}
+                                id={integrante.usuario_projeto_id}
                                 isOwner={integrante.isOwner}
-                                onClose={() => onRemoveIntegranteAtual(integrante.id)}
+                                onClose={() =>
+                                    onRemoveIntegranteAtual(integrante.usuario_projeto_id)
+                                }
                                 onNivelAcessoChange={(integranteId, novoNivel) =>
-                                    atualizarNivelAcesso(
-                                        setIntegrantesAtuais,
-                                        integranteId,
-                                        novoNivel,
-                                    )
+                                    atualizarNivelAcessoIntegrante(integranteId, novoNivel)
                                 }
                             ></ProjectMember>
                         ))}
@@ -303,15 +356,12 @@ function ProjectForm({
                             <ProjectMember
                                 key={adicional.id}
                                 integrante={adicional}
+                                id={adicional.id}
                                 isOwner={adicional.isOwner}
                                 adicional={true}
                                 onClose={() => onRemoveAdicional(adicional.id)}
                                 onNivelAcessoChange={(integranteId, novoNivel) =>
-                                    atualizarNivelAcesso(
-                                        setIntegrantesAdicionais,
-                                        integranteId,
-                                        novoNivel,
-                                    )
+                                    atualizarNivelAcessoAdicional(integranteId, novoNivel)
                                 }
                             ></ProjectMember>
                         ))}
@@ -332,17 +382,14 @@ function ProjectForm({
                                 <div className="flex flex-col gap-1">
                                     {pendentes.map((pendente) => (
                                         <ProjectMember
-                                            key={pendente.id}
+                                            key={pendente.convite_id}
                                             integrante={pendente}
-                                            onClose={() => onRemovePendente(pendente.id)}
+                                            id={pendente.convite_id}
+                                            onClose={() => onRemovePendente(pendente.convite_id)}
                                             pendente={true}
                                             // TODO: Adicionar método para remover convite
-                                            onNivelAcessoChange={(integranteId, novoNivel) =>
-                                                atualizarNivelAcesso(
-                                                    setPendentes,
-                                                    integranteId,
-                                                    novoNivel,
-                                                )
+                                            onNivelAcessoChange={(conviteId, novoNivel) =>
+                                                atualizarNivelAcessoConvite(conviteId, novoNivel)
                                             }
                                         ></ProjectMember>
                                     ))}

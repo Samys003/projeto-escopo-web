@@ -3,6 +3,7 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
 function ProjectMember({
     integrante,
+    id,
     isOwner = false,
     adicional = false,
     pendente = false,
@@ -55,14 +56,14 @@ function ProjectMember({
                 <div className="flex">
                     <select
                         disabled={isOwner}
-                        defaultValue={integrante.nivel_acesso_id || 4}
+                        value={integrante.nivel_acesso_id || 4}
                         className={`
                         text-(--cinza-700) border border-(--cinza-400) rounded-xl px-1 py-2
                         ${isOwner && 'opacity-50 cursor-not-allowed'}
                         ${adicional && 'border-(--color-variant)'} 
                         `}
                         // TODO: Revisar o color-variant, provavelmente inserir uma nova cor
-                        onChange={(e) => onNivelAcessoChange(integrante.id, e.target.value)}
+                        onChange={(e) => onNivelAcessoChange(id, e.target.value)}
                     >
                         <option value="1">Gerente de Projeto</option>
                         <option value="2">Analista de Requisitos</option>

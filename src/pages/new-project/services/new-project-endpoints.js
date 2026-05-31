@@ -9,11 +9,11 @@ export async function createProject({ titulo, descricao, integrantes }) {
     return parseResponse(response);
 }
 
-export async function updateProject({ projetoId, titulo, descricao, integrantes }) {
+export async function updateProject({ projetoId, titulo, descricao, integrantes, convites }) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${projetoId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ titulo, descricao, integrantes }),
+        body: JSON.stringify({ titulo, descricao, integrantes, convites }),
     });
     return parseResponse(response);
 }

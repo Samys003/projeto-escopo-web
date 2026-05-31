@@ -31,32 +31,78 @@ function EditProject() {
 
             setProjectData(response);
         } catch (error) {
-            setSubmitError('Não foi possível atualizar o projeto');
+            showError(error);
         }
     }
 
-    async function handleAtualizarProjeto(formData) {
+    function estruturarPayloadAtualizacao(formData) {
+        const integrantesAtuais = formData.integrantesAtuais.map((integrante) => ({
+            usuario_projeto_id: integrante.usuario_projeto_id,
+            nivel_acesso_id: integrante.nivel_acesso_id,
+        }));
+
+        const integrantesExcluidos = formData.integrantesExcluidos.map((integranteId) => ({
+            usuario_projeto_id: integranteId,
+        }));
+
+        const convitesAdicionais = formData.integrantesAdicionais.map((integrante) => ({
+            usuario_id: integrante.id,
+            nivel_acesso_id: integrante.nivel_acesso_id,
+        }));
+
+        const convitesPendentes = formData.pendentes.map((convite) => ({
+            convite_id: convite.convite_id,
+            nivel_acesso_id: convite.nivel_acesso_id,
+        }));
+
+        const convitesExcluidos = formData.convitesExcluidos.map((conviteId) => ({
+            convite_id: conviteId,
+        }));
+
         const payload = {
             projetoId: projetoId,
             titulo: formData.titulo,
             descricao: formData.descricao,
-            integrantes: {
-                atuais: formData.integrantesAtuais,
-                excluidos: formData.integrantesExcluidos,
-            },
-            convites: {
-                adicionais: formData.integrantesAdicionais,
-                pendentes: formData.pendentes,
-                excluidos: formData.convitesExcluidos,
-            },
         };
+
+        if (integrantesAtuais.length || integrantesExcluidos.length) {
+            payload.integrantes = {};
+
+            if (integrantesAtuais.length) {
+                payload.integrantes.atuais = integrantesAtuais;
+            }
+
+            if (integrantesExcluidos.length) {
+                payload.integrantes.excluidos = integrantesExcluidos;
+            }
+        }
+
+        if (convitesAdicionais.length || convitesPendentes.length || convitesExcluidos.length) {
+            payload.convites = {};
+
+            if (convitesAdicionais.length) {
+                payload.convites.adicionais = convitesAdicionais;
+            }
+
+            if (convitesPendentes.length) {
+                payload.convites.pendentes = convitesPendentes;
+            }
+
+            if (convitesExcluidos.length) {
+                payload.convites.excluidos = convitesExcluidos;
+            }
+        }
+
+        return payload;
+    }
+    async function handleAtualizarProjeto(formData) {
+        const payload = estruturarPayloadAtualizacao(formData);
 
         try {
             const response = await updateProject(payload);
-            console.log(response);
-            navigate(`/projeto/${response.id}`);
+            navigate(`/projeto/${projetoId}`);
         } catch (error) {
-            //TODO: Está faltando tratativa pro response
+            showError(error);
         }
     }
 
