@@ -34,8 +34,6 @@ function NewProject() {
         } catch (error) {
             setSubmitError('Não foi possível criar o projeto');
         }
-
-        //TODO: Está faltando tratativa pro response do create
     }
 
     return (
