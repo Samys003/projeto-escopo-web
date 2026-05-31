@@ -24,14 +24,16 @@ function NewProject() {
             descricao: formData.descricao,
             integrantes: formData.integrantes.map((integrante) => ({
                 id: integrante.id,
-                nivel_acesso_id: integrante.nivelAcesso,
+                nivel_acesso_id: integrante.nivel_acesso_id,
             })),
         };
+        console.log(payload);
 
         try {
             const response = await createProject(payload);
             navigate(`/projeto/${response.id}`);
         } catch (error) {
+            console.log(error);
             setSubmitError('Não foi possível criar o projeto');
         }
     }

@@ -176,7 +176,7 @@ function ProjectForm({
             };
 
             //Limpando o campo de email
-            setValue('email', '');
+            reset({ email: '' });
             setIntegrantesAdicionais((prev) => {
                 // Puxa a lista de integrantes, reatribui ela a si mesma e adiciona nosso novo integrante
                 // Adiciona a lista de integrantes adicionais
