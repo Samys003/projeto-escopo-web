@@ -18,12 +18,21 @@ function MobileHeader() {
     return (
         <div className="relative lg:hidden">
             <header
-                className="px-4 bg-cover bg-no-repeat flex place-content-between relative z-50"
+                className="relative z-50 flex h-[38px] items-center justify-between overflow-hidden bg-cover bg-no-repeat px-4"
                 style={{ backgroundImage: 'var(--bar-background)' }}
             >
-                <img src={logotipoMobile} alt="" />
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                    {isMenuOpen ? <X className="text-white" /> : <Menu className="text-white" />}
+                <img
+                    src={logotipoMobile}
+                    alt=""
+                    className="h-[38px] w-[161px] object-fill"
+                />
+                <button
+                    type="button"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="flex h-9 w-9 items-center justify-center text-white"
+                    aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                >
+                    {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
             </header>
 
