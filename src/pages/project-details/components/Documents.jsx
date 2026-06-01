@@ -4,7 +4,7 @@ import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import Title2 from '../../../components/Typography/Title2';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
-function Documents({ documentos, deletarCategoria, project }) {
+function Documents({ documentos, project, setOpenModalDeleteCategoria }) {
     return (
         <div className="w-full flex flex-col gap-3 lg:gap-5">
             {documentos?.projeto?.categorias?.map((doc) => {
@@ -19,7 +19,7 @@ function Documents({ documentos, deletarCategoria, project }) {
                             </Title2>
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                                 <IconButton
-                                    onClick={() => deletarCategoria(doc.id)}
+                                    onClick={() => setOpenModalDeleteCategoria(doc)}
                                     className="bg-transparent p-0.5 lg:border lg:border-black lg:w-50 lg:flex lg:gap-2"
                                     textClassName="lg:block hidden  lg:text-(--color-base)"
                                     icon={<Trash2 className="text-(--color-base)"></Trash2>}
@@ -28,6 +28,7 @@ function Documents({ documentos, deletarCategoria, project }) {
                                 </IconButton>
                             )}
                         </div>
+
                         <div className="border w-full flex flex-col p-10 lg:gap-4 lg:p-10 items-center gap-2.5 rounded-lg border-(--cinza-300) lg:items-start justify-between">
                             {doc.documentos.map((subdoc) => {
                                 return (

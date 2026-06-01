@@ -3,7 +3,17 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title4 from '../../../components/Typography/Title4';
 import { X } from 'lucide-react';
 
-function PopUp({ onClose, value, onChange, onClick, tituloNovo, tituloCategoria, placeholder }) {
+function PopUp({
+    onClose,
+    value,
+    onChange,
+    onClick,
+    tituloNovo,
+    tituloCategoria,
+    placeholder,
+    showInput = true,
+    children = '',
+}) {
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
             <div className="p-4 w-85.5 h-44 bg-white rounded-xl">
@@ -20,18 +30,22 @@ function PopUp({ onClose, value, onChange, onClick, tituloNovo, tituloCategoria,
                         <ParagraphMedium className="text-(--cinza-700)">
                             {tituloCategoria}
                         </ParagraphMedium>
-                        <form>
-                            <input
-                                type="text"
-                                className="border border-(--cinza-700) w-73.5 p-1 h-8 rounded-xl text-(--cinza-600)"
-                                placeholder={placeholder}
-                                value={value}
-                                onChange={onChange}
-                            ></input>
-                        </form>
+                        {showInput && (
+                            <form>
+                                <input
+                                    type="text"
+                                    className="border border-(--cinza-700) w-73.5 p-1 h-8 rounded-xl text-(--cinza-600)"
+                                    placeholder={placeholder}
+                                    value={value}
+                                    onChange={onChange}
+                                ></input>
+                            </form>
+                        )}
                     </div>
+
                     <div className="flex items-end justify-end py-2">
-                        <IconButton onClick={onClick}>Criar</IconButton>
+                        <IconButton>Cancelar</IconButton>
+                        <IconButton onClick={onClick}>{children}</IconButton>
                     </div>
                 </div>
             </div>

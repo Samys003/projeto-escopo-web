@@ -38,6 +38,7 @@ function ProjectDetails() {
     const [nomeReuniao, setNomeReuniao] = useState('');
     const [expandRegsister, setExpandRegister] = useState({});
     const [expandReuniao, setExpandReuniao] = useState({});
+    const [openModalDeleteCategoria, setOpenModalDeleteCategoria] = useState(null);
 
     useEffect(() => {
         async function carregarProjeto() {
@@ -65,6 +66,7 @@ function ProjectDetails() {
             const dataDoc = await getProjectDocumentById(id);
 
             setNomeCategoria(data);
+            console.log(data);
 
             setDocumentos(dataDoc);
 
@@ -100,6 +102,8 @@ function ProjectDetails() {
             const dataDoc = await getProjectDocumentById(id);
 
             setDocumentos(dataDoc);
+
+            setOpenModalDeleteCategoria(null);
         } catch (error) {
             console.log(error);
         }
@@ -216,18 +220,32 @@ function ProjectDetails() {
                             <PopUp
                                 tituloNovo={'Adicionar Categoria'}
                                 tituloCategoria={'Titulo da Categoria'}
-                                value={nomeCategoria}
+                                value={nomeCategoria.titulo}
+                                showInput={true}
                                 placeholder={'Nova Categoria'}
                                 onClick={novaCategoria}
                                 onChange={(e) => setNomeCategoria(e.target.value)}
                                 onClose={() => setOpenModalCategoria(false)}
+                                children={'Criar'}
                             />
                         )}
                         <Documents
+                            openModalDeleteCategoria={openModalDeleteCategoria}
+                            setOpenModalDeleteCategoria={setOpenModalDeleteCategoria}
                             documentos={documentos}
                             deletarCategoria={deletarCategoria}
                             project={project}
                         ></Documents>
+                        {openModalDeleteCategoria && (
+                            <PopUp
+                                tituloNovo={'Deletando a Categoria'}
+                                showInput={false}
+                                tituloCategoria={`Tem certeza de que deseja excluir a categoria ${openModalDeleteCategoria.nome}? `}
+                                onClick={() => deletarCategoria(openModalDeleteCategoria.id)}
+                                onClose={() => setOpenModalDeleteCategoria(null)}
+                                children={'Confirmar'}
+                            ></PopUp>
+                        )}
                     </div>
                 )}
                 {currentTab === 'Registros' && (
