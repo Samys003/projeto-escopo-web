@@ -1,18 +1,63 @@
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+function formatValidationErrors(erros) {
+    return erros
+        .map((erro) => {
+            if (erro.campo && erro.mensagem) {
+                return `${erro.campo}: ${erro.mensagem.toLowerCase()}`;
+            }
+
+            return erro.mensagem || erro.message || 'valor inválido';
+        })
+        .join('; ');
+}
+
+function getStatusErrorMessage(response, data) {
+    if (data?.erros?.length) {
+        return `Revise os dados informados: ${formatValidationErrors(data.erros)}.`;
+    }
+
+    if (data?.mensagem) {
+        return data.mensagem;
+    }
+
+    if (data?.error) {
+        return data.error;
+    }
+
+    const messages = {
+        400: 'Não foi possível processar sua solicitação. Revise os dados e tente novamente.',
+        401: 'E-mail ou senha inválidos.',
+        403: 'Você não tem permissão para realizar esta ação.',
+        404: 'Não encontramos o recurso solicitado. Tente novamente mais tarde.',
+        409: 'Já existe um cadastro com essas informações.',
+        422: 'Revise os campos informados e tente novamente.',
+        500: 'Não foi possível concluir a solicitação agora. Tente novamente em alguns minutos.',
+        502: 'Não foi possível concluir a solicitação agora. Tente novamente em alguns minutos.',
+        503: 'Serviço temporariamente indisponível. Tente novamente em alguns minutos.',
+    };
+
+    return messages[response.status] || 'Não foi possível concluir a solicitação. Tente novamente.';
+}
+
+export function getApiErrorMessage(err, fallback = 'Erro na requisição. Tente novamente.') {
+    if (err?.name === 'TypeError' || err?.message === 'Failed to fetch') {
+        return 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
+    }
+
+    return err?.message || fallback;
+}
+
 // formatacao da resposta
 export async function parseResponse(response) {
     const contentType = response.headers.get('content-type') || '';
     const data = contentType.includes('application/json') ? await response.json() : null;
 
     if (!response.ok) {
-        if (data?.mensagem) {
-            throw new Error(data.mensagem);
-        }
-        if (data?.error) {
-            throw new Error(data.error);
-        }
-        throw new Error(response.statusText || 'Erro na requisição.');
+        const error = new Error(getStatusErrorMessage(response, data));
+        error.status = response.status;
+        error.data = data;
+        throw error;
     }
 
     return data;
