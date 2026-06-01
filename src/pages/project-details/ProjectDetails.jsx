@@ -14,7 +14,7 @@ import {
     getMeetingById,
     getProjectById,
     getProjectDocumentById,
-    getRegisterById,
+    getRegisterId,
     newCategoria,
     newMeeting,
 } from '../../services/api';
@@ -109,7 +109,7 @@ function ProjectDetails() {
         async function carregarRegistros() {
             try {
                 const data = await getProjectById(id);
-                const dataReg = await getRegisterById(id);
+                const dataReg = await getRegisterId(id);
 
                 setProject(data);
                 setRegistros(dataReg);

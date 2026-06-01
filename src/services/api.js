@@ -99,8 +99,8 @@ export async function getProjectById(id) {
         headers: getAuthHeaders(),
     });
     return parseResponse(response);
-      
-      
+}
+
 export async function getProjectRegisters(projeto_id) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registros`, {
         method: 'GET',
@@ -111,13 +111,12 @@ export async function getProjectRegisters(projeto_id) {
 
 export async function getProjectDocumentById(id) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${id}/categorias/documentos`, {
-        method: 'POST',
+        method: 'GET',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ titulo, conteudo }),
     });
     return parseResponse(response);
 }
-      
+
 export async function createRegister({ projeto_id, titulo, conteudo }) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registro`, {
         method: 'POST',
@@ -143,7 +142,7 @@ export async function newCategoria(id, categoria) {
     });
     return parseResponse(response);
 }
-  
+
 export async function updateRegisterTitle({ registro_id, titulo }) {
     const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}/titulo`, {
         method: 'PATCH',
@@ -172,13 +171,12 @@ export async function deleteRegister(registro_id) {
 
 export async function deleteCategoria(idcategoria) {
     const response = await fetch(`${API_URL}/api/v1/projeto/categoria/${idcategoria}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
+        method: 'DELETE',
+        headers: getAuthHeaders(),
     });
     return parseResponse(response);
 }
-  
-  
+
 export async function updateDocumentTitle({ documento_id, titulo }) {
     const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/titulo`, {
         method: 'PATCH',
@@ -204,11 +202,14 @@ export async function deleteDocument(documento_id) {
     return parseResponse(response);
 }
 
-export async function getRegisterById(id) {
+export async function getRegisterId(id) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${id}/registros`, {
         method: 'GET',
         headers: getAuthHeaders(),
     });
+    return parseResponse(response);
+}
+
 export async function createDocumentVersion({ documento_id, conteudo }) {
     const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/conteudo`, {
         method: 'POST',
@@ -233,7 +234,7 @@ export async function getMeetingById(id) {
     });
     return parseResponse(response);
 }
-  
+
 export async function getDocumentVersionById(documento_versao_id) {
     const response = await fetch(`${API_URL}/api/v1/documento/versao/${documento_versao_id}`, {
         method: 'GET',
@@ -248,7 +249,8 @@ export async function getDetailsMeetingById(id) {
         headers: getAuthHeaders(),
     });
     return parseResponse(response);
-  
+}
+
 export async function getDocumentComments(documento_id) {
     const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentarios`, {
         method: 'GET',

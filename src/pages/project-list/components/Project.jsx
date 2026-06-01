@@ -5,9 +5,7 @@ import Title4 from '../../../components/Typography/Title4';
 
 function Project({ projeto }) {
     return (
-        <Link
-            to={`/projeto/${projeto.id}`}
-        >
+        <Link to={`/projeto/${projeto.id}`}>
             <div
                 className="flex flex-col w-full h-[120px] p-2
                 rounded-lg shadow-(--external-shadow) justify-between
@@ -43,11 +41,7 @@ function Project({ projeto }) {
                     {projeto.foto_usuarios.map((foto, index) =>
                         foto ? (
                             <img
-<<<<<<< integracao-tela-documentacao
-                                key={foto}
-=======
                                 key={index}
->>>>>>> development
                                 src={foto}
                                 alt=""
                                 className="w-6 h-6 rounded-full bg-red-500
@@ -55,11 +49,7 @@ function Project({ projeto }) {
                             />
                         ) : (
                             <div
-<<<<<<< integracao-tela-documentacao
-                                key={foto}
-=======
                                 key={index}
->>>>>>> development
                                 className="w-6 h-6 rounded-full bg-(--cinza-300) border-[0.2px] border-white
                                 lg:w-10 lg:h-10"
                             ></div>
