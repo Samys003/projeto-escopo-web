@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import Title2 from '../../components/Typography/Title2';
-import LoginFeedback from './components/LoginFeedback';
 
 function Redefinir() {
     const [senha, setSenha] = useState('');
@@ -49,8 +48,6 @@ function Redefinir() {
                     <Title2 className="mb-12 text-center text-3xl font-medium text-black">
                         Redefinir Senha
                     </Title2>
-
-                    <LoginFeedback mensagem={error} />
 
                     <form className="space-y-5" onSubmit={handleSubmit}>
                         <div>

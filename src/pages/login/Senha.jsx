@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import Title2 from '../../components/Typography/Title2';
-import LoginFeedback from './components/LoginFeedback';
 
 function Senha() {
     const [email, setEmail] = useState('');
@@ -96,9 +95,6 @@ function Senha() {
                     <p className="mb-5 text-center text-sm leading-6 text-black">
                         Você receberá um código de verificação em seu e-mail
                     </p>
-
-                    <LoginFeedback mensagem={error} />
-                    <LoginFeedback mensagem={success} tipo="success" />
 
                     <form className="space-y-5" onSubmit={handleSubmit}>
                         <div>

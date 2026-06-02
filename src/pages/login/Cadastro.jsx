@@ -2,7 +2,6 @@ import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
-import LoginFeedback from './components/LoginFeedback';
 import { getApiErrorMessage, register as registerApi } from '../../services/api';
 
 function Cadastro() {
@@ -87,8 +86,6 @@ function Cadastro() {
                         Transforme ideias em requisitos bem definidos.
                     </p>
                     <h1 className="mb-5 text-center text-3xl font-bold text-gray-800">Cadastro</h1>
-
-                    <LoginFeedback mensagem={error} className="mx-auto max-w-[22.5rem]" />
 
                     <form
                         className="mx-auto w-full max-w-[22.5rem] space-y-5"
