@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronsLeft, Lightbulb, Save, Trash2 } from 'lucide-react';
+import { ChevronsLeft, Lightbulb, Save, Trash2, X } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
@@ -409,6 +409,9 @@ function Registro() {
     const [sugestaoAberta, setSugestaoAberta] = useState(false);
     const [trechoSelecionado, setTrechoSelecionado] = useState('');
     const [gatilhoSugestao, setGatilhoSugestao] = useState(null);
+    const [confirmacaoExcluirAberta, setConfirmacaoExcluirAberta] = useState(false);
+    const [nomeConfirmacaoExcluir, setNomeConfirmacaoExcluir] = useState('');
+    const [erroConfirmacaoExcluir, setErroConfirmacaoExcluir] = useState('');
 
     const registroNovo = !registroId && Boolean(projetoId);
     const temAlteracao = registroNovo || titulo !== tituloOriginal || conteudo !== conteudoOriginal;
@@ -647,7 +650,30 @@ function Registro() {
         }
     }
 
-    async function excluirRegistro() {
+    function abrirConfirmacaoExcluirRegistro() {
+        if (!registroId) {
+            setErro('Informe o ID do registro na URL.');
+            return;
+        }
+
+        setNomeConfirmacaoExcluir('');
+        setErroConfirmacaoExcluir('');
+        setConfirmacaoExcluirAberta(true);
+    }
+
+    function fecharConfirmacaoExcluirRegistro() {
+        if (excluindo) {
+            return;
+        }
+
+        setConfirmacaoExcluirAberta(false);
+        setNomeConfirmacaoExcluir('');
+        setErroConfirmacaoExcluir('');
+    }
+
+    async function excluirRegistro(event) {
+        event?.preventDefault();
+
         if (!registroId || excluindo) {
             if (!registroId) {
                 setErro('Informe o ID do registro na URL.');
@@ -655,23 +681,42 @@ function Registro() {
             return;
         }
 
-        const confirmar = window.confirm('Tem certeza que deseja excluir este registro?');
+        const nomeEsperado = (titulo || tituloOriginal || '').trim();
+        const nomeDigitado = nomeConfirmacaoExcluir.trim();
 
-        if (!confirmar) {
+        if (
+            !nomeEsperado ||
+            nomeDigitado.toLocaleLowerCase('pt-BR') !== nomeEsperado.toLocaleLowerCase('pt-BR')
+        ) {
+            setErroConfirmacaoExcluir('Digite o nome do registro para confirmar a exclusão.');
             return;
         }
 
         try {
             setExcluindo(true);
             setErro('');
+            setErroConfirmacaoExcluir('');
             await deleteRegister(registroId);
             navigate('/dashboard');
         } catch (error) {
-            setErro(error.message || 'Erro ao excluir registro.');
+            setErroConfirmacaoExcluir(error.message || 'Erro ao excluir registro.');
         } finally {
             setExcluindo(false);
         }
     }
+
+    useEffect(() => {
+        if (!confirmacaoExcluirAberta) {
+            return undefined;
+        }
+
+        const overflowOriginal = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflowOriginal;
+        };
+    }, [confirmacaoExcluirAberta]);
 
     function voltarTelaAnterior() {
         if (window.history.length > 1) {
@@ -776,7 +821,7 @@ function Registro() {
                             <button
                                 className="mt-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
                                 type="button"
-                                onClick={excluirRegistro}
+                                onClick={abrirConfirmacaoExcluirRegistro}
                                 disabled={excluindo}
                                 aria-label="Excluir registro"
                             >
@@ -883,6 +928,66 @@ function Registro() {
                     onFechar={() => setSugestaoAberta(false)}
                     onEnviar={enviarSugestao}
                 />
+            )}
+
+            {confirmacaoExcluirAberta && (
+                <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/25 px-4 py-6">
+                    <form
+                        onSubmit={excluirRegistro}
+                        className="relative w-full max-w-[calc(100vw-24px)] rounded-[34px] bg-white px-8 py-11 shadow-[var(--external-shadow)] sm:px-10 lg:max-w-[900px] lg:rounded-[28px] lg:px-16 lg:py-10"
+                    >
+                        <button
+                            type="button"
+                            onClick={fecharConfirmacaoExcluirRegistro}
+                            disabled={excluindo}
+                            className="absolute right-5 top-5 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] disabled:opacity-50 lg:right-9 lg:top-9"
+                            aria-label="Fechar confirmação"
+                        >
+                            <X className="h-5 w-5 lg:h-7 lg:w-7" strokeWidth={3.4} />
+                        </button>
+
+                        <Title2 className="pr-7 text-left text-[30px] leading-tight text-black lg:pr-8 lg:text-center lg:text-[28px]">
+                            Tem certeza que deseja deletar este registro?
+                        </Title2>
+
+                        <div className="mx-auto mt-9 w-full lg:mt-14 lg:max-w-[520px]">
+                            <ParagraphMedium className="mb-2 text-center text-xl font-semibold text-[var(--color-dark)] lg:text-xl">
+                                Para prosseguir digite o nome do registro
+                            </ParagraphMedium>
+                            <ParagraphMedium className="mb-4 break-words text-center font-semibold text-[var(--cinza-700)] [overflow-wrap:anywhere]">
+                                {titulo || tituloOriginal || 'Registro'}
+                            </ParagraphMedium>
+
+                            <input
+                                type="text"
+                                value={nomeConfirmacaoExcluir}
+                                onChange={(event) => {
+                                    setNomeConfirmacaoExcluir(event.target.value);
+                                    setErroConfirmacaoExcluir('');
+                                }}
+                                disabled={excluindo}
+                                className="h-12 w-full rounded-xl border-2 border-[var(--cinza-500)] bg-white px-4 text-lg text-[var(--cinza-700)] opacity-100 outline-none focus:border-[var(--color-base)] lg:h-11 lg:border-black lg:text-base"
+                                placeholder="Digite o nome do registro"
+                            />
+
+                            {erroConfirmacaoExcluir && (
+                                <ParagraphMedium className="mt-3 text-center text-[var(--color-base)]">
+                                    {erroConfirmacaoExcluir}
+                                </ParagraphMedium>
+                            )}
+                        </div>
+
+                        <div className="mx-auto mt-16 flex w-full justify-end lg:mt-9 lg:max-w-[620px]">
+                            <button
+                                type="submit"
+                                disabled={excluindo}
+                                className="rounded-lg bg-[var(--color-base)] px-10 py-3 text-lg font-medium text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50 lg:px-8 lg:py-2 lg:text-base"
+                            >
+                                {excluindo ? 'Excluindo...' : 'Prosseguir'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             )}
         </div>
     );

@@ -100,6 +100,7 @@ async function enriquecerComDocumentos(notificacoes) {
 
         return {
             ...notificacao,
+            documentoExiste: notificacao.documento_id ? Boolean(documento) : true,
             titulo: primeiroValor(documento, ['titulo', 'documento'], notificacao.titulo),
             projeto: primeiroValor(
                 documento,
@@ -116,6 +117,7 @@ function Notificacoes() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [filtroAtivo, setFiltroAtivo] = useState(FILTRO_TODOS);
+    const [notificacaoSemDocumento, setNotificacaoSemDocumento] = useState(null);
 
     useEffect(() => {
         let ativo = true;
@@ -213,6 +215,21 @@ function Notificacoes() {
             return;
         }
 
+        if (notificacao.documento_id) {
+            try {
+                await getDocumentById(notificacao.documento_id);
+            } catch (err) {
+                console.error(err);
+                setNotificacoes((prev) =>
+                    prev.map((item) =>
+                        item.id === notificacao.id ? { ...item, documentoExiste: false } : item,
+                    ),
+                );
+                setNotificacaoSemDocumento(notificacao);
+                return;
+            }
+        }
+
         try {
             if (Number(notificacao.aberto) !== 1) {
                 await abrirNotificacao(notificacao.id);
@@ -231,6 +248,19 @@ function Notificacoes() {
         }
     }
 
+    useEffect(() => {
+        if (!notificacaoSemDocumento) {
+            return undefined;
+        }
+
+        const overflowOriginal = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflowOriginal;
+        };
+    }, [notificacaoSemDocumento]);
+
     const mensagem = loading
         ? 'Carregando notificações...'
         : error ||
@@ -245,15 +275,15 @@ function Notificacoes() {
             <MobileHeader />
             <DesktopSidebar />
 
-            <main className="flex flex-1 flex-col overflow-x-hidden px-[14px] pt-7 pb-8 lg:min-h-screen lg:px-10 lg:py-20 xl:px-[38px]">
+            <main className="flex flex-1 flex-col overflow-x-hidden overflow-y-scroll px-[14px] pt-7 pb-8 [scrollbar-color:var(--cinza-300)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] lg:h-screen lg:px-10 lg:py-20 xl:px-[38px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--cinza-300) [&::-webkit-scrollbar-track]:bg-transparent">
                 <section className="mx-auto flex w-full max-w-[1064px] flex-col gap-4 lg:mx-0 lg:gap-8">
                     <div className="flex flex-col gap-3 lg:gap-4">
                         <Title2 className="pl-1.5 text-2xl font-bold leading-none text-(--cinza-600) lg:pl-0 lg:text-[32px]">
                             Notificações
                         </Title2>
 
-                        <div className="-mx-[14px] overflow-x-scroll overscroll-x-contain px-5 pb-2 [scrollbar-color:var(--cinza-300)_transparent] [scrollbar-width:thin] lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--cinza-300) [&::-webkit-scrollbar-track]:bg-transparent">
-                            <div className="flex w-max gap-3 lg:w-auto lg:flex-wrap">
+                        <div className="-mx-[14px] overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
+                            <div className="flex w-max gap-3">
                                 {filtros.map((filtro) => (
                                     <button
                                         key={filtro.id}
@@ -323,6 +353,38 @@ function Notificacoes() {
                     )}
                 </section>
             </main>
+
+            {notificacaoSemDocumento && (
+                <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/25 px-4 py-6">
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="documento-inexistente-titulo"
+                        className="w-full max-w-[420px] rounded-2xl bg-white px-6 py-6 shadow-[var(--external-shadow)]"
+                    >
+                        <h2
+                            id="documento-inexistente-titulo"
+                            className="font-inter text-[24px] font-semibold leading-tight text-[var(--cinza-700)]"
+                        >
+                            Documento não encontrado
+                        </h2>
+
+                        <ParagraphMedium className="mt-4 text-[var(--cinza-600)]">
+                            Este documento não existe mais ou não está mais disponível para você.
+                        </ParagraphMedium>
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setNotificacaoSemDocumento(null)}
+                                className="rounded-lg bg-[var(--color-base)] px-5 py-2 font-semibold text-white transition-colors hover:bg-[var(--color-dark)]"
+                            >
+                                Entendi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

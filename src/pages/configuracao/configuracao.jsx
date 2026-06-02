@@ -60,6 +60,7 @@ function Configuracao() {
     const [deleteError, setDeleteError] = useState('');
 
     const currentPlan = useMemo(() => getCurrentPlan(usuario), [usuario]);
+    const popupAberto = showPlanos || showDeleteConfirm;
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -81,6 +82,19 @@ function Configuracao() {
 
         loadUserData();
     }, []);
+
+    useEffect(() => {
+        if (!popupAberto) {
+            return undefined;
+        }
+
+        const overflowOriginal = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflowOriginal;
+        };
+    }, [popupAberto]);
 
     const handleNomeSave = async () => {
         if (!nomeTemp.trim()) {

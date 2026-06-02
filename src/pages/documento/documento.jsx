@@ -7,7 +7,7 @@ import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
 import Title3 from '../../components/Typography/Title3';
 import Title4 from '../../components/Typography/Title4';
-import { ChevronsLeft, ClockFading, MessagesSquare, Save, Trash2 } from 'lucide-react';
+import { ChevronsLeft, ClockFading, MessagesSquare, Save, Trash2, X } from 'lucide-react';
 import Comentarios from './components/comentarios';
 import VersionamentoPopup from './components/versionamento';
 import {
@@ -338,6 +338,9 @@ function Documento() {
     const [historicoAberto, setHistoricoAberto] = useState(false);
     const [comentariosAbertos, setComentariosAbertos] = useState(false);
     const [editandoConteudo, setEditandoConteudo] = useState(false);
+    const [confirmacaoExcluirAberta, setConfirmacaoExcluirAberta] = useState(false);
+    const [nomeConfirmacaoExcluir, setNomeConfirmacaoExcluir] = useState('');
+    const [erroConfirmacaoExcluir, setErroConfirmacaoExcluir] = useState('');
 
     const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
     const conteudoEmEdicao = editandoConteudo || conteudo !== conteudoOriginal;
@@ -455,28 +458,65 @@ function Documento() {
         }
     }
 
-    async function excluirDocumento() {
+    function abrirConfirmacaoExcluirDocumento() {
+        setNomeConfirmacaoExcluir('');
+        setErroConfirmacaoExcluir('');
+        setConfirmacaoExcluirAberta(true);
+    }
+
+    function fecharConfirmacaoExcluirDocumento() {
+        if (excluindo) {
+            return;
+        }
+
+        setConfirmacaoExcluirAberta(false);
+        setNomeConfirmacaoExcluir('');
+        setErroConfirmacaoExcluir('');
+    }
+
+    async function excluirDocumento(event) {
+        event?.preventDefault();
+
         if (!documentoId || excluindo) {
             return;
         }
 
-        const confirmar = window.confirm('Tem certeza que deseja excluir este documento?');
+        const nomeEsperado = (titulo || tituloOriginal || '').trim();
+        const nomeDigitado = nomeConfirmacaoExcluir.trim();
 
-        if (!confirmar) {
+        if (
+            !nomeEsperado ||
+            nomeDigitado.toLocaleLowerCase('pt-BR') !== nomeEsperado.toLocaleLowerCase('pt-BR')
+        ) {
+            setErroConfirmacaoExcluir('Digite o nome do documento para confirmar a exclusão.');
             return;
         }
 
         try {
             setExcluindo(true);
             setErro('');
+            setErroConfirmacaoExcluir('');
             await deleteDocument(documentoId);
             navigate('/dashboard');
         } catch (error) {
-            setErro(error.message || 'Erro ao excluir documento.');
+            setErroConfirmacaoExcluir(error.message || 'Erro ao excluir documento.');
         } finally {
             setExcluindo(false);
         }
     }
+
+    useEffect(() => {
+        if (!confirmacaoExcluirAberta) {
+            return undefined;
+        }
+
+        const overflowOriginal = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflowOriginal;
+        };
+    }, [confirmacaoExcluirAberta]);
 
     function alterarTitulo(event) {
         setTitulo(event.target.value.replace(/\s*\n\s*/g, ' '));
@@ -620,7 +660,7 @@ function Documento() {
                                 <button
                                     className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
                                     type="button"
-                                    onClick={excluirDocumento}
+                                    onClick={abrirConfirmacaoExcluirDocumento}
                                     disabled={excluindo}
                                     aria-label="Excluir documento"
                                 >
@@ -710,6 +750,66 @@ function Documento() {
                     onFechar={() => setComentariosAbertos(false)}
                     onErro={setErro}
                 />
+            )}
+
+            {confirmacaoExcluirAberta && (
+                <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/25 px-4 py-6">
+                    <form
+                        onSubmit={excluirDocumento}
+                        className="relative w-full max-w-[calc(100vw-24px)] rounded-[34px] bg-white px-8 py-11 shadow-[var(--external-shadow)] sm:px-10 lg:max-w-[900px] lg:rounded-[28px] lg:px-16 lg:py-10"
+                    >
+                        <button
+                            type="button"
+                            onClick={fecharConfirmacaoExcluirDocumento}
+                            disabled={excluindo}
+                            className="absolute right-5 top-5 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] disabled:opacity-50 lg:right-9 lg:top-9"
+                            aria-label="Fechar confirmação"
+                        >
+                            <X className="h-5 w-5 lg:h-7 lg:w-7" strokeWidth={3.4} />
+                        </button>
+
+                        <Title2 className="pr-7 text-left text-[30px] leading-tight text-black lg:pr-8 lg:text-center lg:text-[28px]">
+                            Tem certeza que deseja deletar este documento?
+                        </Title2>
+
+                        <div className="mx-auto mt-9 w-full lg:mt-14 lg:max-w-[520px]">
+                            <ParagraphMedium className="mb-2 text-center text-xl font-semibold text-[var(--color-dark)] lg:text-xl">
+                                Para prosseguir digite o nome do documento
+                            </ParagraphMedium>
+                            <ParagraphMedium className="mb-4 break-words text-center font-semibold text-[var(--cinza-700)] [overflow-wrap:anywhere]">
+                                {titulo || tituloOriginal || 'Documento'}
+                            </ParagraphMedium>
+
+                            <input
+                                type="text"
+                                value={nomeConfirmacaoExcluir}
+                                onChange={(event) => {
+                                    setNomeConfirmacaoExcluir(event.target.value);
+                                    setErroConfirmacaoExcluir('');
+                                }}
+                                disabled={excluindo}
+                                className="h-12 w-full rounded-xl border-2 border-[var(--cinza-500)] bg-white px-4 text-lg text-[var(--cinza-700)] opacity-100 outline-none focus:border-[var(--color-base)] lg:h-11 lg:border-black lg:text-base"
+                                placeholder="Digite o nome do documento"
+                            />
+
+                            {erroConfirmacaoExcluir && (
+                                <ParagraphMedium className="mt-3 text-center text-[var(--color-base)]">
+                                    {erroConfirmacaoExcluir}
+                                </ParagraphMedium>
+                            )}
+                        </div>
+
+                        <div className="mx-auto mt-16 flex w-full justify-end lg:mt-9 lg:max-w-[620px]">
+                            <button
+                                type="submit"
+                                disabled={excluindo}
+                                className="rounded-lg bg-[var(--color-base)] px-10 py-3 text-lg font-medium text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50 lg:px-8 lg:py-2 lg:text-base"
+                            >
+                                {excluindo ? 'Excluindo...' : 'Prosseguir'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             )}
         </div>
     );
