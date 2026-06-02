@@ -55,13 +55,13 @@ function DesktopSidebar({ onLogout }) {
                 >
                     <Settings size={27} />
                 </Link>
-                <button
-                    type="button"
+                <Link
+                    to="/notificacoes"
                     className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
                     aria-label="Notificacoes"
                 >
                     <Bell size={27} />
-                </button>
+                </Link>
                 <button
                     type="button"
                     onClick={handleLogout}
