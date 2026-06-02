@@ -3,7 +3,7 @@ import Title2 from '../../components/Typography/Title2.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { createProject } from './services/new-project-endpoints.js';
-import DesktopSidebar from '../../components/DesktopSideBar.jsx';
+import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import ProjectForm from './components/ProjectForm.jsx';
 import Alert from './components/Alert.jsx';
 

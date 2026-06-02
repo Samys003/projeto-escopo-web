@@ -21,7 +21,7 @@ function DesktopSidebar({ onLogout }) {
 
     return (
         <aside
-            className="hidden h-screen min-h-0 w-[280px] shrink-0 self-start overflow-hidden bg-cover bg-no-repeat px-8 py-10 text-white lg:sticky lg:top-0 lg:flex lg:flex-col xl:w-[356px]"
+            className="hidden h-screen min-h-0 w-[280px] shrink-0 self-start overflow-hidden bg-cover bg-no-repeat px-8 py-10 text-white lg:sticky lg:top-0 lg:z-30 lg:flex lg:flex-col xl:w-[356px]"
             style={{ backgroundImage: 'var(--bar-background)' }}
         >
             <Link

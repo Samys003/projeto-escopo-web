@@ -18,14 +18,10 @@ function MobileHeader() {
     return (
         <div className="relative lg:hidden">
             <header
-                className="relative z-50 flex h-[38px] items-center justify-between overflow-hidden bg-cover bg-no-repeat px-4"
+                className="relative z-[1000] flex h-[38px] items-center justify-between overflow-hidden bg-cover bg-no-repeat px-4"
                 style={{ backgroundImage: 'var(--bar-background)' }}
             >
-                <img
-                    src={logotipoMobile}
-                    alt=""
-                    className="h-[38px] w-[161px] object-fill"
-                />
+                <img src={logotipoMobile} alt="" className="h-[38px] w-[161px] object-fill" />
                 <button
                     type="button"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -39,7 +35,7 @@ function MobileHeader() {
             <div
                 className={`
                     fixed top-0 left-0 w-full h-full
-                    bg-cover bg-no-repeat z-40
+                    bg-cover bg-no-repeat z-[999]
                     flex flex-col items-center justify-center gap-4
                     transition-transform duration-300 ease-in-out
                     ${isMenuOpen ? 'translate-y-0' : '-translate-y-full'}

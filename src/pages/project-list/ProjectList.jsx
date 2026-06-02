@@ -8,7 +8,7 @@ import Project from './components/Project';
 import { Plus } from 'lucide-react';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import { Link } from 'react-router-dom';
-import DesktopSidebar from '../../components/DesktopSideBar';
+import DesktopSidebar from '../../components/DesktopSidebar';
 
 function ProjectList() {
     const [projetos, setProjetos] = useState([]);

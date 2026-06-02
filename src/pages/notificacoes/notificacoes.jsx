@@ -1,29 +1,245 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import Title2 from '../../components/Typography/Title2';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
-import { ListCheck } from 'lucide-react';
+import { getApiErrorMessage, getDocumentById } from '../../services/api';
+import Notificacao from './components/notificacao';
+import { abrirNotificacao, getNotificacoes } from './services/notificacoes-endpoints';
 
-const projects = [
-    { id: 1, label: 'Projeto Integrado', active: true },
-    { id: 2, label: 'Projeto Pessoal' },
-    { id: 3, label: 'Trabalho Voluntário 2025' },
-];
+const FILTRO_TODOS = 'todos';
 
-const notifications = Array.from({ length: 7 }, (_, index) => ({
-    id: index + 1,
-    title: 'Requisitos Funcionais',
-    description: 'Sua adição foi aprovada no documento de requisitos da interface Web',
-    date: '17/03/2026',
-}));
+function normalizarResposta(data) {
+    if (Array.isArray(data)) {
+        return data;
+    }
 
-const mobileNotificationGroups = [
-    { date: '17/03/2026', notifications: notifications.slice(0, 3) },
-    { date: '17/03/2026', notifications: notifications.slice(3) },
-];
+    if (Array.isArray(data?.notificacoes)) {
+        return data.notificacoes;
+    }
+
+    return [];
+}
+
+function obterDataChave(data) {
+    if (!data) {
+        return 'sem-data';
+    }
+
+    return String(data).split(/[ T]/)[0] || 'sem-data';
+}
+
+function formatarData(data) {
+    const dataChave = obterDataChave(data);
+
+    if (dataChave === 'sem-data') {
+        return 'Sem data';
+    }
+
+    const [ano, mes, dia] = dataChave.split('-');
+
+    if (!ano || !mes || !dia) {
+        return dataChave;
+    }
+
+    return `${dia}/${mes}/${ano}`;
+}
+
+function obterDataTempo(data) {
+    if (!data) {
+        return 0;
+    }
+
+    const dataNormalizada = String(data).replace(' ', 'T');
+    const tempo = new Date(dataNormalizada).getTime();
+
+    return Number.isNaN(tempo) ? 0 : tempo;
+}
+
+function primeiroValor(objeto, campos, fallback = '') {
+    for (const campo of campos) {
+        if (objeto?.[campo] !== undefined && objeto?.[campo] !== null && objeto?.[campo] !== '') {
+            return objeto[campo];
+        }
+    }
+
+    return fallback;
+}
+
+function obterProjetoNotificacao(notificacao) {
+    return primeiroValor(notificacao, ['projeto', 'nome_projeto', 'projeto_nome', 'project']);
+}
+
+async function enriquecerComDocumentos(notificacoes) {
+    const documentosIds = [
+        ...new Set(notificacoes.map((notificacao) => notificacao.documento_id).filter(Boolean)),
+    ];
+
+    if (documentosIds.length === 0) {
+        return notificacoes;
+    }
+
+    const documentos = await Promise.all(
+        documentosIds.map(async (documentoId) => {
+            try {
+                const documento = await getDocumentById(documentoId);
+                return [documentoId, documento];
+            } catch (err) {
+                console.error(err);
+                return [documentoId, null];
+            }
+        }),
+    );
+
+    const documentoPorId = new Map(documentos);
+
+    return notificacoes.map((notificacao) => {
+        const documento = documentoPorId.get(notificacao.documento_id);
+
+        return {
+            ...notificacao,
+            titulo: primeiroValor(documento, ['titulo', 'documento'], notificacao.titulo),
+            projeto: primeiroValor(
+                documento,
+                ['projeto', 'nome_projeto', 'projeto_nome'],
+                obterProjetoNotificacao(notificacao),
+            ),
+        };
+    });
+}
 
 function Notificacoes() {
+    const navigate = useNavigate();
+    const [notificacoes, setNotificacoes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [filtroAtivo, setFiltroAtivo] = useState(FILTRO_TODOS);
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarNotificacoes() {
+            try {
+                setLoading(true);
+                setError('');
+
+                const data = await getNotificacoes();
+                const notificacoesNormalizadas = normalizarResposta(data);
+                const notificacoesEnriquecidas =
+                    await enriquecerComDocumentos(notificacoesNormalizadas);
+
+                if (ativo) {
+                    setNotificacoes(notificacoesEnriquecidas);
+                }
+            } catch (err) {
+                if (ativo) {
+                    setError(getApiErrorMessage(err, 'Não foi possível carregar as notificações.'));
+                }
+            } finally {
+                if (ativo) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        carregarNotificacoes();
+
+        return () => {
+            ativo = false;
+        };
+    }, []);
+
+    const notificacoesOrdenadas = useMemo(
+        () =>
+            [...notificacoes].sort(
+                (notificacaoA, notificacaoB) =>
+                    obterDataTempo(notificacaoB.data) - obterDataTempo(notificacaoA.data),
+            ),
+        [notificacoes],
+    );
+
+    const filtros = useMemo(() => {
+        const projetos = [
+            ...new Set(notificacoes.map((notificacao) => obterProjetoNotificacao(notificacao))),
+        ].filter(Boolean);
+
+        return [
+            { id: FILTRO_TODOS, label: 'Todos' },
+            ...projetos.map((projeto) => ({ id: projeto, label: projeto })),
+        ];
+    }, [notificacoes]);
+
+    useEffect(() => {
+        if (!filtros.some((filtro) => filtro.id === filtroAtivo)) {
+            setFiltroAtivo(FILTRO_TODOS);
+        }
+    }, [filtroAtivo, filtros]);
+
+    const notificacoesFiltradas = useMemo(() => {
+        if (filtroAtivo === FILTRO_TODOS) {
+            return notificacoesOrdenadas;
+        }
+
+        return notificacoesOrdenadas.filter(
+            (notificacao) => obterProjetoNotificacao(notificacao) === filtroAtivo,
+        );
+    }, [filtroAtivo, notificacoesOrdenadas]);
+
+    const gruposMobile = useMemo(() => {
+        const grupos = [];
+        const indicePorData = new Map();
+
+        notificacoesFiltradas.forEach((notificacao) => {
+            const dataChave = obterDataChave(notificacao.data);
+
+            if (!indicePorData.has(dataChave)) {
+                indicePorData.set(dataChave, grupos.length);
+                grupos.push({
+                    date: formatarData(notificacao.data),
+                    notifications: [],
+                });
+            }
+
+            grupos[indicePorData.get(dataChave)].notifications.push(notificacao);
+        });
+
+        return grupos;
+    }, [notificacoesFiltradas]);
+
+    async function handleOpenNotificacao(notificacao) {
+        if (!notificacao?.id) {
+            return;
+        }
+
+        try {
+            if (Number(notificacao.aberto) !== 1) {
+                await abrirNotificacao(notificacao.id);
+                setNotificacoes((prev) =>
+                    prev.map((item) =>
+                        item.id === notificacao.id ? { ...item, aberto: 1 } : item,
+                    ),
+                );
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
+        if (notificacao.documento_id) {
+            navigate(`/documento/${notificacao.documento_id}`);
+        }
+    }
+
+    const mensagem = loading
+        ? 'Carregando notificações...'
+        : error ||
+          (notificacoesOrdenadas.length === 0
+              ? 'Nenhuma notificação encontrada.'
+              : notificacoesFiltradas.length === 0
+                ? 'Nenhuma notificação neste filtro.'
+                : '');
+
     return (
         <div className="min-h-screen bg-(--fundo) lg:flex">
             <MobileHeader />
@@ -36,93 +252,75 @@ function Notificacoes() {
                             Notificações
                         </Title2>
 
-                        <div className="-mx-[14px] overflow-x-auto px-5 pb-1 [scrollbar-width:none] lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
+                        <div className="-mx-[14px] overflow-x-scroll overscroll-x-contain px-5 pb-2 [scrollbar-color:var(--cinza-300)_transparent] [scrollbar-width:thin] lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--cinza-300) [&::-webkit-scrollbar-track]:bg-transparent">
                             <div className="flex w-max gap-3 lg:w-auto lg:flex-wrap">
-                                {projects.map((project) => (
+                                {filtros.map((filtro) => (
                                     <button
-                                        key={project.id}
+                                        key={filtro.id}
                                         type="button"
-                                        aria-pressed={project.active}
+                                        onClick={() => setFiltroAtivo(filtro.id)}
+                                        aria-pressed={filtroAtivo === filtro.id}
                                         className={`h-7 shrink-0 whitespace-nowrap rounded-full px-3 text-[14px] leading-none lg:h-8 lg:text-[16px] ${
-                                            project.active
+                                            filtroAtivo === filtro.id
                                                 ? 'bg-(--roxo-light) text-(--roxo-dark)'
                                                 : 'bg-(--cinza-200) text-(--cinza-700)'
                                         }`}
                                     >
-                                        {project.label}
+                                        {filtro.label}
                                     </button>
                                 ))}
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-7 lg:hidden">
-                        {mobileNotificationGroups.map((group, groupIndex) => (
-                            <section key={`${group.date}-${groupIndex}`} className="flex flex-col">
-                                <ParagraphLarge className="mb-2.5 text-(--cinza-600)">
-                                    {group.date}
-                                </ParagraphLarge>
+                    {mensagem ? (
+                        <ParagraphMedium
+                            className={`pl-1.5 lg:pl-0 ${
+                                error ? 'text-(--color-alert)' : 'text-(--cinza-600)'
+                            }`}
+                        >
+                            {mensagem}
+                        </ParagraphMedium>
+                    ) : (
+                        <>
+                            <div className="flex flex-col gap-7 lg:hidden">
+                                {gruposMobile.map((group, groupIndex) => (
+                                    <section
+                                        key={`${group.date}-${groupIndex}`}
+                                        className="flex flex-col"
+                                    >
+                                        <ParagraphLarge className="mb-2.5 text-(--cinza-600)">
+                                            {group.date}
+                                        </ParagraphLarge>
 
-                                <div className="flex flex-col gap-1.5">
-                                    {group.notifications.map((notification) => (
-                                        <article
-                                            key={notification.id}
-                                            className="min-h-[86px] rounded-xl border border-(--cinza-200) bg-white px-[14px] py-[11px] shadow-[0_1px_4px_rgba(0,0,0,0.14)]"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <ListCheck
-                                                    aria-hidden="true"
-                                                    className="h-[30px] w-[30px] shrink-0 text-(--color-verde)"
-                                                    strokeWidth={2.7}
+                                        <div className="flex flex-col gap-1.5">
+                                            {group.notifications.map((notification) => (
+                                                <Notificacao
+                                                    key={notification.id}
+                                                    notificacao={notification}
+                                                    layout="mobile"
+                                                    onOpen={handleOpenNotificacao}
                                                 />
+                                            ))}
+                                        </div>
+                                    </section>
+                                ))}
+                            </div>
 
-                                                <ParagraphLarge
-                                                    as="h3"
-                                                    className="text-[16px] font-normal leading-none text-black"
-                                                >
-                                                    {notification.title}
-                                                </ParagraphLarge>
-                                            </div>
-
-                                            <ParagraphMedium className="mt-1 pl-2.5 text-[14px] leading-snug text-(--cinza-600)">
-                                                {notification.description}
-                                            </ParagraphMedium>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        ))}
-                    </div>
-
-                    <div className="hidden flex-col gap-[10px] lg:flex">
-                        {notifications.map((notification) => (
-                            <article
-                                key={notification.id}
-                                className="grid min-h-[73px] grid-cols-[88px_240px_minmax(0,1fr)_112px] items-center gap-10 rounded-[10px] border border-(--cinza-300) bg-white px-10 py-4"
-                            >
-                                <ListCheck
-                                    aria-hidden="true"
-                                    className="mx-auto h-10 w-10 text-(--color-verde)"
-                                    strokeWidth={2.7}
-                                />
-
-                                <ParagraphLarge
-                                    as="h3"
-                                    className="font-normal whitespace-nowrap text-black"
-                                >
-                                    {notification.title}
-                                </ParagraphLarge>
-
-                                <ParagraphMedium className="max-w-[430px] text-(--cinza-600) md:text-[14px] md:leading-[1.25]">
-                                    {notification.description}
-                                </ParagraphMedium>
-
-                                <ParagraphMedium className="justify-self-end text-(--cinza-500) md:text-[14px]">
-                                    {notification.date}
-                                </ParagraphMedium>
-                            </article>
-                        ))}
-                    </div>
+                            <div className="hidden flex-col gap-[10px] lg:flex">
+                                {notificacoesFiltradas.map((notification) => (
+                                    <Notificacao
+                                        key={notification.id}
+                                        notificacao={{
+                                            ...notification,
+                                            dataFormatada: formatarData(notification.data),
+                                        }}
+                                        onOpen={handleOpenNotificacao}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </section>
             </main>
         </div>
