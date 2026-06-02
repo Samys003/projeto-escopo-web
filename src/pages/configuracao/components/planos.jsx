@@ -29,7 +29,7 @@ export const plans = [
     },
 ];
 
-function InlinePlanCard({ plan, currentPlanName, index }) {
+function InlinePlanCard({ plan, currentPlanName, index, onUpgrade }) {
     const isCurrent = plan.name === currentPlanName;
 
     return (
@@ -60,6 +60,7 @@ function InlinePlanCard({ plan, currentPlanName, index }) {
             {!isCurrent && (
                 <button
                     type="button"
+                    onClick={onUpgrade}
                     className="mt-auto pt-11 text-xl font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                 >
                     Fazer Upgrade
@@ -131,25 +132,43 @@ function Planos({ onClose, currentPlanName = 'Free', variant = 'modal' }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
-            <div className="relative max-h-[80vh] w-full max-w-md overflow-y-auto rounded-[32px] border border-[var(--cinza-200)] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.18)]">
+            <div className="relative max-h-[84vh] w-full max-w-md overflow-y-auto rounded-[32px] border border-[var(--cinza-200)] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] lg:max-w-[1040px] lg:rounded-[28px]">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 rounded-full bg-[var(--cinza-100)] p-1 text-[var(--color-base)] transition-colors hover:bg-[var(--color-variant)]"
+                    className="absolute right-4 top-4 rounded-full bg-[var(--cinza-100)] px-2 py-0.5 text-2xl leading-none text-[var(--color-base)] transition-colors hover:bg-[var(--color-variant)] lg:right-7 lg:top-7 lg:bg-transparent lg:text-4xl"
                     aria-label="Fechar"
                 >
                     ×
                 </button>
 
-                <div className="px-6 py-7">
-                    <div className="mb-6 text-center"></div>
-                    <div className="space-y-6">
+                <div className="px-6 py-7 lg:px-12 lg:py-10">
+                    <div className="mb-6 text-center lg:mb-10">
+                        <Title2 className="text-black">Plano Atual:</Title2>
+                        <Title4 className="mx-auto mt-3 min-w-[116px] w-fit rounded-md border border-[var(--color-variant)] px-8 py-2 text-center text-[var(--color-variant)]">
+                            {currentPlanName}
+                        </Title4>
+                    </div>
+
+                    <div className="space-y-6 lg:hidden">
                         {plans.map((plan, index) => (
                             <ModalPlanCard
                                 key={plan.name}
                                 plan={plan}
                                 index={index}
                                 onClose={onClose}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="hidden grid-cols-3 lg:grid">
+                        {plans.map((plan, index) => (
+                            <InlinePlanCard
+                                key={plan.name}
+                                plan={plan}
+                                index={index}
+                                currentPlanName={currentPlanName}
+                                onUpgrade={onClose}
                             />
                         ))}
                     </div>

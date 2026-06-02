@@ -537,6 +537,24 @@ function Configuracao() {
                                 <div className="hidden justify-center lg:flex">
                                     <button
                                         type="button"
+                                        onClick={() => setShowPlanos(true)}
+                                        className="flex min-h-14 w-full items-center justify-between gap-4 rounded-xl bg-[#f3f3f3] px-5 py-3 text-left transition-colors hover:bg-[var(--cinza-200)]"
+                                    >
+                                        <span className="font-inter text-base font-semibold text-[var(--cinza-700)]">
+                                            Plano Atual:
+                                            <span className="ml-2 text-[var(--color-variant)]">
+                                                {currentPlan.name}
+                                            </span>
+                                        </span>
+                                        <span className="shrink-0 font-inter text-base font-semibold text-[var(--color-base)]">
+                                            Fazer Upgrade
+                                        </span>
+                                    </button>
+                                </div>
+
+                                <div className="hidden justify-center lg:flex">
+                                    <button
+                                        type="button"
                                         onClick={() => setShowDeleteConfirm(true)}
                                         className="text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
                                     >
@@ -564,10 +582,6 @@ function Configuracao() {
                             </span>
                         </button>
                     </section>
-
-                    <div className="mt-12 hidden lg:block">
-                        <Planos variant="inline" currentPlanName={currentPlan.name} />
-                    </div>
 
                     <div className="mx-auto mt-16 flex w-full max-w-[327px] items-center justify-between gap-4 lg:hidden">
                         <button
