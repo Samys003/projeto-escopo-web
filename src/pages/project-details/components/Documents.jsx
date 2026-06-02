@@ -3,8 +3,11 @@ import IconButton from '../../../components/IconButton';
 import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import Title2 from '../../../components/Typography/Title2';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 function Documents({ documentos, project, setOpenModalDeleteCategoria }) {
+    const navigate = useNavigate();
+
     return (
         <div className="w-full flex flex-col gap-3 lg:gap-5">
             {documentos?.projeto?.categorias?.map((doc) => {
@@ -33,7 +36,10 @@ function Documents({ documentos, project, setOpenModalDeleteCategoria }) {
                             {doc.documentos.map((subdoc) => {
                                 return (
                                     <div key={subdoc.id} className="flex  p-1 w-full ">
-                                        <button className="flex w-full justify-between gap-3 ">
+                                        <button
+                                            onClick={() => navigate(`/documento/${subdoc.id}`)}
+                                            className="flex w-full justify-between gap-3 "
+                                        >
                                             <div className="w-full items-start flex flex-col  text-start">
                                                 <ParagraphLarge className="line-clamp-2">
                                                     {subdoc.titulo}

@@ -2,8 +2,11 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import IconButton from '../../../components/IconButton';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title2 from '../../../components/Typography/Title2';
+import { useNavigate } from 'react-router-dom';
 
 function Register({ formatRegistros, expandRegsister, setExpandRegister }) {
+    const navigate = useNavigate();
+
     return (
         <div className="flex flex-col gap-2 lg:pl-3 lg:pr-3">
             {Object.entries(formatRegistros).map(([ano, meses]) => (
@@ -35,9 +38,10 @@ function Register({ formatRegistros, expandRegsister, setExpandRegister }) {
                             </div>
                             {expandRegsister[mes] !== false &&
                                 registros.map((registro) => (
-                                    <div
+                                    <button
+                                        onClick={() => navigate(`/registro/${registro.id}`)}
                                         key={registro.id}
-                                        className="flex border border-(--cinza-300) justify-between rounded-xl p-6"
+                                        className="flex border  border-(--cinza-300) justify-between rounded-xl p-6"
                                     >
                                         <ParagraphMedium className="w-[33%] truncate">
                                             {registro.titulo}
@@ -50,7 +54,7 @@ function Register({ formatRegistros, expandRegsister, setExpandRegister }) {
                                                 'pt-BR',
                                             )}
                                         </ParagraphMedium>
-                                    </div>
+                                    </button>
                                 ))}
                         </div>
                     ))}

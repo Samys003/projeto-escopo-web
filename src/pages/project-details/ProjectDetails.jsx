@@ -7,7 +7,7 @@ import ButtonRegistrer from './components/ButtonRegister';
 import Register from './components/Register';
 import Meeting from './components/Meeting';
 import PopUp from './components/PopUp';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { FolderPlus } from 'lucide-react';
 import {
     deleteCategoria,
@@ -29,7 +29,9 @@ function ProjectDetails() {
     const [documentos, setDocumentos] = useState([]);
     const [registros, setRegistros] = useState([]);
     const [reunioes, setReunioes] = useState([]);
-    const [currentTab, setCurrentTab] = useState('Documentos');
+    const [currentTab, setCurrentTab] = useState(
+        sessionStorage.getItem('projectTab') || 'Documentos',
+    );
     const tabs = ['Documentos', 'Registros', 'Reuniões'];
     const [openModalCategoria, setOpenModalCategoria] = useState(false);
     const [openModalReuniao, setOpenModalReuniao] = useState(false);
@@ -39,6 +41,7 @@ function ProjectDetails() {
     const [expandRegsister, setExpandRegister] = useState({});
     const [expandReuniao, setExpandReuniao] = useState({});
     const [openModalDeleteCategoria, setOpenModalDeleteCategoria] = useState(null);
+    const [erro, setErro] = useState('');
 
     useEffect(() => {
         async function carregarProjeto() {
@@ -56,7 +59,18 @@ function ProjectDetails() {
         carregarProjeto();
     }, [id]);
 
+    useEffect(() => {
+        sessionStorage.setItem('projectTab', currentTab);
+    }, [currentTab]);
+
     async function novaCategoria() {
+        if (!nomeCategoria.trim()) {
+            setErro('Esse campo não pode estar vazio! ');
+            return;
+        }
+
+        setErro('');
+
         try {
             const nameCategoria = {
                 titulo: nomeCategoria,
@@ -125,7 +139,11 @@ function ProjectDetails() {
         carregarRegistros();
     }, [id]);
 
-    const formatRegistros = registros.reduce((acc, registro) => {
+    const registrosOrdenados = [...registros].sort(
+        (a, b) => new Date(b.criado_em) - new Date(a.criado_em),
+    );
+
+    const formatRegistros = registrosOrdenados.reduce((acc, registro) => {
         const data = new Date(registro.criado_em);
 
         const ano = data.getFullYear();
@@ -166,7 +184,11 @@ function ProjectDetails() {
         carregarReunioes();
     }, [id]);
 
-    const formatReunioes = reunioes.reduce((acc, reuniao) => {
+    const reunoiesOrdenadas = [...reunioes].sort(
+        (a, b) => new Date(b.criado_em) - new Date(a.criado_em),
+    );
+
+    const formatReunioes = reunoiesOrdenadas.reduce((acc, reuniao) => {
         const data = new Date(reuniao.criado_em);
 
         const ano = data.getFullYear();
@@ -218,14 +240,22 @@ function ProjectDetails() {
                         )}
                         {openModalCategoria && (
                             <PopUp
+                                erro={erro}
                                 tituloNovo={'Adicionar Categoria'}
                                 tituloCategoria={'Titulo da Categoria'}
                                 value={nomeCategoria.titulo}
                                 showInput={true}
                                 placeholder={'Nova Categoria'}
                                 onClick={novaCategoria}
-                                onChange={(e) => setNomeCategoria(e.target.value)}
-                                onClose={() => setOpenModalCategoria(false)}
+                                onChange={(e) => {
+                                    setNomeCategoria(e.target.value);
+                                    setErro('');
+                                }}
+                                onClose={() => {
+                                    setOpenModalCategoria(false);
+                                    setNomeCategoria('');
+                                    setErro('');
+                                }}
                                 children={'Criar'}
                             />
                         )}
@@ -279,8 +309,12 @@ function ProjectDetails() {
                                 value={nomeReuniao}
                                 placeholder={'Nova Reuniao'}
                                 onClick={novaReuniao}
-                                onChange={(e) => setNomeReuniao(e.target.value)}
+                                onChange={(e) => {
+                                    setNomeReuniao(e.target.value);
+                                    setErro('');
+                                }}
                                 onClose={() => setOpenModalReuniao(false)}
+                                children="Criar"
                             />
                         )}
 

@@ -11,7 +11,7 @@ function DocumentQuickAccess(props) {
     return (
         <Link to={`/documento/${documento.id}`}>
             <div
-                className="grid gap-[10px] p-3 w-[196px] border-(--cinza-300) border-[2px] rounded-xl overflow-hidden
+                className="grid gap-[10px]  p-3 w-[196px] border-(--cinza-300) border-[2px] rounded-xl overflow-hidden
             lg:w-[352px] lg:h-min lg:max-h-23 lg:px-8 lg:py-2 lg:gap-0"
             >
                 <div className="flex gap-3 items-center lg:hidden">
