@@ -3,6 +3,7 @@ import { useState } from 'react';
 import LogoImg from '../../assets/logotipo-desktop.svg';
 import Carrossel from './components/Carrossel';
 import { getApiErrorMessage, login as loginApi } from '../../services/api';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Login() {
     const navigate = useNavigate();
@@ -90,6 +91,9 @@ function Login() {
                                 className="mx-auto w-full max-w-[17rem] space-y-5"
                                 onSubmit={handleSubmit}
                             >
+                                <FeedbackMessage>{error}</FeedbackMessage>
+                                <FeedbackMessage type="success">{success}</FeedbackMessage>
+
                                 <div>
                                     <label className="block text-gray-800 font-medium mb-2">
                                         E-mail

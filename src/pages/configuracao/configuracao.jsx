@@ -4,13 +4,15 @@ import { Camera, LogOut, PenLine, X } from 'lucide-react';
 import MobileHeader from '../../components/MobileHeader.jsx';
 import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import Planos from './components/planos.jsx';
-import { plans } from './components/planos.jsx';
+import { plans } from './components/planos-data.js';
+import FeedbackMessage from '../../components/FeedbackMessage.jsx';
 import {
     updateUserName,
     updateUserProfilePicture,
     deleteUserAccount,
     updatePassword,
     getUserByEmail,
+    getApiErrorMessage,
 } from '../../services/api.js';
 import Title2 from '../../components/Typography/Title2.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
@@ -43,7 +45,7 @@ function getCurrentPlan(usuario) {
 function Configuracao() {
     const navigate = useNavigate();
     const [usuario, setUsuario] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -72,6 +74,10 @@ function Configuracao() {
                     setUsuario(user);
                     setNomeTemp(user.nome || '');
                     setFotoPreview(user.foto_perfil || null);
+                } else {
+                    setError(
+                        'Não foi possível carregar os dados do usuário. Faça login novamente.',
+                    );
                 }
             } catch {
                 setError('Erro ao carregar dados do usuário');
@@ -97,12 +103,24 @@ function Configuracao() {
     }, [popupAberto]);
 
     const handleNomeSave = async () => {
-        if (!nomeTemp.trim()) {
+        const nomeTratado = nomeTemp.trim();
+
+        if (!nomeTratado) {
             setError('Nome não pode ser vazio');
             return;
         }
 
-        if (nomeTemp === usuario?.nome) {
+        if (nomeTratado.length < 2) {
+            setError('Informe um nome válido.');
+            return;
+        }
+
+        if (nomeTratado.length > 150) {
+            setError('O nome deve ter no máximo 150 caracteres.');
+            return;
+        }
+
+        if (nomeTratado === usuario?.nome) {
             setEditingNome(false);
             return;
         }
@@ -112,9 +130,9 @@ function Configuracao() {
             setError('');
             setSuccess('');
 
-            await updateUserName({ nome: nomeTemp.trim() });
+            await updateUserName({ nome: nomeTratado });
 
-            const usuarioAtualizado = { ...usuario, nome: nomeTemp.trim() };
+            const usuarioAtualizado = { ...usuario, nome: nomeTratado };
             setUsuario(usuarioAtualizado);
             localStorage.setItem('authUser', JSON.stringify(usuarioAtualizado));
 
@@ -122,7 +140,7 @@ function Configuracao() {
             setSuccess('Nome atualizado com sucesso!');
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
-            setError(err.message || 'Erro ao atualizar nome');
+            setError(getApiErrorMessage(err, 'Erro ao atualizar nome.'));
         } finally {
             setSaving(false);
         }
@@ -168,7 +186,7 @@ function Configuracao() {
             setSuccess('Senha atualizada com sucesso!');
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
-            setError(err.message || 'Erro ao atualizar senha');
+            setError(getApiErrorMessage(err, 'Erro ao atualizar senha.'));
         } finally {
             setSaving(false);
         }
@@ -177,6 +195,16 @@ function Configuracao() {
     const handleFotoChange = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            setError('Selecione uma imagem válida para a foto de perfil.');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError('A imagem deve ter no máximo 5 MB.');
+            return;
+        }
 
         try {
             setSaving(true);
@@ -197,7 +225,7 @@ function Configuracao() {
                     setSuccess('Foto de perfil atualizada com sucesso!');
                     setTimeout(() => setSuccess(''), 3000);
                 } catch (err) {
-                    setError(err.message || 'Erro ao atualizar foto de perfil');
+                    setError(getApiErrorMessage(err, 'Erro ao atualizar foto de perfil.'));
                 } finally {
                     setSaving(false);
                 }
@@ -224,6 +252,11 @@ function Configuracao() {
             return;
         }
 
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailDigitado)) {
+            setDeleteError('Digite um e-mail válido.');
+            return;
+        }
+
         try {
             setSaving(true);
             setError('');
@@ -244,7 +277,7 @@ function Configuracao() {
 
             navigate('/');
         } catch (err) {
-            setDeleteError(err.message || 'Erro ao confirmar e-mail');
+            setDeleteError(getApiErrorMessage(err, 'Erro ao confirmar e-mail.'));
         } finally {
             setSaving(false);
         }
@@ -288,17 +321,10 @@ function Configuracao() {
 
             <main className="flex-1 px-5 py-8 lg:px-8 lg:py-14 xl:px-20">
                 <div className="mx-auto flex w-full max-w-[1240px] flex-col">
-                    {error && (
-                        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
-                            <p className="text-sm text-red-700">{error}</p>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 p-4">
-                            <p className="text-sm text-green-700">{success}</p>
-                        </div>
-                    )}
+                    <FeedbackMessage className="mb-5">{error}</FeedbackMessage>
+                    <FeedbackMessage type="success" className="mb-5">
+                        {success}
+                    </FeedbackMessage>
 
                     <section className="grid items-start gap-5 lg:grid-cols-[minmax(300px,470px)_minmax(240px,360px)] lg:justify-between lg:gap-8 xl:gap-24">
                         <div className="order-1 flex flex-col items-center lg:order-2 lg:pt-16">
@@ -537,26 +563,8 @@ function Configuracao() {
                                 <div className="hidden justify-center lg:flex">
                                     <button
                                         type="button"
-                                        onClick={() => setShowPlanos(true)}
-                                        className="flex min-h-14 w-full items-center justify-between gap-4 rounded-xl bg-[#f3f3f3] px-5 py-3 text-left transition-colors hover:bg-[var(--cinza-200)]"
-                                    >
-                                        <span className="font-inter text-base font-semibold text-[var(--cinza-700)]">
-                                            Plano Atual:
-                                            <span className="ml-2 text-[var(--color-variant)]">
-                                                {currentPlan.name}
-                                            </span>
-                                        </span>
-                                        <span className="shrink-0 font-inter text-base font-semibold text-[var(--color-base)]">
-                                            Fazer Upgrade
-                                        </span>
-                                    </button>
-                                </div>
-
-                                <div className="hidden justify-center lg:flex">
-                                    <button
-                                        type="button"
                                         onClick={() => setShowDeleteConfirm(true)}
-                                        className="text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
+                                        className="text-[var(--color-alert)] transition-colors hover:text-[var(--color-alert-hover)]"
                                     >
                                         Deletar sua conta
                                     </button>
@@ -595,10 +603,14 @@ function Configuracao() {
                         <button
                             type="button"
                             onClick={() => setShowDeleteConfirm(true)}
-                            className="text-right text-base font-medium text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)]"
+                            className="text-right text-base font-medium text-[var(--color-alert)] transition-colors hover:text-[var(--color-alert-hover)]"
                         >
                             Deletar sua conta
                         </button>
+                    </div>
+
+                    <div className="mt-12 hidden lg:block">
+                        <Planos variant="inline" currentPlanName={currentPlan.name} />
                     </div>
                 </div>
 

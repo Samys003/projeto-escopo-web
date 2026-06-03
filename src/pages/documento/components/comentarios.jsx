@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronsLeft, Menu, Send, X } from 'lucide-react';
+import { ChevronsLeft, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logotipoMobile from '../../../assets/logotipo-mobile.svg';
+import MobileHeader from '../../../components/MobileHeader';
 import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
-import { createDocumentComment, getDocumentComments } from '../../../services/api';
+import { createDocumentComment, getDocumentComments, getRegisterById } from '../../../services/api';
+import { limparMarkdownTexto } from '../../../utils/markdown-text';
 
 function pegar(objeto, campos, fallback = '') {
     for (const campo of campos) {
@@ -306,7 +307,7 @@ function adaptarComentario(
     );
     const registroReferenciaId = pegar(
         comentario,
-        ['registro_referencia_id', 'registroReferenciaId', 'registro_id'],
+        ['registro_referencia_id', 'registroReferenciaId', 'registro_referencia', 'registro_id'],
         null,
     );
     const registro = pegarObjeto(comentario, ['registro']);
@@ -316,7 +317,17 @@ function adaptarComentario(
         cargosPorAutorId.get(String(autorId)) ||
         (String(autorId) === String(usuarioAtual?.id) ? usuarioAtual?.cargo : '') ||
         (tipoId === 3 ? 'Registro' : '');
-    const tituloRegistro = textoDoValor(pegar(registro, ['registro_titulo', 'titulo', 'nome'], ''));
+    const tituloRegistro = textoDoValor(
+        pegar(
+            registro,
+            ['registro_titulo', 'titulo', 'nome'],
+            pegar(
+                comentario,
+                ['registro_titulo', 'registroTitulo', 'titulo_registro', 'registro_nome'],
+                '',
+            ),
+        ),
+    );
     const registroLinkId = pegar(
         registro,
         ['id', 'registro_id', 'registroId'],
@@ -340,9 +351,11 @@ function adaptarComentario(
             tipoId === 3 || registroReferenciaId || registro?.registro_id
                 ? {
                       autor: 'Sugestão de Requisito',
-                      cargo: tituloRegistro || 'deletado',
+                      cargo: tituloRegistro || 'Registro apagado',
                       texto: '',
-                      href: registroLinkId ? `/registro/${registroLinkId}` : null,
+                      registroId: registroLinkId || null,
+                      registroApagado: !tituloRegistro,
+                      href: registroLinkId && tituloRegistro ? `/registro/${registroLinkId}` : null,
                   }
                 : null,
     };
@@ -382,6 +395,80 @@ function prepararComentarios(comentariosApi, usuarioAtual) {
             cargosPorAutorId,
         ),
     );
+}
+
+async function prepararComentariosComRegistros(comentariosApi, usuarioAtual) {
+    const comentarios = prepararComentarios(comentariosApi, usuarioAtual);
+    const registrosIds = [
+        ...new Set(
+            comentarios
+                .map((comentario) => comentario.referencia?.registroId)
+                .filter(Boolean)
+                .map(String),
+        ),
+    ];
+
+    if (registrosIds.length === 0) {
+        return comentarios;
+    }
+
+    const registros = await Promise.all(
+        registrosIds.map(async (registroId) => {
+            try {
+                const registro = await getRegisterById(registroId);
+                const titulo = textoDoValor(
+                    pegar(registro, ['titulo', 'nome', 'registro_titulo'], ''),
+                );
+
+                return [registroId, { apagado: false, titulo }];
+            } catch (error) {
+                if (error.status === 404) {
+                    return [registroId, { apagado: true, titulo: '' }];
+                }
+
+                return [registroId, null];
+            }
+        }),
+    );
+    const registrosPorId = new Map(registros);
+
+    return comentarios.map((comentario) => {
+        const referencia = comentario.referencia;
+
+        if (!referencia?.registroId) {
+            return comentario;
+        }
+
+        const registro = registrosPorId.get(String(referencia.registroId));
+
+        if (!registro) {
+            return comentario;
+        }
+
+        if (registro.apagado) {
+            return {
+                ...comentario,
+                referencia: {
+                    ...referencia,
+                    cargo: 'Registro apagado',
+                    href: null,
+                    registroApagado: true,
+                },
+            };
+        }
+
+        const titulo = registro.titulo || referencia.cargo || 'Registro';
+
+        return {
+            ...comentario,
+            referencia: {
+                ...referencia,
+                cargo: titulo,
+                href: `/registro/${referencia.registroId}`,
+                registroApagado: false,
+            },
+        };
+    });
 }
 
 function Avatar({ comentario, className = '' }) {
@@ -443,50 +530,6 @@ function ReferenciaComentario({ referencia }) {
     return <div className={className}>{conteudo}</div>;
 }
 
-function renderizarTextoComentario(texto) {
-    const valor = String(texto || '');
-    const partes = [];
-    const regex = /(\[[^\]]+\]\(([^)]+)\)|https?:\/\/[^\s]+)/g;
-    let ultimoIndice = 0;
-    let indice = 0;
-
-    for (const match of valor.matchAll(regex)) {
-        if (match.index > ultimoIndice) {
-            partes.push(valor.slice(ultimoIndice, match.index));
-        }
-
-        const trecho = match[0];
-        const chave = `comentario-link-${indice}`;
-        const markdown = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        const rotulo = markdown?.[1] || trecho;
-        const url = markdown?.[2] || trecho;
-        const className = 'text-[var(--color-base)] underline underline-offset-2';
-
-        if (url.startsWith('/')) {
-            partes.push(
-                <Link key={chave} to={url} className={className}>
-                    {rotulo}
-                </Link>,
-            );
-        } else {
-            partes.push(
-                <a key={chave} href={url} target="_blank" rel="noreferrer" className={className}>
-                    {rotulo}
-                </a>,
-            );
-        }
-
-        ultimoIndice = match.index + trecho.length;
-        indice += 1;
-    }
-
-    if (ultimoIndice < valor.length) {
-        partes.push(valor.slice(ultimoIndice));
-    }
-
-    return partes;
-}
-
 function ComentarioCard({ comentario, mobile = false, onResponder }) {
     const referencia = comentario.resposta || comentario.referencia;
     const textoNome = mobile ? 'text-[16px]' : 'text-[20px]';
@@ -533,7 +576,7 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                     {referencia && <ReferenciaComentario referencia={referencia} />}
 
                     <ParagraphLarge className="whitespace-pre-wrap break-words leading-6 [overflow-wrap:anywhere]">
-                        {renderizarTextoComentario(comentario.texto)}
+                        {limparMarkdownTexto(comentario.texto)}
                     </ParagraphLarge>
                 </div>
 
@@ -663,8 +706,12 @@ function Comentarios({ documentoId, onFechar, onErro }) {
             setCarregando(true);
             setErro('');
             const comentariosApi = await getDocumentComments(documentoId);
+            const comentariosPreparados = await prepararComentariosComRegistros(
+                comentariosApi,
+                usuarioAtual,
+            );
 
-            setComentarios(prepararComentarios(comentariosApi, usuarioAtual));
+            setComentarios(comentariosPreparados);
         } catch (error) {
             const mensagem = error.message || 'Erro ao carregar comentários.';
             setErro(mensagem);
@@ -690,9 +737,13 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                 setCarregando(true);
                 setErro('');
                 const comentariosApi = await getDocumentComments(documentoId);
+                const comentariosPreparados = await prepararComentariosComRegistros(
+                    comentariosApi,
+                    usuarioAtual,
+                );
 
                 if (ativo) {
-                    setComentarios(prepararComentarios(comentariosApi, usuarioAtual));
+                    setComentarios(comentariosPreparados);
                 }
             } catch (error) {
                 const mensagem = error.message || 'Erro ao carregar comentários.';
@@ -788,15 +839,10 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                 </footer>
             </aside>
 
-            <section className="fixed inset-0 z-50 flex flex-col bg-white lg:hidden">
-                <header className="flex h-[50px] items-center justify-between bg-[var(--color-base)] px-4">
-                    <img src={logotipoMobile} alt="Escopo" className="h-auto w-40" />
-                    <button type="button" onClick={onFechar} aria-label="Fechar comentários">
-                        <Menu className="text-white" />
-                    </button>
-                </header>
+            <section className="fixed inset-0 z-[1001] flex flex-col bg-white lg:hidden">
+                <MobileHeader />
 
-                <div className="flex items-center gap-1 px-5 py-3">
+                <div className="flex min-h-[58px] items-center gap-1 border-b border-[var(--cinza-200)] px-5 py-3">
                     <button
                         type="button"
                         onClick={onFechar}

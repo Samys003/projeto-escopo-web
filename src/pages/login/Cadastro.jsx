@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import { getApiErrorMessage, register as registerApi } from '../../services/api';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Cadastro() {
     const navigate = useNavigate();
@@ -91,6 +92,8 @@ function Cadastro() {
                         className="mx-auto w-full max-w-[22.5rem] space-y-5"
                         onSubmit={handleSubmit}
                     >
+                        <FeedbackMessage>{error}</FeedbackMessage>
+
                         <div>
                             <label className="block text-gray-800 font-medium mb-2">Nome</label>
                             <input

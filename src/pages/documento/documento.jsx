@@ -5,8 +5,7 @@ import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
-import Title3 from '../../components/Typography/Title3';
-import Title4 from '../../components/Typography/Title4';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
 import { ChevronsLeft, ClockFading, MessagesSquare, Save, Trash2, X } from 'lucide-react';
 import Comentarios from './components/comentarios';
 import VersionamentoPopup from './components/versionamento';
@@ -15,6 +14,7 @@ import {
     deleteDocument,
     getDocumentById,
     getDocumentVersions,
+    getApiErrorMessage,
     updateDocumentTitle,
 } from '../../services/api';
 
@@ -36,219 +36,8 @@ function primeiroValor(objeto, campos, fallback = '') {
     return fallback;
 }
 
-function linkSeguro(url) {
-    return /^(https?:|mailto:|\/)/i.test(url) ? url : '#';
-}
-
-function renderizarInline(texto, chaveBase) {
-    const partes = [];
-    const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
-    let ultimoIndice = 0;
-    let indice = 0;
-
-    for (const match of texto.matchAll(regex)) {
-        if (match.index > ultimoIndice) {
-            partes.push(texto.slice(ultimoIndice, match.index));
-        }
-
-        const trecho = match[0];
-        const chave = `${chaveBase}-${indice}`;
-
-        if (trecho.startsWith('**') && trecho.endsWith('**')) {
-            partes.push(
-                <strong key={chave} className="font-semibold">
-                    {trecho.slice(2, -2)}
-                </strong>,
-            );
-        } else if (trecho.startsWith('*') && trecho.endsWith('*')) {
-            partes.push(
-                <em key={chave} className="italic">
-                    {trecho.slice(1, -1)}
-                </em>,
-            );
-        } else if (trecho.startsWith('`') && trecho.endsWith('`')) {
-            partes.push(
-                <code
-                    key={chave}
-                    className="rounded bg-[var(--cinza-200)] px-1 py-0.5 font-mono text-[13px]"
-                >
-                    {trecho.slice(1, -1)}
-                </code>,
-            );
-        } else {
-            const [, textoLink, url] = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/) || [];
-
-            partes.push(
-                <a
-                    key={chave}
-                    href={linkSeguro(url || '')}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[var(--color-base)] underline underline-offset-2"
-                >
-                    {textoLink || trecho}
-                </a>,
-            );
-        }
-
-        ultimoIndice = match.index + trecho.length;
-        indice += 1;
-    }
-
-    if (ultimoIndice < texto.length) {
-        partes.push(texto.slice(ultimoIndice));
-    }
-
-    return partes;
-}
-
 function MarkdownPreview({ valor }) {
-    const elementos = [];
-    const linhas = String(valor || '').split('\n');
-    let listaAtual = null;
-    let paragrafoAtual = [];
-
-    function fecharParagrafo() {
-        if (paragrafoAtual.length === 0) {
-            return;
-        }
-
-        const texto = paragrafoAtual.join('\n');
-
-        elementos.push(
-            <ParagraphLarge
-                key={`p-${elementos.length}`}
-                className="mb-3 whitespace-pre-wrap break-words leading-7 text-black [overflow-wrap:anywhere]"
-            >
-                {renderizarInline(texto, `p-${elementos.length}`)}
-            </ParagraphLarge>,
-        );
-        paragrafoAtual = [];
-    }
-
-    function fecharLista() {
-        if (!listaAtual) {
-            return;
-        }
-
-        const Component = listaAtual.tipo === 'ol' ? 'ol' : 'ul';
-        const classeLista =
-            listaAtual.tipo === 'ol'
-                ? 'mb-4 list-decimal space-y-1 pl-6'
-                : 'mb-4 list-disc space-y-1 pl-6';
-
-        elementos.push(
-            <Component key={`lista-${elementos.length}`} className={classeLista}>
-                {listaAtual.itens.map((item, index) => (
-                    <ParagraphMedium
-                        as="li"
-                        key={`${listaAtual.tipo}-${index}`}
-                        className="break-words text-[16px] leading-7 text-black [overflow-wrap:anywhere]"
-                    >
-                        {renderizarInline(item, `${listaAtual.tipo}-${index}`)}
-                    </ParagraphMedium>
-                ))}
-            </Component>,
-        );
-        listaAtual = null;
-    }
-
-    linhas.forEach((linha, index) => {
-        const textoLimpo = linha.trim();
-
-        if (!textoLimpo) {
-            fecharParagrafo();
-            fecharLista();
-            return;
-        }
-
-        const titulo = textoLimpo.match(/^(#{1,3})\s+(.+)$/);
-        const itemLista = textoLimpo.match(/^[-*]\s+(.+)$/);
-        const itemOrdenado = textoLimpo.match(/^\d+\.\s+(.+)$/);
-        const citacao = textoLimpo.match(/^>\s+(.+)$/);
-
-        if (titulo) {
-            fecharParagrafo();
-            fecharLista();
-
-            const nivel = titulo[1].length;
-            const conteudo = renderizarInline(titulo[2], `titulo-${index}`);
-
-            if (nivel === 1) {
-                elementos.push(
-                    <Title2
-                        key={`titulo-${index}`}
-                        className="mb-3 break-words text-[28px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title2>,
-                );
-            } else if (nivel === 2) {
-                elementos.push(
-                    <Title3
-                        key={`titulo-${index}`}
-                        className="mb-3 break-words text-[22px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title3>,
-                );
-            } else {
-                elementos.push(
-                    <Title4
-                        key={`titulo-${index}`}
-                        className="mb-2 break-words text-[18px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title4>,
-                );
-            }
-            return;
-        }
-
-        if (itemLista || itemOrdenado) {
-            fecharParagrafo();
-
-            const tipo = itemOrdenado ? 'ol' : 'ul';
-
-            if (listaAtual?.tipo !== tipo) {
-                fecharLista();
-                listaAtual = { tipo, itens: [] };
-            }
-
-            listaAtual.itens.push(itemOrdenado?.[1] || itemLista?.[1]);
-            return;
-        }
-
-        if (citacao) {
-            fecharParagrafo();
-            fecharLista();
-            elementos.push(
-                <ParagraphLarge
-                    key={`quote-${index}`}
-                    className="mb-4 border-l-4 border-[var(--color-base)] bg-[var(--cinza-100)] py-2 pl-4 text-[var(--cinza-700)]"
-                >
-                    {renderizarInline(citacao[1], `quote-${index}`)}
-                </ParagraphLarge>,
-            );
-            return;
-        }
-
-        fecharLista();
-        paragrafoAtual.push(textoLimpo);
-    });
-
-    fecharParagrafo();
-    fecharLista();
-
-    if (elementos.length === 0) {
-        return (
-            <ParagraphMedium className="text-[var(--cinza-500)]">
-                Clique para começar a escrever.
-            </ParagraphMedium>
-        );
-    }
-
-    return <div className="max-w-none">{elementos}</div>;
+    return <MarkdownRenderer valor={valor} emptyMessage="Clique para começar a escrever." />;
 }
 
 function EditorMarkdown({ valor, onChange, onBlur }) {
@@ -390,7 +179,7 @@ function Documento() {
                 setConteudoOriginal(conteudoApi);
                 setEditandoConteudo(false);
             } catch (error) {
-                setErro(error.message || 'Erro ao carregar documento.');
+                setErro(getApiErrorMessage(error, 'Erro ao carregar documento.'));
             } finally {
                 setCarregando(false);
             }
@@ -411,7 +200,7 @@ function Documento() {
             setVersoes(versoesApi || []);
             return versoesApi || [];
         } catch (error) {
-            setErro(error.message || 'Erro ao carregar historico.');
+            setErro(getApiErrorMessage(error, 'Erro ao carregar historico.'));
             return [];
         }
     }
@@ -428,12 +217,29 @@ function Documento() {
             return;
         }
 
+        const tituloTratado = titulo.trim();
+
+        if (!tituloTratado) {
+            setErro('Informe o título do documento.');
+            return;
+        }
+
+        if (tituloTratado.length > 150) {
+            setErro('O título do documento deve ter no máximo 150 caracteres.');
+            return;
+        }
+
+        if (conteudo !== conteudoOriginal && !conteudo.trim()) {
+            setErro('Digite algum conteúdo antes de salvar uma nova versão.');
+            return;
+        }
+
         try {
             setSalvando(true);
             setErro('');
 
-            if (titulo !== tituloOriginal) {
-                await updateDocumentTitle({ documento_id: documentoId, titulo });
+            if (tituloTratado !== tituloOriginal) {
+                await updateDocumentTitle({ documento_id: documentoId, titulo: tituloTratado });
             }
 
             if (conteudo !== conteudoOriginal) {
@@ -442,7 +248,7 @@ function Documento() {
 
             const documentoAtualizado = await getDocumentById(documentoId);
             const conteudoApi = documentoAtualizado?.conteudo || conteudo;
-            const tituloApi = documentoAtualizado?.titulo || titulo;
+            const tituloApi = documentoAtualizado?.titulo || tituloTratado;
 
             setDocumento(documentoAtualizado);
             setTitulo(tituloApi);
@@ -452,7 +258,7 @@ function Documento() {
             setEditandoConteudo(false);
             await carregarVersoes();
         } catch (error) {
-            setErro(error.message || 'Erro ao salvar documento.');
+            setErro(getApiErrorMessage(error, 'Erro ao salvar documento.'));
         } finally {
             setSalvando(false);
         }
@@ -497,9 +303,14 @@ function Documento() {
             setErro('');
             setErroConfirmacaoExcluir('');
             await deleteDocument(documentoId);
-            navigate('/dashboard');
+            voltarTelaAnterior();
         } catch (error) {
-            setErroConfirmacaoExcluir(error.message || 'Erro ao excluir documento.');
+            const mensagem =
+                error.status === 500
+                    ? 'Não foi possível excluir este documento agora. Tente novamente em alguns minutos.'
+                    : getApiErrorMessage(error, 'Erro ao excluir documento.');
+
+            setErroConfirmacaoExcluir(mensagem);
         } finally {
             setExcluindo(false);
         }

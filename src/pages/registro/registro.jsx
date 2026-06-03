@@ -6,18 +6,19 @@ import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
-import Title3 from '../../components/Typography/Title3';
-import Title4 from '../../components/Typography/Title4';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
 import {
     createRegister,
     createDocumentComment,
     deleteRegister,
     getRegisterById,
+    getApiErrorMessage,
     updateRegisterContent,
     updateRegisterTitle,
 } from '../../services/api';
 import { getDashboard } from '../dashboard/services/dashboard-endpoints';
 import Sugestao from './components/sugestao';
+import { limparMarkdownTexto } from '../../utils/markdown-text';
 
 const registroPadrao = {
     titulo: 'Registro 01',
@@ -52,10 +53,6 @@ function primeiroValor(objeto, campos, fallback = '') {
     }
 
     return fallback;
-}
-
-function linkSeguro(url) {
-    return /^(https?:|mailto:|\/)/i.test(url) ? url : '#';
 }
 
 function normalizarIdUrl(valor) {
@@ -101,215 +98,8 @@ function textoSelecionadoDentro(elemento) {
     return selecao.toString().trim().replace(/\s+/g, ' ');
 }
 
-function renderizarInline(texto, chaveBase) {
-    const partes = [];
-    const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
-    let ultimoIndice = 0;
-    let indice = 0;
-
-    for (const match of texto.matchAll(regex)) {
-        if (match.index > ultimoIndice) {
-            partes.push(texto.slice(ultimoIndice, match.index));
-        }
-
-        const trecho = match[0];
-        const chave = `${chaveBase}-${indice}`;
-
-        if (trecho.startsWith('**') && trecho.endsWith('**')) {
-            partes.push(
-                <strong key={chave} className="font-semibold">
-                    {trecho.slice(2, -2)}
-                </strong>,
-            );
-        } else if (trecho.startsWith('*') && trecho.endsWith('*')) {
-            partes.push(
-                <em key={chave} className="italic">
-                    {trecho.slice(1, -1)}
-                </em>,
-            );
-        } else if (trecho.startsWith('`') && trecho.endsWith('`')) {
-            partes.push(
-                <code
-                    key={chave}
-                    className="rounded bg-[var(--cinza-200)] px-1 py-0.5 font-mono text-[13px]"
-                >
-                    {trecho.slice(1, -1)}
-                </code>,
-            );
-        } else {
-            const [, textoLink, url] = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/) || [];
-
-            partes.push(
-                <a
-                    key={chave}
-                    href={linkSeguro(url || '')}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[var(--color-base)] underline underline-offset-2"
-                >
-                    {textoLink || trecho}
-                </a>,
-            );
-        }
-
-        ultimoIndice = match.index + trecho.length;
-        indice += 1;
-    }
-
-    if (ultimoIndice < texto.length) {
-        partes.push(texto.slice(ultimoIndice));
-    }
-
-    return partes;
-}
-
 function MarkdownPreview({ valor }) {
-    const elementos = [];
-    const linhas = String(valor || '').split('\n');
-    let listaAtual = null;
-    let paragrafoAtual = [];
-
-    function fecharParagrafo() {
-        if (paragrafoAtual.length === 0) {
-            return;
-        }
-
-        const texto = paragrafoAtual.join('\n');
-
-        elementos.push(
-            <ParagraphLarge
-                key={`p-${elementos.length}`}
-                className="mb-3 whitespace-pre-wrap break-words leading-7 text-black [overflow-wrap:anywhere]"
-            >
-                {renderizarInline(texto, `p-${elementos.length}`)}
-            </ParagraphLarge>,
-        );
-        paragrafoAtual = [];
-    }
-
-    function fecharLista() {
-        if (!listaAtual) {
-            return;
-        }
-
-        const Component = listaAtual.tipo === 'ol' ? 'ol' : 'ul';
-        const classeLista =
-            listaAtual.tipo === 'ol'
-                ? 'mb-4 list-decimal space-y-1 pl-6'
-                : 'mb-4 list-disc space-y-1 pl-6';
-
-        elementos.push(
-            <Component key={`lista-${elementos.length}`} className={classeLista}>
-                {listaAtual.itens.map((item, index) => (
-                    <ParagraphMedium
-                        as="li"
-                        key={`${listaAtual.tipo}-${index}`}
-                        className="break-words text-[16px] leading-7 text-black [overflow-wrap:anywhere]"
-                    >
-                        {renderizarInline(item, `${listaAtual.tipo}-${index}`)}
-                    </ParagraphMedium>
-                ))}
-            </Component>,
-        );
-        listaAtual = null;
-    }
-
-    linhas.forEach((linha, index) => {
-        const textoLimpo = linha.trim();
-
-        if (!textoLimpo) {
-            fecharParagrafo();
-            fecharLista();
-            return;
-        }
-
-        const titulo = textoLimpo.match(/^(#{1,3})\s+(.+)$/);
-        const itemLista = textoLimpo.match(/^[-*]\s+(.+)$/);
-        const itemOrdenado = textoLimpo.match(/^\d+\.\s+(.+)$/);
-        const citacao = textoLimpo.match(/^>\s+(.+)$/);
-
-        if (titulo) {
-            fecharParagrafo();
-            fecharLista();
-
-            const nivel = titulo[1].length;
-            const conteudo = renderizarInline(titulo[2], `titulo-${index}`);
-
-            if (nivel === 1) {
-                elementos.push(
-                    <Title2
-                        key={`titulo-${index}`}
-                        className="mb-3 break-words text-[28px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title2>,
-                );
-            } else if (nivel === 2) {
-                elementos.push(
-                    <Title3
-                        key={`titulo-${index}`}
-                        className="mb-3 break-words text-[22px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title3>,
-                );
-            } else {
-                elementos.push(
-                    <Title4
-                        key={`titulo-${index}`}
-                        className="mb-2 break-words text-[18px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title4>,
-                );
-            }
-            return;
-        }
-
-        if (itemLista || itemOrdenado) {
-            fecharParagrafo();
-
-            const tipo = itemOrdenado ? 'ol' : 'ul';
-
-            if (listaAtual?.tipo !== tipo) {
-                fecharLista();
-                listaAtual = { tipo, itens: [] };
-            }
-
-            listaAtual.itens.push(itemOrdenado?.[1] || itemLista?.[1]);
-            return;
-        }
-
-        if (citacao) {
-            fecharParagrafo();
-            fecharLista();
-            elementos.push(
-                <ParagraphLarge
-                    key={`quote-${index}`}
-                    className="mb-4 border-l-4 border-[var(--color-base)] bg-[var(--cinza-100)] py-2 pl-4 text-[var(--cinza-700)]"
-                >
-                    {renderizarInline(citacao[1], `quote-${index}`)}
-                </ParagraphLarge>,
-            );
-            return;
-        }
-
-        fecharLista();
-        paragrafoAtual.push(textoLimpo);
-    });
-
-    fecharParagrafo();
-    fecharLista();
-
-    if (elementos.length === 0) {
-        return (
-            <ParagraphMedium className="text-[var(--cinza-500)]">
-                Clique para começar o registro.
-            </ParagraphMedium>
-        );
-    }
-
-    return <div className="max-w-none">{elementos}</div>;
+    return <MarkdownRenderer valor={valor} emptyMessage="Clique para começar o registro." />;
 }
 
 function EditorMarkdown({ valor, onChange, onBlur, onContextMenu }) {
@@ -458,7 +248,7 @@ function Registro() {
                 setConteudoOriginal(proximoConteudo);
                 setEditandoConteudo(false);
             } catch (error) {
-                setErro(error.message || 'Erro ao carregar registro.');
+                setErro(getApiErrorMessage(error, 'Erro ao carregar registro.'));
             } finally {
                 setCarregando(false);
             }
@@ -572,7 +362,7 @@ function Registro() {
         }
 
         const registroReferenciaId = Number(registroId);
-        const conteudoSugestao = trechoSelecionado.trim();
+        const conteudoSugestao = limparMarkdownTexto(trechoSelecionado);
 
         await Promise.all(
             destinos.map((destino) =>
@@ -597,6 +387,18 @@ function Registro() {
     }
 
     async function salvarRegistro() {
+        const tituloTratado = titulo.trim();
+
+        if (!tituloTratado) {
+            setErro('Informe o título do registro.');
+            return;
+        }
+
+        if (tituloTratado.length > 150) {
+            setErro('O título do registro deve ter no máximo 150 caracteres.');
+            return;
+        }
+
         if (!registroId) {
             if (!projetoId) {
                 setErro('Informe o ID do registro ou o ID do projeto na URL.');
@@ -608,13 +410,13 @@ function Registro() {
                 setErro('');
                 const novoRegistro = await createRegister({
                     projeto_id: projetoId,
-                    titulo,
+                    titulo: tituloTratado,
                     conteudo,
                 });
 
                 navigate(`/registro/${novoRegistro.id}`);
             } catch (error) {
-                setErro(error.message || 'Erro ao criar registro.');
+                setErro(getApiErrorMessage(error, 'Erro ao criar registro.'));
             } finally {
                 setSalvando(false);
             }
@@ -625,8 +427,8 @@ function Registro() {
             setSalvando(true);
             setErro('');
 
-            if (titulo !== tituloOriginal) {
-                await updateRegisterTitle({ registro_id: registroId, titulo });
+            if (tituloTratado !== tituloOriginal) {
+                await updateRegisterTitle({ registro_id: registroId, titulo: tituloTratado });
             }
 
             if (conteudo !== conteudoOriginal) {
@@ -634,7 +436,7 @@ function Registro() {
             }
 
             const registroAtualizado = await getRegisterById(registroId);
-            const proximoTitulo = registroAtualizado?.titulo || titulo;
+            const proximoTitulo = registroAtualizado?.titulo || tituloTratado;
             const proximoConteudo = registroAtualizado?.conteudo || '';
 
             setRegistro(registroAtualizado);
@@ -644,7 +446,7 @@ function Registro() {
             setConteudoOriginal(proximoConteudo);
             setEditandoConteudo(false);
         } catch (error) {
-            setErro(error.message || 'Erro ao salvar registro.');
+            setErro(getApiErrorMessage(error, 'Erro ao salvar registro.'));
         } finally {
             setSalvando(false);
         }
@@ -697,9 +499,14 @@ function Registro() {
             setErro('');
             setErroConfirmacaoExcluir('');
             await deleteRegister(registroId);
-            navigate('/dashboard');
+            voltarTelaAnterior();
         } catch (error) {
-            setErroConfirmacaoExcluir(error.message || 'Erro ao excluir registro.');
+            const mensagem =
+                error.status === 500
+                    ? 'Não foi possível excluir este registro agora. Ele pode estar vinculado a comentários ou outro conteúdo.'
+                    : getApiErrorMessage(error, 'Erro ao excluir registro.');
+
+            setErroConfirmacaoExcluir(mensagem);
         } finally {
             setExcluindo(false);
         }

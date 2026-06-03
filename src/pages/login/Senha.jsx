@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import Title2 from '../../components/Typography/Title2';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Senha() {
     const [email, setEmail] = useState('');
@@ -97,6 +98,9 @@ function Senha() {
                     </p>
 
                     <form className="space-y-5" onSubmit={handleSubmit}>
+                        <FeedbackMessage>{error}</FeedbackMessage>
+                        <FeedbackMessage type="success">{success}</FeedbackMessage>
+
                         <div>
                             <label className="mb-2 block font-medium text-gray-800"></label>
                             <input
