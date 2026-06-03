@@ -1,5 +1,5 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
-import DesktopSidebar from '../../components/DesktopSideBar.jsx';
+import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import { getDashboard, answerInvite } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
 

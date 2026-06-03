@@ -1,23 +1,51 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import LogoImg from '../../assets/logotipo-desktop.svg';
 import Carrossel from './components/Carrossel';
-import { login as loginApi } from '../../services/api';
+import { getApiErrorMessage, login as loginApi } from '../../services/api';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState(location.state?.success || '');
     const [loading, setLoading] = useState(false);
+
+    const validarFormulario = () => {
+        if (!email.trim()) {
+            setError('Informe seu e-mail.');
+            return false;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+            setError('Informe um e-mail válido, como nome@dominio.com.');
+            return false;
+        }
+
+        if (!senha.trim()) {
+            setError('Informe sua senha.');
+            return false;
+        }
+
+        return true;
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
+        setSuccess('');
+
+        if (!validarFormulario()) {
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const response = await loginApi({ email, senha });
+            const response = await loginApi({ email: email.trim(), senha });
             const token = response?.token;
             const usuario = response?.usuario;
 
@@ -26,10 +54,10 @@ function Login() {
             }
 
             localStorage.setItem('authToken', token);
-            localStorage.setItem('authUser', JSON.stringify(usuario || { email }));
+            localStorage.setItem('authUser', JSON.stringify(usuario || { email: email.trim() }));
             navigate('/dashboard');
         } catch (err) {
-            setError(err.message || 'Erro ao efetuar login. Verifique suas credenciais.');
+            setError(getApiErrorMessage(err, 'Não foi possível entrar. Tente novamente.'));
         } finally {
             setLoading(false);
         }
@@ -58,15 +86,14 @@ function Login() {
                             <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">
                                 Login
                             </h2>
-                            {error && (
-                                <p className="mx-auto mb-4 max-w-[17rem] rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
-                                    {error}
-                                </p>
-                            )}
+
                             <form
                                 className="mx-auto w-full max-w-[17rem] space-y-5"
                                 onSubmit={handleSubmit}
                             >
+                                <FeedbackMessage>{error}</FeedbackMessage>
+                                <FeedbackMessage type="success">{success}</FeedbackMessage>
+
                                 <div>
                                     <label className="block text-gray-800 font-medium mb-2">
                                         E-mail

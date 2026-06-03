@@ -2,7 +2,8 @@ import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
-import { register as registerApi } from '../../services/api';
+import { getApiErrorMessage, register as registerApi } from '../../services/api';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Cadastro() {
     const navigate = useNavigate();
@@ -12,16 +13,57 @@ function Cadastro() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const validarFormulario = () => {
+        if (!nome.trim()) {
+            setError('Informe seu nome.');
+            return false;
+        }
+
+        if (nome.trim().length < 2) {
+            setError('Informe um nome válido.');
+            return false;
+        }
+
+        if (!email.trim()) {
+            setError('Informe seu e-mail.');
+            return false;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+            setError('Informe um e-mail válido, como nome@dominio.com.');
+            return false;
+        }
+
+        if (!senha.trim()) {
+            setError('Informe uma senha.');
+            return false;
+        }
+
+        if (senha.length < 8) {
+            setError('A senha deve ter pelo menos 8 caracteres.');
+            return false;
+        }
+
+        return true;
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
+
+        if (!validarFormulario()) {
+            return;
+        }
+
         setLoading(true);
 
         try {
-            await registerApi({ nome, email, senha });
-            navigate('/Login');
+            await registerApi({ nome: nome.trim(), email: email.trim(), senha });
+            navigate('/Login', {
+                state: { success: 'Cadastro criado com sucesso. Faça login para continuar.' },
+            });
         } catch (err) {
-            setError(err.message || 'Erro ao cadastrar. Verifique os dados e tente novamente.');
+            setError(getApiErrorMessage(err, 'Não foi possível criar sua conta. Tente novamente.'));
         } finally {
             setLoading(false);
         }
@@ -46,16 +88,12 @@ function Cadastro() {
                     </p>
                     <h1 className="mb-5 text-center text-3xl font-bold text-gray-800">Cadastro</h1>
 
-                    {error && (
-                        <p className="mx-auto mb-4 max-w-[22.5rem] rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
-                            {error}
-                        </p>
-                    )}
-
                     <form
                         className="mx-auto w-full max-w-[22.5rem] space-y-5"
                         onSubmit={handleSubmit}
                     >
+                        <FeedbackMessage>{error}</FeedbackMessage>
+
                         <div>
                             <label className="block text-gray-800 font-medium mb-2">Nome</label>
                             <input

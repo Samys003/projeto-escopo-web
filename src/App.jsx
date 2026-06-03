@@ -12,6 +12,7 @@ import ProjectList from './pages/project-list/ProjectList';
 import DetailsMeeting from './pages/detailsMeeting/DetailsMeeting';
 import Documento from './pages/documento/documento';
 import Registro from './pages/registro/registro';
+import Notificacoes from './pages/notificacoes/notificacoes';
 function App() {
     return (
         <Router>
@@ -32,6 +33,7 @@ function App() {
                 <Route path="/documento" element={<Documento />} />
                 <Route path="/registro/:registroId" element={<Registro />} />
                 <Route path="/registro" element={<Registro />} />
+                <Route path="/notificacoes" element={<Notificacoes />} />
             </Routes>
         </Router>
     );
