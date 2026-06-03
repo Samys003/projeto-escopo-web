@@ -470,7 +470,7 @@ function Documento() {
             setExcluindo(true);
             setErro('');
             await deleteDocument(documentoId);
-            navigate('/dashboard');
+            navigate(-1);
         } catch (error) {
             setErro(error.message || 'Erro ao excluir documento.');
         } finally {
@@ -488,7 +488,7 @@ function Documento() {
             return;
         }
 
-        navigate('/dashboard');
+        navigate(-1);
     }
 
     return (

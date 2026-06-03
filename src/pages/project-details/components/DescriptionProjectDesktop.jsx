@@ -3,20 +3,21 @@ import IconButton from '../../../components/IconButton';
 import { SquarePen } from 'lucide-react';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
-function DescriptionProjectDesktop({ project }) {
+function DescriptionProjectDesktop({ project, onClick }) {
     return (
         <div className="lg:flex hidden w-full justify-between">
             <div className="w-[50%]">
                 <div className="flex items-center justify-between w-full mb-2">
                     <Title2 className="text-2xl text-(--cinza-700">{project?.titulo}</Title2>
                     <IconButton
+                        onClick={onClick}
                         icon={<SquarePen />}
                         className={project?.nivel_acesso_id === 1 ? '' : 'hidden'}
                     ></IconButton>
                 </div>
                 <div className="w-full flex flex-col  gap-2  mb-4">
                     <ParagraphMedium className="text-(--cinza-700)">
-                        Status: {project?.status ? 'Concluido' : 'Em andamento'}
+                        Status: {project?.status ? 'Em andamento' : 'Concluido'}
                     </ParagraphMedium>
                     <ParagraphMedium className="text-(--cinza-700)">
                         Descrição: {project?.descricao}

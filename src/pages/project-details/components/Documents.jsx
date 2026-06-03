@@ -3,9 +3,9 @@ import IconButton from '../../../components/IconButton';
 import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import Title2 from '../../../components/Typography/Title2';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-function Documents({ documentos, project, setOpenModalDeleteCategoria }) {
+function Documents({ documentos, project, setOpenModalDeleteCategoria, novoDocumento }) {
     const navigate = useNavigate();
 
     return (
@@ -70,7 +70,11 @@ function Documents({ documentos, project, setOpenModalDeleteCategoria }) {
                                 );
                             })}
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
-                                <IconButton className={`gap-2 lg:p-3`} icon={<FilePlus />}>
+                                <IconButton
+                                    className={`gap-2 lg:p-3`}
+                                    icon={<FilePlus />}
+                                    onClick={() => novoDocumento(doc.id)}
+                                >
                                     Novo Documento
                                 </IconButton>
                             )}

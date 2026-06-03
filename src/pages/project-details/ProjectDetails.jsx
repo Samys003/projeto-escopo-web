@@ -7,17 +7,20 @@ import ButtonRegistrer from './components/ButtonRegister';
 import Register from './components/Register';
 import Meeting from './components/Meeting';
 import PopUp from './components/PopUp';
-import { useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FolderPlus } from 'lucide-react';
 import {
     deleteCategoria,
     getMeetingById,
     getProjectById,
     getProjectDocumentById,
+    getProjectRegisters,
     getRegisterId,
     newCategoria,
+    newDocument,
     newMeeting,
-} from '../../services/api';
+    newRegister,
+} from '../../services/api.js';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import DescriptionProjectMobile from './components/DescriptionProjectMobile';
 import DescriptionProjectDesktop from './components/DescriptionProjectDesktop';
@@ -42,12 +45,16 @@ function ProjectDetails() {
     const [expandReuniao, setExpandReuniao] = useState({});
     const [openModalDeleteCategoria, setOpenModalDeleteCategoria] = useState(null);
     const [erro, setErro] = useState('');
+    const [nomeDocument, setNomeDocument] = useState('');
+    const [nomeRegistro, setNomeRegistro] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function carregarProjeto() {
             try {
                 const data = await getProjectById(id);
                 const dataDoc = await getProjectDocumentById(id);
+                const dataRegister = await getProjectRegisters();
 
                 setProject(data);
                 setDocumentos(dataDoc);
@@ -120,6 +127,40 @@ function ProjectDetails() {
             setOpenModalDeleteCategoria(null);
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    async function novoDocumento(idCategoria) {
+        try {
+            const nameDocument = {
+                titulo: 'Novo Documento',
+            };
+
+            const data = await newDocument(idCategoria, nameDocument);
+            const dataDoc = await getProjectDocumentById(id);
+
+            setNomeDocument(data);
+            setDocumentos(dataDoc);
+            navigate(`/documento/${id}`);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function novoRegistro() {
+        try {
+            const nameRegister = {
+                titulo: 'Novo Registro',
+                conteudo: 'digite o seu registro',
+            };
+
+            const data = await newRegister(id, nameRegister);
+            const dataDoc = await getProjectDocumentById(id);
+
+            setDocumentos(dataDoc);
+            setNomeRegistro(data);
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -220,8 +261,16 @@ function ProjectDetails() {
             <DesktopSidebar />
             <MobileHeader />
             <div className="w-full p-4 ">
-                <DescriptionProjectMobile project={project} expand={expand} setExpand={setExpand} />
-                <DescriptionProjectDesktop project={project} />
+                <DescriptionProjectMobile
+                    project={project}
+                    expand={expand}
+                    setExpand={setExpand}
+                    onClick={() => navigate(`/projeto/${id}/editar-projeto/`)}
+                />
+                <DescriptionProjectDesktop
+                    project={project}
+                    onClick={() => navigate(`/projeto/${id}/editar-projeto/`)}
+                />
                 <ComponentMenu
                     currentTab={currentTab}
                     setCurrentTab={setCurrentTab}
@@ -265,6 +314,7 @@ function ProjectDetails() {
                             documentos={documentos}
                             deletarCategoria={deletarCategoria}
                             project={project}
+                            novoDocumento={novoDocumento}
                         ></Documents>
                         {openModalDeleteCategoria && (
                             <PopUp
@@ -281,7 +331,10 @@ function ProjectDetails() {
                 {currentTab === 'Registros' && (
                     <div className="pt-4">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
-                            <ButtonRegistrer className="lg:w-84 lg:h-15 lg:p-5">
+                            <ButtonRegistrer
+                                onClick={novoRegistro}
+                                className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5"
+                            >
                                 + Novo Registro
                             </ButtonRegistrer>
                         )}
@@ -296,7 +349,7 @@ function ProjectDetails() {
                     <div className="pt-4">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                             <ButtonRegistrer
-                                className="lg:w-84 lg:h-15 lg:p-5"
+                                className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5"
                                 onClick={() => setOpenModalReuniao(true)}
                             >
                                 + Nova Reunião

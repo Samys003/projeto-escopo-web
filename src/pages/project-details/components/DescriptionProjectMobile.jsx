@@ -3,12 +3,13 @@ import IconButton from '../../../components/IconButton';
 import { SquarePen, ChevronUp, ChevronDown } from 'lucide-react';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 
-function DescriptionProjectMobile({ project, expand, setExpand }) {
+function DescriptionProjectMobile({ project, expand, setExpand, onClick }) {
     return (
         <div className="lg:hidden w-full flex flex-col p-2">
             <div className="w-full flex items-center gap-2 ">
                 <Title2 className="text-2xl">{project?.titulo}</Title2>
                 <IconButton
+                    onClick={onClick}
                     icon={<SquarePen />}
                     className={project?.nivel_acesso_id === 1 ? '' : 'hidden'}
                 ></IconButton>
@@ -16,7 +17,7 @@ function DescriptionProjectMobile({ project, expand, setExpand }) {
             <div className="w-full flex flex-col  gap-2">
                 <div className="">
                     <ParagraphMedium>
-                        Status: {project?.status ? 'Concluido' : 'Em andamento'}
+                        Status: {project?.status ? 'Em andamento' : 'Concluido'}
                     </ParagraphMedium>
                 </div>
                 <div
