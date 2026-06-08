@@ -54,7 +54,6 @@ function ProjectDetails() {
             try {
                 const data = await getProjectById(id);
                 const dataDoc = await getProjectDocumentById(id);
-                const dataRegister = await getProjectRegisters();
 
                 setProject(data);
                 setDocumentos(dataDoc);
@@ -98,6 +97,13 @@ function ProjectDetails() {
     }
 
     async function novaReuniao() {
+        if (!nomeReuniao.trim()) {
+            setErro('Esse campo não pode estar vazio! ');
+            return;
+        }
+
+        setErro('');
+
         try {
             const nameMeeting = {
                 titulo: nomeReuniao,
@@ -137,11 +143,10 @@ function ProjectDetails() {
             };
 
             const data = await newDocument(idCategoria, nameDocument);
-            const dataDoc = await getProjectDocumentById(id);
 
             setNomeDocument(data);
-            setDocumentos(dataDoc);
-            navigate(`/documento/${id}`);
+
+            navigate(`/documento/${data.id}`);
         } catch (error) {
             console.error(error);
         }
@@ -155,10 +160,9 @@ function ProjectDetails() {
             };
 
             const data = await newRegister(id, nameRegister);
-            const dataDoc = await getProjectDocumentById(id);
 
-            setDocumentos(dataDoc);
             setNomeRegistro(data);
+            navigate(`/registro/${data.id}`);
         } catch (error) {
             console.error(error);
         }
@@ -357,17 +361,23 @@ function ProjectDetails() {
                         )}
                         {openModalReuniao && (
                             <PopUp
-                                tituloNovo={'Nova Reunião'}
+                                erro={erro}
+                                tituloNovo={'Adicionar Reunião'}
                                 tituloCategoria={'Titulo da Reunião'}
-                                value={nomeReuniao}
-                                placeholder={'Nova Reuniao'}
+                                value={nomeReuniao.titulo}
+                                showInput={true}
+                                placeholder={'Nova Reunião'}
                                 onClick={novaReuniao}
                                 onChange={(e) => {
                                     setNomeReuniao(e.target.value);
                                     setErro('');
                                 }}
-                                onClose={() => setOpenModalReuniao(false)}
-                                children="Criar"
+                                onClose={() => {
+                                    setOpenModalReuniao(false);
+                                    setNomeReuniao('');
+                                    setErro('');
+                                }}
+                                children={'Criar'}
                             />
                         )}
 

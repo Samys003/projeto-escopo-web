@@ -665,7 +665,7 @@ function Registro() {
             setExcluindo(true);
             setErro('');
             await deleteRegister(registroId);
-            navigate('/dashboard');
+            navigate(-1);
         } catch (error) {
             setErro(error.message || 'Erro ao excluir registro.');
         } finally {

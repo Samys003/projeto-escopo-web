@@ -46,10 +46,10 @@ function Register({ formatRegistros, expandRegsister, setExpandRegister }) {
                                         <ParagraphMedium className="w-[33%] truncate">
                                             {registro.titulo}
                                         </ParagraphMedium>
-                                        <ParagraphMedium className="hidden w-[33%] lg:block text-(--cinza-600) truncate">
+                                        <ParagraphMedium className="hidden w-[33%]  lg:block text-(--cinza-600) truncate">
                                             {registro.conteudo}
                                         </ParagraphMedium>
-                                        <ParagraphMedium className=" text-end text-(--cinza-600)">
+                                        <ParagraphMedium className=" text-end   text-(--cinza-600)">
                                             {new Date(registro.criado_em).toLocaleDateString(
                                                 'pt-BR',
                                             )}
