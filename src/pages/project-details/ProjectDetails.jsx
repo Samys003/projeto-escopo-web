@@ -285,7 +285,7 @@ function ProjectDetails() {
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                             <IconButton
                                 onClick={() => setOpenModalCategoria(true)}
-                                className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex "
+                                className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex hover:bg-(--color-dark)"
                                 icon={<FolderPlus />}
                             >
                                 Nova Categoria
@@ -337,7 +337,7 @@ function ProjectDetails() {
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                             <ButtonRegistrer
                                 onClick={novoRegistro}
-                                className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5"
+                                className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5 hover:bg-(--color-dark)"
                             >
                                 + Novo Registro
                             </ButtonRegistrer>
@@ -353,7 +353,7 @@ function ProjectDetails() {
                     <div className="pt-4">
                         {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                             <ButtonRegistrer
-                                className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5"
+                                className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5 hover:bg-(--color-dark)"
                                 onClick={() => setOpenModalReuniao(true)}
                             >
                                 + Nova Reunião

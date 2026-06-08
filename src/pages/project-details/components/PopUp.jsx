@@ -35,7 +35,7 @@ function PopUp({
                         </Title4>
 
                         <button onClick={onClose} className="">
-                            <X className="text-black" />
+                            <X className="text-black hover:text-(--roxo-dark) cursor-pointer" />
                         </button>
                     </div>
                     <div className=" w-full h-full pl-2 py-2 justify-center items-center flex flex-col gap-1">
@@ -61,8 +61,18 @@ function PopUp({
                     </div>
 
                     <div className="flex justify-end items-end gap-3 ">
-                        <IconButton onClick={onClose}>Cancelar</IconButton>
-                        <IconButton onClick={onClick}>{children}</IconButton>
+                        <IconButton
+                            className="hover:bg-(--color-dark) cursor-pointer"
+                            onClick={onClose}
+                        >
+                            Cancelar
+                        </IconButton>
+                        <IconButton
+                            className="hover:bg-(--color-dark) cursor-pointer"
+                            onClick={onClick}
+                        >
+                            {children}
+                        </IconButton>
                     </div>
                 </div>
             </div>
