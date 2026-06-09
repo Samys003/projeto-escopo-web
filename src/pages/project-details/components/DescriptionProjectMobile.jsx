@@ -11,7 +11,7 @@ function DescriptionProjectMobile({ project, expand, setExpand, onClick }) {
                 <IconButton
                     onClick={onClick}
                     icon={<SquarePen />}
-                    className={project?.nivel_acesso_id === 1 ? '' : 'hidden'}
+                    className={`hover:bg-(--color-dark) ${project?.nivel_acesso_id === 1 ? '' : 'hidden'}`}
                 ></IconButton>
             </div>
             <div className="w-full flex flex-col  gap-2">

@@ -1,4 +1,4 @@
-import { ChevronsLeft, SquarePen, Trash, Trash2 } from 'lucide-react';
+import { ChevronsLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import { useEffect } from 'react';
@@ -66,15 +66,25 @@ function DetailsMeeting() {
                     </div>
                     <IconButton className="w-10 h-10" icon={<Trash2 />}></IconButton>
                 </div>
-                <div className="w-full flex flex-col gap-2 p-5 border rounded-2xl border-(--cinza-300)  mt-3 text-start">
-                    <ParagraphMedium className="text-(--cinza-600)">
-                        Gravação da Reunião
-                    </ParagraphMedium>
+                <div className="w-full flex flex-col gap-3 p-3 border rounded-2xl border-(--cinza-300)  mt-3 text-start">
+                    <div className="flex items-center ">
+                        <ParagraphMedium className="text-(--cinza-600)">
+                            Gravação da Reunião
+                        </ParagraphMedium>
+                        <IconButton
+                            className="bg-transparent w-8 h-8"
+                            icon={<Pencil className="text-black w-4 h-4" />}
+                        ></IconButton>
+                    </div>
                     <div className="flex">
                         {detalhesReuniao.links
                             ?.filter((link) => link.tipo_link === 'reuniao')
                             .map((link) => (
-                                <IconButton key={link.id} className="w-35">
+                                <IconButton
+                                    key={link.id}
+                                    onClick={() => navigate(link.url)}
+                                    className="w-35"
+                                >
                                     Acessar Gravação
                                 </IconButton>
                             ))}
@@ -90,12 +100,17 @@ function DetailsMeeting() {
                     {detalhesReuniao?.links
                         ?.filter((link) => link.tipo_link === 'link_adicional')
                         .map((link) => (
-                            <div key={link.id} className="pl-2 text-(--color-base) underline">
+                            <div key={link.id} className="flex pl-2 text-(--color-base) underline">
                                 <button>
                                     <ParagraphSmall>{link.nome}</ParagraphSmall>
                                 </button>
+                                <IconButton
+                                    className="bg-transparent "
+                                    icon={<Trash2 className="text-black w-4 h-4" />}
+                                ></IconButton>
                             </div>
                         ))}
+
                     <div className="w-full flex items-center p-1 justify-center">
                         <IconButton className="w-29">Adicionar link</IconButton>
                     </div>
@@ -104,7 +119,7 @@ function DetailsMeeting() {
                     <div>
                         <ParagraphSmall>Participantes</ParagraphSmall>
                     </div>
-                    <div className="lg:border-b border-(--cinza-400)">
+                    <div className="">
                         {detalhesReuniao?.usuarios?.map((usuario, index) => (
                             <div
                                 key={`${usuario.id}-${index}`}
@@ -119,9 +134,15 @@ function DetailsMeeting() {
                                         {usuario.nome}
                                     </ParagraphSmall>
                                 </div>
-                                <ParagraphSmall className="text-(--cinza-500)">
-                                    {usuario.cargo}
-                                </ParagraphSmall>
+                                <div className="flex gap-4">
+                                    <ParagraphSmall className="text-(--cinza-500)">
+                                        {usuario.cargo}
+                                    </ParagraphSmall>
+                                    <IconButton
+                                        className="bg-transparent flex "
+                                        icon={<EllipsisVertical className="text-black w-4" />}
+                                    ></IconButton>
+                                </div>
                             </div>
                         ))}
                         <div className="w-full p-2 items-center justify-center flex">
