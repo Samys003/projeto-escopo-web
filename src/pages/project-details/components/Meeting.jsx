@@ -42,7 +42,7 @@ function Meeting({ formatReunioes, expandReuniao, setExpandReuniao }) {
                                     <button
                                         key={reuniao.id}
                                         onClick={() => navigate(`/reuniao/${reuniao.id}`)}
-                                        className="flex border border-(--cinza-300) justify-between rounded-xl p-3 mb-3"
+                                        className="flex hover:bg-(--roxo-light) border border-(--cinza-300) justify-between rounded-xl p-3 mb-3"
                                     >
                                         <div className="lg:flex lg:gap-2 lg:items-center lg:justify-between  lg:w-[70%]">
                                             <ParagraphMedium className="truncate ">

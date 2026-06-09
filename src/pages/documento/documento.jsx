@@ -339,7 +339,7 @@ function Documento() {
             return;
         }
 
-        navigate('/dashboard');
+        navigate(-1);
     }
 
     return (

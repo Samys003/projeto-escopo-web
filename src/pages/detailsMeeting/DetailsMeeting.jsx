@@ -1,4 +1,4 @@
-import { ChevronsLeft, SquarePen } from 'lucide-react';
+import { ChevronsLeft, SquarePen, Trash, Trash2 } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import { useEffect } from 'react';
@@ -46,14 +46,14 @@ function DetailsMeeting() {
             <DesktopSidebar></DesktopSidebar>
             <MobileHeader></MobileHeader>
             <div className="flex flex-col px-4 w-full">
-                <div className="flex gap-2 lg:items-start p-2 border-b ">
+                <div className="flex gap-2 lg:items-start p-2 border-b border-(--cinza-300) ">
                     <button>
                         <ChevronsLeft
                             onClick={() => navigate(`/projeto/${detalhesReuniao.projeto_id}`)}
                             className="w-9 h-9"
                         />
                     </button>
-                    <div className="flex w-full pb-2 items-center justify-between">
+                    <div className="flex w-full pb-2  items-center justify-between">
                         <div className="flex flex-col ">
                             <Title2 className="font-bold leading-none">
                                 {detalhesReuniao.titulo}
@@ -64,28 +64,28 @@ function DetailsMeeting() {
                             </ParagraphMedium>
                         </div>
                     </div>
-                    <button>
-                        <SquarePen className="w-6 h-9" />
-                    </button>
+                    <IconButton className="w-10 h-10" icon={<Trash2 />}></IconButton>
                 </div>
-                <div className="w-full flex flex-col gap-2 p-2 border-b border-(--cinza-400) text-start">
+                <div className="w-full flex flex-col gap-2 p-5 border rounded-2xl border-(--cinza-300)  mt-3 text-start">
                     <ParagraphMedium className="text-(--cinza-600)">
                         Gravação da Reunião
                     </ParagraphMedium>
-                    {detalhesReuniao.links
-                        ?.filter((link) => link.tipo_link === 'reuniao')
-                        .map((link) => (
-                            <IconButton key={link.id} className="w-35">
-                                Acessar Gravação
-                            </IconButton>
-                        ))}
-                    <button className="w-22">
-                        <ParagraphSmall className="text-(--color-base) underline">
-                            Transcrição
-                        </ParagraphSmall>
-                    </button>
+                    <div className="flex">
+                        {detalhesReuniao.links
+                            ?.filter((link) => link.tipo_link === 'reuniao')
+                            .map((link) => (
+                                <IconButton key={link.id} className="w-35">
+                                    Acessar Gravação
+                                </IconButton>
+                            ))}
+                        <button className="w-22">
+                            <ParagraphSmall className="text-(--color-base) underline">
+                                Transcrição
+                            </ParagraphSmall>
+                        </button>
+                    </div>
                 </div>
-                <div className="w-full flex flex-col border-b border-(--cinza-400) p-2">
+                <div className="w-full flex flex-col border mt-3 rounded-2xl border-(--cinza-300) p-2">
                     <ParagraphSmall>Links Adicionais</ParagraphSmall>
                     {detalhesReuniao?.links
                         ?.filter((link) => link.tipo_link === 'link_adicional')
@@ -124,24 +124,29 @@ function DetailsMeeting() {
                                 </ParagraphSmall>
                             </div>
                         ))}
-                        {detalhesReuniao?.convidados?.map((convidado) => (
-                            <div key={convidado.id} className="flex justify-between items-center ">
-                                <div className="flex items-center py-2 gap-1">
-                                    <div className="flex rounded-full text-white w-10 justify-center items-center h-10 bg-(--cinza-200)">
-                                        {gerarIniciais(convidado.nome)}
+                        <IconButton>Novo Participante</IconButton>
+                        <div>
+                            <ParagraphSmall>Convidados</ParagraphSmall>
+                            {detalhesReuniao?.convidados?.map((convidado) => (
+                                <div
+                                    key={convidado.id}
+                                    className="flex justify-between items-center "
+                                >
+                                    <div className="flex items-center py-2 gap-1">
+                                        <div className="flex rounded-full text-white w-10 justify-center items-center h-10 bg-(--cinza-200)">
+                                            {gerarIniciais(convidado.nome)}
+                                        </div>
+                                        <ParagraphSmall className="text-(--cinza-500)">
+                                            {convidado.nome}
+                                        </ParagraphSmall>
                                     </div>
                                     <ParagraphSmall className="text-(--cinza-500)">
-                                        {convidado.nome}
+                                        {convidado.cargo}
                                     </ParagraphSmall>
                                 </div>
-                                <ParagraphSmall className="text-(--cinza-500)">
-                                    {convidado.cargo}
-                                </ParagraphSmall>
-                            </div>
-                        ))}
-                        <div className="flex items-center w-full justify-center p-2">
-                            <IconButton>Novo Participante</IconButton>
+                            ))}
                         </div>
+                        <div className="flex items-center w-full justify-center p-2"></div>
                     </div>
                 </div>
             </div>

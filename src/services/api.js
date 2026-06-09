@@ -332,3 +332,21 @@ export async function createDocumentComment({
     });
     return parseResponse(response);
 }
+
+export async function newDocument(id, documento) {
+    const response = await fetch(`${API_URL}/api/v1/categoria/${id}/documento`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(documento),
+    });
+    return parseResponse(response);
+}
+
+export async function newRegister(id, registro) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/registro`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(registro),
+    });
+    return parseResponse(response);
+}
