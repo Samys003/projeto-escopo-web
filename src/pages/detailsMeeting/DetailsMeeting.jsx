@@ -100,7 +100,7 @@ function DetailsMeeting() {
                         <IconButton className="w-29">Adicionar link</IconButton>
                     </div>
                 </div>
-                <div className="p-2">
+                <div className="p-2 mt-3 border border-(--cinza-300) rounded-2xl ">
                     <div>
                         <ParagraphSmall>Participantes</ParagraphSmall>
                     </div>
@@ -124,31 +124,33 @@ function DetailsMeeting() {
                                 </ParagraphSmall>
                             </div>
                         ))}
-                        <IconButton>Novo Participante</IconButton>
-                        <div>
-                            <ParagraphSmall>Convidados</ParagraphSmall>
-                            {detalhesReuniao?.convidados?.map((convidado) => (
-                                <div
-                                    key={convidado.id}
-                                    className="flex justify-between items-center "
-                                >
-                                    <div className="flex items-center py-2 gap-1">
-                                        <div className="flex rounded-full text-white w-10 justify-center items-center h-10 bg-(--cinza-200)">
-                                            {gerarIniciais(convidado.nome)}
-                                        </div>
-                                        <ParagraphSmall className="text-(--cinza-500)">
-                                            {convidado.nome}
-                                        </ParagraphSmall>
-                                    </div>
-                                    <ParagraphSmall className="text-(--cinza-500)">
-                                        {convidado.cargo}
-                                    </ParagraphSmall>
-                                </div>
-                            ))}
+                        <div className="w-full p-2 items-center justify-center flex">
+                            <IconButton>Novo Participante</IconButton>
                         </div>
-                        <div className="flex items-center w-full justify-center p-2"></div>
                     </div>
                 </div>
+                <div className="p-2 mt-3 border border-(--cinza-300) rounded-2xl ">
+                    <ParagraphSmall>Convidados</ParagraphSmall>
+                    {detalhesReuniao?.convidados?.map((convidado) => (
+                        <div key={convidado.id} className="flex justify-between items-center ">
+                            <div className="flex items-center py-2 gap-1">
+                                <div className="flex rounded-full text-white w-10 justify-center items-center h-10 bg-(--cinza-200)">
+                                    {gerarIniciais(convidado.nome)}
+                                </div>
+                                <ParagraphSmall className="text-(--cinza-500)">
+                                    {convidado.nome}
+                                </ParagraphSmall>
+                            </div>
+                            <ParagraphSmall className="text-(--cinza-500)">
+                                {convidado.cargo}
+                            </ParagraphSmall>
+                        </div>
+                    ))}
+                    <div className="w-full p-2 items-center justify-center flex">
+                        <IconButton>Novo Convidado</IconButton>
+                    </div>
+                </div>
+                <div className="flex items-center w-full justify-center p-2"></div>
             </div>
         </div>
     );
