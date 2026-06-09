@@ -499,11 +499,7 @@ function Registro() {
             setErro('');
             setErroConfirmacaoExcluir('');
             await deleteRegister(registroId);
-<<<<<<< HEAD
             voltarTelaAnterior();
-=======
-            navigate(-1);
->>>>>>> origin/teladetalhesdoprojeto-ajustes
         } catch (error) {
             const mensagem =
                 error.status === 500
