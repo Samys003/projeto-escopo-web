@@ -128,12 +128,93 @@ function BlocoCodigo({ linhas, linguagem, chave }) {
     );
 }
 
+function celulasTabela(linha) {
+    return String(linha || '')
+        .trim()
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map((celula) => celula.trim());
+}
+
+function ehLinhaTabela(linha) {
+    return /^\s*\|.+\|\s*$/.test(linha);
+}
+
+function ehSeparadorTabela(linha) {
+    const celulas = celulasTabela(linha);
+
+    return celulas.length > 0 && celulas.every((celula) => /^:?-{3,}:?$/.test(celula));
+}
+
+function classeAlinhamentoTabela(separador) {
+    if (/^:-{3,}:$/.test(separador)) {
+        return 'text-center';
+    }
+
+    if (/^-{3,}:$/.test(separador)) {
+        return 'text-right';
+    }
+
+    return 'text-left';
+}
+
+function normalizarCelulas(celulas, total) {
+    return Array.from({ length: total }, (_, index) => celulas[index] || '');
+}
+
+function TabelaMarkdown({ tabela, chave }) {
+    const totalColunas = tabela.cabecalhos.length;
+    const alinhamentos = tabela.alinhamentos;
+
+    return (
+        <div
+            key={chave}
+            className="mb-4 max-w-full overflow-x-auto rounded-lg border border-[var(--cinza-300)]"
+        >
+            <table className="w-full min-w-[520px] border-collapse bg-white">
+                <thead className="bg-[var(--cinza-100)]">
+                    <tr>
+                        {tabela.cabecalhos.map((cabecalho, index) => (
+                            <th
+                                scope="col"
+                                key={`th-${index}`}
+                                className={`border-b border-r border-[var(--cinza-300)] px-3 py-2 font-inter text-[14px] font-semibold text-black last:border-r-0 ${alinhamentos[index] || 'text-left'}`}
+                            >
+                                {renderizarInline(cabecalho, `${chave}-th-${index}`)}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {tabela.linhas.map((linha, linhaIndex) => (
+                        <tr key={`tr-${linhaIndex}`} className="even:bg-[var(--cinza-100)]">
+                            {normalizarCelulas(linha, totalColunas).map((celula, celulaIndex) => (
+                                <td
+                                    key={`td-${linhaIndex}-${celulaIndex}`}
+                                    className={`align-top break-words border-b border-r border-[var(--cinza-300)] px-3 py-2 font-inter text-[14px] text-black last:border-r-0 [overflow-wrap:anywhere] ${alinhamentos[celulaIndex] || 'text-left'}`}
+                                >
+                                    {renderizarInline(
+                                        celula,
+                                        `${chave}-td-${linhaIndex}-${celulaIndex}`,
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
 function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrever.' }) {
     const elementos = [];
     const linhas = String(valor || '').split('\n');
     let listaAtual = null;
     let paragrafoAtual = [];
     let blocoCodigo = null;
+    let tabelaAtual = null;
 
     function fecharParagrafo() {
         if (paragrafoAtual.length === 0) {
@@ -196,6 +277,21 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         blocoCodigo = null;
     }
 
+    function fecharTabela() {
+        if (!tabelaAtual) {
+            return;
+        }
+
+        elementos.push(
+            <TabelaMarkdown
+                key={`tabela-${elementos.length}`}
+                chave={`tabela-${elementos.length}`}
+                tabela={tabelaAtual}
+            />,
+        );
+        tabelaAtual = null;
+    }
+
     linhas.forEach((linha, index) => {
         const marcadorCodigo = linha.trim().match(/^(`{3,}|'{3,})\s*([\w-]+)?\s*$/);
 
@@ -212,6 +308,7 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         if (marcadorCodigo) {
             fecharParagrafo();
             fecharLista();
+            fecharTabela();
             blocoCodigo = {
                 marcador: marcadorCodigo[1],
                 linguagem: marcadorCodigo[2] || '',
@@ -225,6 +322,34 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         if (!textoLimpo) {
             fecharParagrafo();
             fecharLista();
+            fecharTabela();
+            return;
+        }
+
+        const linhaTabela = ehLinhaTabela(linha);
+        const separadorTabela = ehSeparadorTabela(linha);
+
+        if (tabelaAtual) {
+            if (separadorTabela) {
+                return;
+            }
+
+            if (linhaTabela) {
+                tabelaAtual.linhas.push(celulasTabela(linha));
+                return;
+            }
+
+            fecharTabela();
+        }
+
+        if (linhaTabela && ehSeparadorTabela(linhas[index + 1])) {
+            fecharParagrafo();
+            fecharLista();
+            tabelaAtual = {
+                cabecalhos: celulasTabela(linha),
+                alinhamentos: celulasTabela(linhas[index + 1]).map(classeAlinhamentoTabela),
+                linhas: [],
+            };
             return;
         }
 
@@ -236,6 +361,7 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         if (titulo) {
             fecharParagrafo();
             fecharLista();
+            fecharTabela();
 
             const nivel = titulo[1].length;
             const conteudo = renderizarInline(titulo[2], `titulo-${index}`);
@@ -273,6 +399,7 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
 
         if (itemLista || itemOrdenado) {
             fecharParagrafo();
+            fecharTabela();
 
             const tipo = itemOrdenado ? 'ol' : 'ul';
 
@@ -288,6 +415,7 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         if (citacao) {
             fecharParagrafo();
             fecharLista();
+            fecharTabela();
             elementos.push(
                 <ParagraphLarge
                     key={`quote-${index}`}
@@ -300,11 +428,13 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         }
 
         fecharLista();
+        fecharTabela();
         paragrafoAtual.push(textoLimpo);
     });
 
     fecharParagrafo();
     fecharLista();
+    fecharTabela();
     fecharBlocoCodigo();
 
     if (elementos.length === 0) {
@@ -313,7 +443,7 @@ function MarkdownRenderer({ valor, emptyMessage = 'Clique para começar a escrev
         );
     }
 
-    return <div className="max-w-none">{elementos}</div>;
+    return <div className="max-w-full min-w-0 overflow-hidden">{elementos}</div>;
 }
 
 export default MarkdownRenderer;

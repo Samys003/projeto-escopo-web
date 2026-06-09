@@ -36,6 +36,50 @@ function primeiroValor(objeto, campos, fallback = '') {
     return fallback;
 }
 
+function numeroSeguro(valor) {
+    const numero = Number(valor);
+
+    return Number.isNaN(numero) ? null : numero;
+}
+
+function nivelAcessoDocumento(documento) {
+    const nivelDireto = numeroSeguro(
+        primeiroValor(
+            documento,
+            [
+                'nivel_acesso_id',
+                'nivelAcessoId',
+                'usuario_nivel_acesso_id',
+                'usuarioProjetoNivelAcessoId',
+            ],
+            null,
+        ),
+    );
+
+    if (nivelDireto !== null) {
+        return nivelDireto;
+    }
+
+    const projeto = primeiroValor(documento, ['projeto', 'project'], null);
+
+    if (projeto && typeof projeto === 'object') {
+        return numeroSeguro(
+            primeiroValor(
+                projeto,
+                [
+                    'nivel_acesso_id',
+                    'nivelAcessoId',
+                    'usuario_nivel_acesso_id',
+                    'usuarioProjetoNivelAcessoId',
+                ],
+                null,
+            ),
+        );
+    }
+
+    return null;
+}
+
 function MarkdownPreview({ valor }) {
     return <MarkdownRenderer valor={valor} emptyMessage="Clique para começar a escrever." />;
 }
@@ -46,7 +90,7 @@ function EditorMarkdown({ valor, onChange, onBlur }) {
             value={valor}
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
-            className="min-h-[520px] w-full resize-none bg-transparent font-inter text-[16px] leading-7 text-black outline-none placeholder:text-[var(--cinza-500)] lg:min-h-[calc(100vh-340px)]"
+            className="min-h-[520px] w-full max-w-full resize-none overflow-x-hidden bg-transparent font-inter text-[16px] leading-7 text-black outline-none placeholder:text-[var(--cinza-500)] lg:min-h-[calc(100vh-340px)]"
         />
     );
 }
@@ -54,6 +98,7 @@ function EditorMarkdown({ valor, onChange, onBlur }) {
 function TituloDocumento({
     valor,
     onChange,
+    podeEditar = true,
     className = '',
     textoClassName = '',
     campoClassName = '',
@@ -75,7 +120,7 @@ function TituloDocumento({
 
     return (
         <div className={`min-w-0 overflow-hidden ${className}`}>
-            {editando ? (
+            {editando && podeEditar ? (
                 <input
                     ref={ref}
                     value={valor}
@@ -90,6 +135,10 @@ function TituloDocumento({
                     aria-label="Título do documento"
                     className={campoClassName}
                 />
+            ) : !podeEditar ? (
+                <Title2 as="span" className={`block truncate ${textoClassName}`}>
+                    {valor || 'Documento'}
+                </Title2>
             ) : (
                 <button
                     type="button"
@@ -133,6 +182,8 @@ function Documento() {
 
     const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
     const conteudoEmEdicao = editandoConteudo || conteudo !== conteudoOriginal;
+    const nivelAcesso = useMemo(() => nivelAcessoDocumento(documento), [documento]);
+    const podeAlterarDocumento = nivelAcesso === null || [1, 2].includes(nivelAcesso);
 
     const ultimaAlteracao = useMemo(() => {
         return documento?.ultima_alteracao || versoes[0]?.criado_em;
@@ -217,6 +268,11 @@ function Documento() {
             return;
         }
 
+        if (!podeAlterarDocumento) {
+            setErro('Você não tem permissão para alterar este documento.');
+            return;
+        }
+
         const tituloTratado = titulo.trim();
 
         if (!tituloTratado) {
@@ -265,6 +321,11 @@ function Documento() {
     }
 
     function abrirConfirmacaoExcluirDocumento() {
+        if (!podeAlterarDocumento) {
+            setErro('Você não tem permissão para excluir este documento.');
+            return;
+        }
+
         setNomeConfirmacaoExcluir('');
         setErroConfirmacaoExcluir('');
         setConfirmacaoExcluirAberta(true);
@@ -343,12 +404,12 @@ function Documento() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--fundo)] lg:flex">
+        <div className="min-h-screen min-w-0 bg-[var(--fundo)] lg:flex">
             <MobileHeader />
             <DesktopSidebar />
 
-            <main className="flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-7 lg:pb-8 lg:pt-10 xl:px-7">
-                <section className="relative mx-auto max-w-[700px] lg:max-w-none">
+            <main className="min-w-0 flex-1 px-4 pb-4 pt-3 sm:px-8 lg:px-7 lg:pb-8 lg:pt-10 xl:px-7">
+                <section className="relative mx-auto max-w-[700px] min-w-0 lg:max-w-none">
                     {historicoAberto && (
                         <div className="fixed inset-0 z-20 bg-black/20 lg:left-[280px] xl:left-[356px]" />
                     )}
@@ -367,6 +428,7 @@ function Documento() {
                             <TituloDocumento
                                 valor={titulo}
                                 onChange={alterarTitulo}
+                                podeEditar={podeAlterarDocumento}
                                 className="h-10 flex-1"
                                 textoClassName="text-[22px] font-semibold leading-10 text-black sm:text-[26px]"
                                 campoClassName="h-10 w-full rounded-sm border border-[var(--cinza-600)] bg-transparent px-1 font-inter text-[22px] font-semibold leading-10 text-black outline-none sm:text-[26px]"
@@ -428,6 +490,7 @@ function Documento() {
                                     <TituloDocumento
                                         valor={titulo}
                                         onChange={alterarTitulo}
+                                        podeEditar={podeAlterarDocumento}
                                         className="h-12 w-full max-w-[560px]"
                                         textoClassName="text-[30px] font-semibold leading-[48px] text-[var(--cinza-700)] xl:text-[34px]"
                                         campoClassName="h-12 w-full rounded-sm border border-[var(--cinza-600)] bg-transparent px-1 font-inter text-[30px] font-semibold leading-[48px] text-[var(--cinza-700)] outline-none xl:text-[34px]"
@@ -468,15 +531,17 @@ function Documento() {
                             </div>
 
                             <div className="flex shrink-0 items-center gap-6 lg:justify-end lg:pt-1">
-                                <button
-                                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
-                                    type="button"
-                                    onClick={abrirConfirmacaoExcluirDocumento}
-                                    disabled={excluindo}
-                                    aria-label="Excluir documento"
-                                >
-                                    <Trash2 className="h-6 w-6" strokeWidth={2} />
-                                </button>
+                                {podeAlterarDocumento && (
+                                    <button
+                                        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
+                                        type="button"
+                                        onClick={abrirConfirmacaoExcluirDocumento}
+                                        disabled={excluindo}
+                                        aria-label="Excluir documento"
+                                    >
+                                        <Trash2 className="h-6 w-6" strokeWidth={2} />
+                                    </button>
+                                )}
 
                                 <button
                                     className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)]"
@@ -496,12 +561,12 @@ function Documento() {
                         </ParagraphMedium>
                     )}
 
-                    <div className="relative z-10 mt-3 min-h-[610px] rounded-2xl border border-[var(--cinza-300)] bg-white px-4 py-4 text-black sm:px-6 lg:mt-[28px] lg:min-h-[calc(100vh-260px)] lg:px-8 lg:py-8">
+                    <div className="relative z-10 mt-3 min-h-[610px] min-w-0 overflow-hidden rounded-2xl border border-[var(--cinza-300)] bg-white px-4 py-4 text-black sm:px-6 lg:mt-[28px] lg:min-h-[calc(100vh-260px)] lg:px-8 lg:py-8">
                         {carregando ? (
                             <ParagraphMedium className="text-[var(--cinza-600)]">
                                 Carregando documento...
                             </ParagraphMedium>
-                        ) : conteudoEmEdicao ? (
+                        ) : conteudoEmEdicao && podeAlterarDocumento ? (
                             <EditorMarkdown
                                 valor={conteudo}
                                 onChange={setConteudo}
@@ -515,21 +580,34 @@ function Documento() {
                             <div
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setEditandoConteudo(true)}
+                                onClick={() => {
+                                    if (podeAlterarDocumento) {
+                                        setEditandoConteudo(true);
+                                    }
+                                }}
                                 onKeyDown={(event) => {
-                                    if (event.key === 'Enter' || event.key === ' ') {
+                                    if (
+                                        podeAlterarDocumento &&
+                                        (event.key === 'Enter' || event.key === ' ')
+                                    ) {
                                         event.preventDefault();
                                         setEditandoConteudo(true);
                                     }
                                 }}
-                                className="block min-h-[520px] w-full overflow-y-auto pb-20 text-left outline-none lg:min-h-[calc(100vh-340px)]"
-                                aria-label="Editar conteúdo do documento"
+                                className={`block min-h-[520px] w-full max-w-full overflow-x-hidden overflow-y-auto pb-20 text-left outline-none lg:min-h-[calc(100vh-340px)] ${
+                                    podeAlterarDocumento ? 'cursor-text' : 'cursor-default'
+                                }`}
+                                aria-label={
+                                    podeAlterarDocumento
+                                        ? 'Editar conteúdo do documento'
+                                        : 'Visualizar conteúdo do documento'
+                                }
                             >
                                 <MarkdownPreview valor={conteudo} />
                             </div>
                         )}
 
-                        {temAlteracao && (
+                        {temAlteracao && podeAlterarDocumento && (
                             <button
                                 type="button"
                                 onClick={salvarDocumento}

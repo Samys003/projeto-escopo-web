@@ -69,6 +69,26 @@ function formatarDataHora(data) {
     };
 }
 
+function timestampSeguro(data) {
+    const timestamp = new Date(data || '').getTime();
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function ordenarComentarios(comentarios) {
+    return [...comentarios].sort((a, b) => {
+        const diferencaData = b.ordem - a.ordem;
+        const idA = Number(a.id || 0);
+        const idB = Number(b.id || 0);
+
+        if (diferencaData !== 0) {
+            return diferencaData;
+        }
+
+        return (Number.isNaN(idB) ? 0 : idB) - (Number.isNaN(idA) ? 0 : idA);
+    });
+}
+
 function iniciais(nome) {
     return String(nome || 'U')
         .split(' ')
@@ -343,6 +363,7 @@ function adaptarComentario(
         cargo,
         data,
         horario,
+        ordem: timestampSeguro(criadoEm),
         texto: textoComentario(comentario),
         avatar: iniciais(autor.nome),
         foto: autor.foto,
@@ -386,13 +407,15 @@ function prepararComentarios(comentariosApi, usuarioAtual) {
         }
     });
 
-    return comentarios.map((comentario) =>
-        adaptarComentario(
-            comentario,
-            comentariosPorId,
-            usuarioAtual,
-            cargosPorComentarioId,
-            cargosPorAutorId,
+    return ordenarComentarios(
+        comentarios.map((comentario) =>
+            adaptarComentario(
+                comentario,
+                comentariosPorId,
+                usuarioAtual,
+                cargosPorComentarioId,
+                cargosPorAutorId,
+            ),
         ),
     );
 }
@@ -673,7 +696,7 @@ function ListaComentarios({ comentarios, carregando, onResponder, mobile }) {
     }
 
     return (
-        <div className={`flex flex-col ${mobile ? 'gap-5' : 'gap-8'}`}>
+        <div className={`flex flex-col-reverse ${mobile ? 'gap-5' : 'gap-8'}`}>
             {comentarios.map((comentario) => (
                 <ComentarioCard
                     key={comentario.id}
