@@ -146,6 +146,14 @@ export async function getProjectById(id) {
     return parseResponse(response);
 }
 
+export async function getProjects() {
+    const response = await fetch(`${API_URL}/api/v1/projetos`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
 export async function getProjectRegisters(projeto_id) {
     const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registros`, {
         method: 'GET',

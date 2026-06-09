@@ -11,12 +11,14 @@ import {
     createRegister,
     createDocumentComment,
     deleteRegister,
+    getProjectDocumentById,
+    getProjectRegisters,
+    getProjects,
     getRegisterById,
     getApiErrorMessage,
     updateRegisterContent,
     updateRegisterTitle,
 } from '../../services/api';
-import { getDashboard } from '../dashboard/services/dashboard-endpoints';
 import Sugestao from './components/sugestao';
 import { limparMarkdownTexto } from '../../utils/markdown-text';
 
@@ -59,7 +61,39 @@ function normalizarIdUrl(valor) {
     return String(valor || '').replace(/^:/, '');
 }
 
-function normalizarDocumentoDestino(documento) {
+function textoDoValor(valor) {
+    if (valor === undefined || valor === null || valor === '') {
+        return '';
+    }
+
+    if (typeof valor === 'object') {
+        return primeiroValor(valor, ['nome', 'titulo', 'descricao', 'label'], '');
+    }
+
+    return String(valor);
+}
+
+function projetoIdDoRegistro(registro) {
+    const idDireto = primeiroValor(
+        registro,
+        ['projeto_id', 'projetoId', 'id_projeto', 'project_id'],
+        '',
+    );
+
+    if (idDireto) {
+        return normalizarIdUrl(idDireto);
+    }
+
+    const projeto = primeiroValor(registro, ['projeto', 'project'], null);
+
+    if (projeto && typeof projeto === 'object') {
+        return normalizarIdUrl(primeiroValor(projeto, ['id', 'projeto_id', 'projetoId'], ''));
+    }
+
+    return '';
+}
+
+function normalizarDocumentoDestino(documento, categoria = {}) {
     const id = normalizarIdUrl(primeiroValor(documento, ['id', 'documento_id', 'documentoId'], ''));
 
     if (!id) {
@@ -68,17 +102,73 @@ function normalizarDocumentoDestino(documento) {
 
     return {
         id,
-        titulo: primeiroValor(
-            documento,
-            ['titulo', 'documento', 'nome', 'nome_documento'],
-            'Documento',
-        ),
-        setor: primeiroValor(
-            documento,
-            ['setor', 'setor_nome', 'nome_setor', 'categoria', 'categoria_nome'],
-            'Web',
-        ),
+        titulo:
+            textoDoValor(
+                primeiroValor(documento, ['titulo', 'documento', 'nome', 'nome_documento'], ''),
+            ) || 'Documento',
+        setor:
+            textoDoValor(
+                primeiroValor(
+                    documento,
+                    ['setor', 'setor_nome', 'nome_setor', 'categoria', 'categoria_nome'],
+                    primeiroValor(categoria, ['nome', 'titulo', 'categoria'], ''),
+                ),
+            ) || 'Web',
+        categoriaId: primeiroValor(categoria, ['id', 'categoria_id', 'categoriaId'], ''),
     };
+}
+
+function documentosDoProjeto(resposta) {
+    const categorias = resposta?.projeto?.categorias || resposta?.categorias || [];
+    const documentos = [];
+
+    if (Array.isArray(categorias) && categorias.length > 0) {
+        categorias.forEach((categoria) => {
+            (categoria?.documentos || []).forEach((documento) => {
+                const documentoNormalizado = normalizarDocumentoDestino(documento, categoria);
+
+                if (documentoNormalizado) {
+                    documentos.push(documentoNormalizado);
+                }
+            });
+        });
+    } else if (Array.isArray(resposta)) {
+        resposta.forEach((documento) => {
+            const documentoNormalizado = normalizarDocumentoDestino(documento);
+
+            if (documentoNormalizado) {
+                documentos.push(documentoNormalizado);
+            }
+        });
+    }
+
+    const documentosPorId = new Map();
+
+    documentos.forEach((documento) => {
+        documentosPorId.set(String(documento.id), documento);
+    });
+
+    return [...documentosPorId.values()];
+}
+
+function normalizarProjetos(resposta) {
+    const projetos = Array.isArray(resposta) ? resposta : resposta?.projetos || [];
+
+    return projetos
+        .map((projeto) => ({
+            ...projeto,
+            id: normalizarIdUrl(primeiroValor(projeto, ['id', 'projeto_id', 'projetoId'], '')),
+        }))
+        .filter((projeto) => projeto.id);
+}
+
+function registroEstaNaLista(registros, registroId) {
+    const idAtual = String(registroId);
+
+    return (Array.isArray(registros) ? registros : []).some(
+        (registro) =>
+            String(primeiroValor(registro, ['id', 'registro_id', 'registroId'], '')) === idAtual,
+    );
 }
 
 function textoSelecionadoDentro(elemento) {
@@ -202,6 +292,7 @@ function Registro() {
     const [confirmacaoExcluirAberta, setConfirmacaoExcluirAberta] = useState(false);
     const [nomeConfirmacaoExcluir, setNomeConfirmacaoExcluir] = useState('');
     const [erroConfirmacaoExcluir, setErroConfirmacaoExcluir] = useState('');
+    const [projetoInferidoId, setProjetoInferidoId] = useState('');
 
     const registroNovo = !registroId && Boolean(projetoId);
     const temAlteracao = registroNovo || titulo !== tituloOriginal || conteudo !== conteudoOriginal;
@@ -216,10 +307,16 @@ function Registro() {
         ['data_criacao', 'criado_em', 'created_at', 'criacao'],
         registroPadrao.data_criacao,
     );
+    const projetoAtualId = useMemo(
+        () => normalizarIdUrl(projetoId || projetoIdDoRegistro(registro) || projetoInferidoId),
+        [projetoId, projetoInferidoId, registro],
+    );
     const documentosDisponiveis = useMemo(() => documentosDestino, [documentosDestino]);
 
     useEffect(() => {
         async function carregarRegistro() {
+            setProjetoInferidoId('');
+
             if (!registroId) {
                 setRegistro(registroPadrao);
                 setTitulo(registroPadrao.titulo);
@@ -260,19 +357,77 @@ function Registro() {
     useEffect(() => {
         let ativo = true;
 
-        async function carregarDocumentos() {
-            try {
-                const dashboard = await getDashboard();
-                const documentos = (dashboard?.documentos || [])
-                    .map(normalizarDocumentoDestino)
-                    .filter(Boolean);
+        async function localizarProjetoDoRegistro() {
+            if (projetoAtualId || !registroId) {
+                return;
+            }
 
-                if (ativo && documentos.length > 0) {
+            try {
+                const projetos = normalizarProjetos(await getProjects());
+
+                for (const projeto of projetos) {
+                    try {
+                        const registrosProjeto = await getProjectRegisters(projeto.id);
+
+                        if (registroEstaNaLista(registrosProjeto, registroId)) {
+                            if (ativo) {
+                                setProjetoInferidoId(projeto.id);
+                            }
+
+                            return;
+                        }
+                    } catch {
+                        // Projeto sem acesso aos registros ou indisponível não deve bloquear a busca.
+                    }
+                }
+
+                if (ativo) {
+                    setProjetoInferidoId('');
+                }
+            } catch (error) {
+                if (ativo) {
+                    setErro(
+                        getApiErrorMessage(
+                            error,
+                            'Não foi possível carregar os projetos disponíveis.',
+                        ),
+                    );
+                }
+            }
+        }
+
+        localizarProjetoDoRegistro();
+
+        return () => {
+            ativo = false;
+        };
+    }, [projetoAtualId, registroId]);
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarDocumentos() {
+            if (!projetoAtualId) {
+                setDocumentosDestino([]);
+                return;
+            }
+
+            try {
+                const documentosProjeto = await getProjectDocumentById(projetoAtualId);
+                const documentos = documentosDoProjeto(documentosProjeto);
+
+                if (ativo) {
                     setDocumentosDestino(documentos);
                 }
-            } catch {
+            } catch (error) {
                 if (ativo) {
                     setDocumentosDestino([]);
+                    setErro(
+                        getApiErrorMessage(
+                            error,
+                            'Não foi possível carregar os documentos deste projeto.',
+                        ),
+                    );
                 }
             }
         }
@@ -282,7 +437,7 @@ function Registro() {
         return () => {
             ativo = false;
         };
-    }, []);
+    }, [projetoAtualId]);
 
     useEffect(() => {
         if (!gatilhoSugestao) {
@@ -325,6 +480,18 @@ function Registro() {
         }
 
         if (!trechoSelecionado.trim()) {
+            return;
+        }
+
+        if (!projetoAtualId) {
+            setGatilhoSugestao(null);
+            setErro('Não foi possível identificar o projeto deste registro.');
+            return;
+        }
+
+        if (documentosDisponiveis.length === 0) {
+            setGatilhoSugestao(null);
+            setErro('Nenhum documento deste projeto está disponível para receber a sugestão.');
             return;
         }
 
@@ -414,7 +581,7 @@ function Registro() {
                     conteudo,
                 });
 
-                navigate(`/registro/${novoRegistro.id}`);
+                navigate(`/registro/${novoRegistro.id}?projetoId=${projetoId}`);
             } catch (error) {
                 setErro(getApiErrorMessage(error, 'Erro ao criar registro.'));
             } finally {
