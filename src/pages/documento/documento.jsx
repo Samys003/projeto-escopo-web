@@ -13,6 +13,9 @@ import {
     createDocumentVersion,
     deleteDocument,
     getDocumentById,
+    getProjectById,
+    getProjectDocumentById,
+    getProjects,
     getDocumentVersions,
     getApiErrorMessage,
     updateDocumentTitle,
@@ -36,10 +39,51 @@ function primeiroValor(objeto, campos, fallback = '') {
     return fallback;
 }
 
+function normalizarIdUrl(valor) {
+    return String(valor || '').replace(/^:/, '');
+}
+
 function numeroSeguro(valor) {
+    if (valor === undefined || valor === null || valor === '') {
+        return null;
+    }
+
     const numero = Number(valor);
 
     return Number.isNaN(numero) ? null : numero;
+}
+
+function normalizarProjetos(resposta) {
+    const projetos = Array.isArray(resposta) ? resposta : resposta?.projetos || [];
+
+    return projetos
+        .map((projeto) => ({
+            ...projeto,
+            id: normalizarIdUrl(primeiroValor(projeto, ['id', 'projeto_id', 'projetoId'], '')),
+        }))
+        .filter((projeto) => projeto.id);
+}
+
+function documentoEstaNoProjeto(resposta, documentoId) {
+    const idAtual = String(documentoId);
+    const categorias = resposta?.projeto?.categorias || resposta?.categorias || [];
+
+    if (Array.isArray(categorias) && categorias.length > 0) {
+        return categorias.some((categoria) =>
+            (categoria?.documentos || []).some(
+                (documento) =>
+                    String(
+                        primeiroValor(documento, ['id', 'documento_id', 'documentoId'], ''),
+                    ) === idAtual,
+            ),
+        );
+    }
+
+    return (Array.isArray(resposta) ? resposta : []).some(
+        (documento) =>
+            String(primeiroValor(documento, ['id', 'documento_id', 'documentoId'], '')) ===
+            idAtual,
+    );
 }
 
 function nivelAcessoDocumento(documento) {
@@ -179,10 +223,14 @@ function Documento() {
     const [confirmacaoExcluirAberta, setConfirmacaoExcluirAberta] = useState(false);
     const [nomeConfirmacaoExcluir, setNomeConfirmacaoExcluir] = useState('');
     const [erroConfirmacaoExcluir, setErroConfirmacaoExcluir] = useState('');
+    const [nivelAcessoInferido, setNivelAcessoInferido] = useState(null);
 
     const temAlteracao = titulo !== tituloOriginal || conteudo !== conteudoOriginal;
     const conteudoEmEdicao = editandoConteudo || conteudo !== conteudoOriginal;
-    const nivelAcesso = useMemo(() => nivelAcessoDocumento(documento), [documento]);
+    const nivelAcesso = useMemo(
+        () => nivelAcessoDocumento(documento) ?? nivelAcessoInferido,
+        [documento, nivelAcessoInferido],
+    );
     const podeAlterarDocumento = nivelAcesso === null || [1, 2].includes(nivelAcesso);
 
     const ultimaAlteracao = useMemo(() => {
@@ -202,6 +250,8 @@ function Documento() {
 
     useEffect(() => {
         async function carregarDocumento() {
+            setNivelAcessoInferido(null);
+
             if (!documentoId) {
                 setDocumento(null);
                 setTitulo('Documento');
@@ -238,6 +288,66 @@ function Documento() {
 
         carregarDocumento();
     }, [documentoId]);
+
+    useEffect(() => {
+        if (!documentoId || nivelAcessoDocumento(documento) !== null) {
+            return undefined;
+        }
+
+        let ativo = true;
+
+        async function localizarNivelAcessoDoDocumento() {
+            try {
+                const projetos = normalizarProjetos(await getProjects());
+
+                for (const projeto of projetos) {
+                    try {
+                        const documentosProjeto = await getProjectDocumentById(projeto.id);
+
+                        if (!documentoEstaNoProjeto(documentosProjeto, documentoId)) {
+                            continue;
+                        }
+
+                        const detalhesProjeto = await getProjectById(projeto.id);
+                        const nivel = numeroSeguro(
+                            primeiroValor(
+                                detalhesProjeto,
+                                [
+                                    'nivel_acesso_id',
+                                    'nivelAcessoId',
+                                    'usuario_nivel_acesso_id',
+                                    'usuarioProjetoNivelAcessoId',
+                                ],
+                                primeiroValor(projeto, ['nivel_acesso_id', 'nivelAcessoId'], null),
+                            ),
+                        );
+
+                        if (ativo) {
+                            setNivelAcessoInferido(nivel);
+                        }
+
+                        return;
+                    } catch {
+                        // Projeto indisponível nesta busca não deve impedir os demais.
+                    }
+                }
+
+                if (ativo) {
+                    setNivelAcessoInferido(null);
+                }
+            } catch {
+                if (ativo) {
+                    setNivelAcessoInferido(null);
+                }
+            }
+        }
+
+        localizarNivelAcessoDoDocumento();
+
+        return () => {
+            ativo = false;
+        };
+    }, [documento, documentoId]);
 
     async function carregarVersoes() {
         if (!documentoId) {
