@@ -26,7 +26,13 @@ function formatarData(data) {
         return '';
     }
 
-    return new Date(data).toLocaleDateString('pt-BR');
+    const dataFormatada = new Date(data);
+
+    if (Number.isNaN(dataFormatada.getTime())) {
+        return '';
+    }
+
+    return dataFormatada.toLocaleDateString('pt-BR');
 }
 
 function primeiroValor(objeto, campos, fallback = '') {

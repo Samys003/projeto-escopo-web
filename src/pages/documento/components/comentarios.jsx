@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronsLeft, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MobileHeader from '../../../components/MobileHeader';
@@ -6,7 +6,12 @@ import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
-import { createDocumentComment, getDocumentComments, getRegisterById } from '../../../services/api';
+import {
+    API_URL,
+    createDocumentComment,
+    getDocumentComments,
+    getRegisterById,
+} from '../../../services/api';
 import { limparMarkdownTexto } from '../../../utils/markdown-text';
 
 function pegar(objeto, campos, fallback = '') {
@@ -51,6 +56,36 @@ function textoDoValor(valor) {
     }
 
     return String(valor);
+}
+
+function normalizarFotoPerfil(foto) {
+    if (foto === undefined || foto === null) {
+        return '';
+    }
+
+    const valor = String(foto).trim();
+
+    if (!valor) {
+        return '';
+    }
+
+    if (/^(data:image\/|blob:|https?:\/\/)/i.test(valor)) {
+        return valor;
+    }
+
+    if (valor.startsWith('//')) {
+        return `${window.location.protocol}${valor}`;
+    }
+
+    if (/^[A-Za-z0-9+/]+=*$/.test(valor) && valor.length > 120) {
+        return `data:image/jpeg;base64,${valor}`;
+    }
+
+    if (valor.startsWith('/')) {
+        return `${API_URL}${valor}`;
+    }
+
+    return `${API_URL}/${valor.replace(/^\.?\//, '')}`;
 }
 
 function formatarDataHora(data) {
@@ -122,7 +157,9 @@ function lerUsuarioAtual() {
                     '',
                 ),
             ),
-            foto: pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
+            foto: normalizarFotoPerfil(
+                pegar(usuario, ['foto_perfil', 'fotoPerfil', 'foto', 'avatar'], ''),
+            ),
         };
     } catch {
         return { id: null, nome: 'Usuário', cargo: '', foto: '' };
@@ -216,12 +253,48 @@ function autorComentario(comentario) {
             ),
         );
 
+    const foto =
+        pegar(
+            comentario,
+            [
+                'foto_perfil',
+                'fotoPerfil',
+                'foto',
+                'avatar',
+                'foto_usuario',
+                'fotoUsuario',
+                'usuario_foto',
+                'usuarioFoto',
+                'autor_foto',
+                'autorFoto',
+                'autor_foto_perfil',
+                'autorFotoPerfil',
+                'criador_foto',
+                'criadorFoto',
+                'criador_foto_perfil',
+                'criadorFotoPerfil',
+            ],
+            '',
+        ) ||
+        pegar(
+            usuario,
+            [
+                'foto_perfil',
+                'fotoPerfil',
+                'foto',
+                'avatar',
+                'foto_usuario',
+                'fotoUsuario',
+                'profile_picture',
+                'profilePicture',
+            ],
+            '',
+        );
+
     return {
         nome,
         cargo,
-        foto:
-            pegar(comentario, ['foto_perfil', 'foto', 'avatar'], '') ||
-            pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
+        foto: normalizarFotoPerfil(foto),
     };
 }
 
@@ -325,6 +398,12 @@ function adaptarComentario(
     const tipoId = Number(
         pegar(comentario, ['comentario_tipo_id', 'tipo_comentario_id', 'tipoId'], 1),
     );
+    const comentarioDoUsuarioAtual =
+        autorId !== null &&
+        autorId !== undefined &&
+        usuarioAtual?.id !== null &&
+        usuarioAtual?.id !== undefined &&
+        String(autorId) === String(usuarioAtual.id);
     const registroReferenciaId = pegar(
         comentario,
         ['registro_referencia_id', 'registroReferenciaId', 'registro_referencia', 'registro_id'],
@@ -335,8 +414,10 @@ function adaptarComentario(
         autor.cargo ||
         cargosPorComentarioId.get(String(id)) ||
         cargosPorAutorId.get(String(autorId)) ||
-        (String(autorId) === String(usuarioAtual?.id) ? usuarioAtual?.cargo : '') ||
+        (comentarioDoUsuarioAtual ? usuarioAtual?.cargo : '') ||
         (tipoId === 3 ? 'Registro' : '');
+    const foto =
+        (comentarioDoUsuarioAtual ? normalizarFotoPerfil(usuarioAtual?.foto) : '') || autor.foto;
     const tituloRegistro = textoDoValor(
         pegar(
             registro,
@@ -366,7 +447,7 @@ function adaptarComentario(
         ordem: timestampSeguro(criadoEm),
         texto: textoComentario(comentario),
         avatar: iniciais(autor.nome),
-        foto: autor.foto,
+        foto,
         resposta: referenciaComentario(comentarioPai) || referenciaRespostaDireta(comentario),
         referencia:
             tipoId === 3 || registroReferenciaId || registro?.registro_id
@@ -716,7 +797,21 @@ function Comentarios({ documentoId, onFechar, onErro }) {
     const [erro, setErro] = useState('');
     const [texto, setTexto] = useState('');
     const [respostaPara, setRespostaPara] = useState(null);
-    const usuarioAtual = useMemo(() => lerUsuarioAtual(), []);
+    const [usuarioAtual, setUsuarioAtual] = useState(() => lerUsuarioAtual());
+
+    useEffect(() => {
+        function atualizarUsuarioAtual() {
+            setUsuarioAtual(lerUsuarioAtual());
+        }
+
+        window.addEventListener('storage', atualizarUsuarioAtual);
+        window.addEventListener('authUserUpdated', atualizarUsuarioAtual);
+
+        return () => {
+            window.removeEventListener('storage', atualizarUsuarioAtual);
+            window.removeEventListener('authUserUpdated', atualizarUsuarioAtual);
+        };
+    }, []);
 
     async function carregarComentarios() {
         if (!documentoId) {
