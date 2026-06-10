@@ -305,3 +305,12 @@ export async function newRegister(id, registro) {
     });
     return parseResponse(response);
 }
+
+export async function updateMeeting({ nome, id, linkReuniao }) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ nome, linkReuniao }),
+    });
+    return parseResponse(response);
+}

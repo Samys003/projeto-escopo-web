@@ -10,11 +10,14 @@ import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import IconButton from '../../components/IconButton';
 import ParagraphSmall from '../../components/Typography/ParagraphSmall';
 import user_default from '../project-details/assets/user_default.svg';
+import PopUp from '../project-details/components/PopUp';
 
 function DetailsMeeting() {
     const { id } = useParams();
 
     const [detalhesReuniao, setDetalhesReuniao] = useState({});
+    const [erro, setErro] = useState('');
+    const [openModal, setOpenModal] = useState(false);
 
     const navigate = useNavigate();
 
@@ -64,7 +67,10 @@ function DetailsMeeting() {
                             </ParagraphMedium>
                         </div>
                     </div>
-                    <IconButton className="w-10 h-10" icon={<Trash2 />}></IconButton>
+                    <IconButton
+                        className="w-10 h-10 hover:bg-(--color-dark)"
+                        icon={<Trash2 />}
+                    ></IconButton>
                 </div>
                 <div className="w-full flex flex-col gap-3 p-3 border rounded-2xl border-(--cinza-300)  mt-3 text-start">
                     <div className="flex items-center ">
@@ -72,23 +78,41 @@ function DetailsMeeting() {
                             Gravação da Reunião
                         </ParagraphMedium>
                         <IconButton
-                            className="bg-transparent w-8 h-8"
-                            icon={<Pencil className="text-black w-4 h-4" />}
+                            onClick={() => setOpenModal(true)}
+                            className="bg-transparent w-8 h-8 hover:bg-(--roxo-light)"
+                            icon={<Pencil className="text-black w-8 h-8" />}
                         ></IconButton>
+                        {openModal && (
+                            <PopUp
+                             onClose={setOpenModal(false)}
+                            value={link.url}
+                            onChange={}
+                            onClick={}
+                            tituloNovo={"Gravacão"}
+                            tituloCategoria={"Reunião"}
+                            placeholder={"Link Da Reunião"}
+                            showInput={true}
+                            children={"Atualizar"}
+                            erro={erro}>
+
+                            </PopUp>
+                        )}
                     </div>
+
                     <div className="flex">
                         {detalhesReuniao.links
                             ?.filter((link) => link.tipo_link === 'reuniao')
                             .map((link) => (
-                                <IconButton
-                                    key={link.id}
-                                    onClick={() => navigate(link.url)}
-                                    className="w-35"
-                                >
-                                    Acessar Gravação
-                                </IconButton>
+                                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                                    <IconButton
+                                        key={link.id}
+                                        className="w-35 hover:bg-(--color-dark)"
+                                    >
+                                        Acessar Gravação
+                                    </IconButton>
+                                </a>
                             ))}
-                        <button className="w-22">
+                        <button className="w-22 hidden">
                             <ParagraphSmall className="text-(--color-base) underline">
                                 Transcrição
                             </ParagraphSmall>
@@ -105,14 +129,16 @@ function DetailsMeeting() {
                                     <ParagraphSmall>{link.nome}</ParagraphSmall>
                                 </button>
                                 <IconButton
-                                    className="bg-transparent "
-                                    icon={<Trash2 className="text-black w-4 h-4" />}
+                                    className="bg-transparent hover:bg-(--roxo-light) "
+                                    icon={<Trash2 className="text-black w-4 h-4 " />}
                                 ></IconButton>
                             </div>
                         ))}
 
                     <div className="w-full flex items-center p-1 justify-center">
-                        <IconButton className="w-29">Adicionar link</IconButton>
+                        <IconButton className="w-29 hover:bg-(--color-dark)">
+                            Adicionar link
+                        </IconButton>
                     </div>
                 </div>
                 <div className="p-2 mt-3 border border-(--cinza-300) rounded-2xl ">
@@ -134,7 +160,7 @@ function DetailsMeeting() {
                                         {usuario.nome}
                                     </ParagraphSmall>
                                 </div>
-                                <div className="flex gap-4">
+                                <div className="flex items-center gap-4">
                                     <ParagraphSmall className="text-(--cinza-500)">
                                         {usuario.cargo}
                                     </ParagraphSmall>
@@ -146,7 +172,9 @@ function DetailsMeeting() {
                             </div>
                         ))}
                         <div className="w-full p-2 items-center justify-center flex">
-                            <IconButton>Novo Participante</IconButton>
+                            <IconButton className="hover:bg-(--color-dark)">
+                                Novo Participante
+                            </IconButton>
                         </div>
                     </div>
                 </div>
@@ -162,13 +190,19 @@ function DetailsMeeting() {
                                     {convidado.nome}
                                 </ParagraphSmall>
                             </div>
-                            <ParagraphSmall className="text-(--cinza-500)">
-                                {convidado.cargo}
-                            </ParagraphSmall>
+                            <div className="flex items-center">
+                                <ParagraphSmall className="text-(--cinza-500)">
+                                    {convidado.cargo} (Convidado)
+                                </ParagraphSmall>
+                                <IconButton
+                                    className="bg-transparent flex "
+                                    icon={<EllipsisVertical className="text-black w-4" />}
+                                ></IconButton>
+                            </div>
                         </div>
                     ))}
                     <div className="w-full p-2 items-center justify-center flex">
-                        <IconButton>Novo Convidado</IconButton>
+                        <IconButton className="hover:bg-(--color-dark)">Novo Convidado</IconButton>
                     </div>
                 </div>
                 <div className="flex items-center w-full justify-center p-2"></div>
