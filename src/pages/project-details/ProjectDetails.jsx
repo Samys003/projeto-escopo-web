@@ -14,7 +14,6 @@ import {
     getMeetingById,
     getProjectById,
     getProjectDocumentById,
-    getProjectRegisters,
     getRegisterId,
     newCategoria,
     newDocument,
