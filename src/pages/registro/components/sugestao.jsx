@@ -87,7 +87,7 @@ function Destino({ destino, indice, documentos, setores, podeRemover, onAlterar,
 
             <div>
                 <ParagraphLarge className="mb-2 text-black">Documento:</ParagraphLarge>
-                <div className="overflow-hidden rounded-lg border border-black bg-white">
+                <div className="max-h-[220px] overflow-y-auto rounded-lg border border-black bg-white">
                     {documentosFiltrados.length > 0 ? (
                         documentosFiltrados.map((documento) => {
                             const selecionado =
@@ -100,7 +100,7 @@ function Destino({ destino, indice, documentos, setores, podeRemover, onAlterar,
                                     onClick={() =>
                                         onAlterar(destino.id, { documentoId: documento.id })
                                     }
-                                    className={`block min-h-9 w-full px-3 py-2 text-left font-inter text-[16px] leading-5 transition-colors ${
+                                    className={`block min-h-9 w-full break-words px-3 py-2 text-left font-inter text-[16px] leading-5 transition-colors [overflow-wrap:anywhere] ${
                                         selecionado
                                             ? 'bg-[var(--roxo-light)] text-[var(--color-base)]'
                                             : 'bg-white text-black hover:bg-[var(--cinza-100)]'

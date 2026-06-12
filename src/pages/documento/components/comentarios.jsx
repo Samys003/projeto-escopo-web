@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronsLeft, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MobileHeader from '../../../components/MobileHeader';
@@ -6,8 +6,17 @@ import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
-import { createDocumentComment, getDocumentComments, getRegisterById } from '../../../services/api';
+import {
+    createDocumentComment,
+    getDocumentComments,
+    getRegisterById,
+} from '../../../services/api';
 import { limparMarkdownTexto } from '../../../utils/markdown-text';
+import {
+    carregarUsuarioAutenticadoAtualizado,
+    lerUsuarioAutenticado,
+    normalizarFotoPerfil,
+} from '../../../utils/user-profile';
 
 function pegar(objeto, campos, fallback = '') {
     for (const campo of campos) {
@@ -69,6 +78,26 @@ function formatarDataHora(data) {
     };
 }
 
+function timestampSeguro(data) {
+    const timestamp = new Date(data || '').getTime();
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function ordenarComentarios(comentarios) {
+    return [...comentarios].sort((a, b) => {
+        const diferencaData = b.ordem - a.ordem;
+        const idA = Number(a.id || 0);
+        const idB = Number(b.id || 0);
+
+        if (diferencaData !== 0) {
+            return diferencaData;
+        }
+
+        return (Number.isNaN(idB) ? 0 : idB) - (Number.isNaN(idA) ? 0 : idA);
+    });
+}
+
 function iniciais(nome) {
     return String(nome || 'U')
         .split(' ')
@@ -80,33 +109,31 @@ function iniciais(nome) {
 }
 
 function lerUsuarioAtual() {
-    try {
-        const usuario = JSON.parse(localStorage.getItem('authUser') || '{}');
+    const usuario = lerUsuarioAutenticado();
 
-        return {
-            id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
-            nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
-            cargo: textoDoValor(
-                pegar(
-                    usuario,
-                    [
-                        'cargo',
-                        'perfil',
-                        'papel',
-                        'funcao',
-                        'tipo_usuario',
-                        'tipoUsuario',
-                        'nivel_acesso',
-                        'nivel_acesso_nome',
-                    ],
-                    '',
-                ),
+    return {
+        id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
+        nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
+        cargo: textoDoValor(
+            pegar(
+                usuario,
+                [
+                    'cargo',
+                    'perfil',
+                    'papel',
+                    'funcao',
+                    'tipo_usuario',
+                    'tipoUsuario',
+                    'nivel_acesso',
+                    'nivel_acesso_nome',
+                ],
+                '',
             ),
-            foto: pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
-        };
-    } catch {
-        return { id: null, nome: 'Usuário', cargo: '', foto: '' };
-    }
+        ),
+        foto: normalizarFotoPerfil(
+            pegar(usuario, ['foto_perfil', 'fotoPerfil', 'foto', 'avatar'], ''),
+        ),
+    };
 }
 
 function idComentario(comentario) {
@@ -114,7 +141,13 @@ function idComentario(comentario) {
 }
 
 function autorIdComentario(comentario) {
-    return pegar(comentario, ['autor_id', 'criador_id', 'usuario_id', 'user_id'], null);
+    const usuario = pegarObjeto(comentario, ['usuario', 'criador', 'autor', 'user']);
+
+    return pegar(
+        comentario,
+        ['autor_id', 'autorId', 'criador_id', 'criadorId', 'usuario_id', 'usuarioId', 'user_id'],
+        pegar(usuario, ['id', 'usuario_id', 'usuarioId', 'user_id', 'userId'], null),
+    );
 }
 
 function parentIdComentario(comentario) {
@@ -196,12 +229,48 @@ function autorComentario(comentario) {
             ),
         );
 
+    const foto =
+        pegar(
+            comentario,
+            [
+                'foto_perfil',
+                'fotoPerfil',
+                'foto',
+                'avatar',
+                'foto_usuario',
+                'fotoUsuario',
+                'usuario_foto',
+                'usuarioFoto',
+                'autor_foto',
+                'autorFoto',
+                'autor_foto_perfil',
+                'autorFotoPerfil',
+                'criador_foto',
+                'criadorFoto',
+                'criador_foto_perfil',
+                'criadorFotoPerfil',
+            ],
+            '',
+        ) ||
+        pegar(
+            usuario,
+            [
+                'foto_perfil',
+                'fotoPerfil',
+                'foto',
+                'avatar',
+                'foto_usuario',
+                'fotoUsuario',
+                'profile_picture',
+                'profilePicture',
+            ],
+            '',
+        );
+
     return {
         nome,
         cargo,
-        foto:
-            pegar(comentario, ['foto_perfil', 'foto', 'avatar'], '') ||
-            pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
+        foto: normalizarFotoPerfil(foto),
     };
 }
 
@@ -305,6 +374,12 @@ function adaptarComentario(
     const tipoId = Number(
         pegar(comentario, ['comentario_tipo_id', 'tipo_comentario_id', 'tipoId'], 1),
     );
+    const comentarioDoUsuarioAtual =
+        autorId !== null &&
+        autorId !== undefined &&
+        usuarioAtual?.id !== null &&
+        usuarioAtual?.id !== undefined &&
+        String(autorId) === String(usuarioAtual.id);
     const registroReferenciaId = pegar(
         comentario,
         ['registro_referencia_id', 'registroReferenciaId', 'registro_referencia', 'registro_id'],
@@ -315,8 +390,10 @@ function adaptarComentario(
         autor.cargo ||
         cargosPorComentarioId.get(String(id)) ||
         cargosPorAutorId.get(String(autorId)) ||
-        (String(autorId) === String(usuarioAtual?.id) ? usuarioAtual?.cargo : '') ||
+        (comentarioDoUsuarioAtual ? usuarioAtual?.cargo : '') ||
         (tipoId === 3 ? 'Registro' : '');
+    const foto =
+        (comentarioDoUsuarioAtual ? normalizarFotoPerfil(usuarioAtual?.foto) : '') || autor.foto;
     const tituloRegistro = textoDoValor(
         pegar(
             registro,
@@ -343,9 +420,10 @@ function adaptarComentario(
         cargo,
         data,
         horario,
+        ordem: timestampSeguro(criadoEm),
         texto: textoComentario(comentario),
         avatar: iniciais(autor.nome),
-        foto: autor.foto,
+        foto,
         resposta: referenciaComentario(comentarioPai) || referenciaRespostaDireta(comentario),
         referencia:
             tipoId === 3 || registroReferenciaId || registro?.registro_id
@@ -386,13 +464,15 @@ function prepararComentarios(comentariosApi, usuarioAtual) {
         }
     });
 
-    return comentarios.map((comentario) =>
-        adaptarComentario(
-            comentario,
-            comentariosPorId,
-            usuarioAtual,
-            cargosPorComentarioId,
-            cargosPorAutorId,
+    return ordenarComentarios(
+        comentarios.map((comentario) =>
+            adaptarComentario(
+                comentario,
+                comentariosPorId,
+                usuarioAtual,
+                cargosPorComentarioId,
+                cargosPorAutorId,
+            ),
         ),
     );
 }
@@ -673,7 +753,7 @@ function ListaComentarios({ comentarios, carregando, onResponder, mobile }) {
     }
 
     return (
-        <div className={`flex flex-col ${mobile ? 'gap-5' : 'gap-8'}`}>
+        <div className={`flex flex-col-reverse ${mobile ? 'gap-5' : 'gap-8'}`}>
             {comentarios.map((comentario) => (
                 <ComentarioCard
                     key={comentario.id}
@@ -693,7 +773,39 @@ function Comentarios({ documentoId, onFechar, onErro }) {
     const [erro, setErro] = useState('');
     const [texto, setTexto] = useState('');
     const [respostaPara, setRespostaPara] = useState(null);
-    const usuarioAtual = useMemo(() => lerUsuarioAtual(), []);
+    const [usuarioAtual, setUsuarioAtual] = useState(() => lerUsuarioAtual());
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarUsuarioCompleto() {
+            await carregarUsuarioAutenticadoAtualizado();
+
+            if (ativo) {
+                setUsuarioAtual(lerUsuarioAtual());
+            }
+        }
+
+        carregarUsuarioCompleto();
+
+        return () => {
+            ativo = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        function atualizarUsuarioAtual() {
+            setUsuarioAtual(lerUsuarioAtual());
+        }
+
+        window.addEventListener('storage', atualizarUsuarioAtual);
+        window.addEventListener('authUserUpdated', atualizarUsuarioAtual);
+
+        return () => {
+            window.removeEventListener('storage', atualizarUsuarioAtual);
+            window.removeEventListener('authUserUpdated', atualizarUsuarioAtual);
+        };
+    }, []);
 
     async function carregarComentarios() {
         if (!documentoId) {
