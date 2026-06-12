@@ -3,7 +3,7 @@ import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { getDetailsMeetingById } from '../../services/api';
+import { getDetailsMeetingById, updateMeeting } from '../../services/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import Title2 from '../../components/Typography/Title2';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
@@ -15,6 +15,8 @@ import { getProjectById } from '../../services/api';
 
 function DetailsMeeting() {
     const { id } = useParams();
+
+    console.log(id);
 
     const [detalhesReuniao, setDetalhesReuniao] = useState({});
     const [erro, setErro] = useState('');
@@ -55,6 +57,22 @@ function DetailsMeeting() {
         carregarProjeto();
     }, [detalhesReuniao?.projeto_id]);
 
+    async function atualizarTituloReuniao() {
+        console.log('bla bla', id);
+
+        const tituloReuniao = {
+            titulo: reuniao,
+        };
+
+        try {
+            const data = await updateMeeting(id, tituloReuniao);
+
+            setDetalhesReuniao(data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const gerarIniciais = (nomeCompleto) => {
         return nomeCompleto
             .split(' ')
@@ -86,7 +104,10 @@ function DetailsMeeting() {
                                 {(project?.nivel_acesso_id == 1 ||
                                     project?.nivel_acesso_id == 2) && (
                                     <IconButton
-                                        onClick={() => setOpenModalTitulo(true)}
+                                        onClick={() => {
+                                            setNomeReuniao(detalhesReuniao.titulo);
+                                            setOpenModalTitulo(true);
+                                        }}
                                         className="bg-transparent hover:bg-(--roxo-light)"
                                         icon={<Pencil className="text-black w-5 h-5" />}
                                     />
@@ -99,12 +120,12 @@ function DetailsMeeting() {
                                         setNomeReuniao('');
                                         setErro('');
                                     }}
-                                    value={detalhesReuniao.titulo}
+                                    value={reuniao}
                                     onChange={(e) => {
                                         setNomeReuniao(e.target.value);
                                         setErro('');
                                     }}
-                                    onClick={''}
+                                    onClick={atualizarTituloReuniao}
                                     tituloNovo={'Atualizar Reunião'}
                                     tituloCategoria={'Titulo da Reuniao'}
                                     placeholder={'Novo Titulo'}

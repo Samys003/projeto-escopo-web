@@ -385,6 +385,7 @@ function ProjectDetails() {
                             setExpandReuniao={setExpandReuniao}
                             formatReunioes={formatReunioes}
                             PopUp={PopUp}
+                            project={project}
                         ></Meeting>
                     </div>
                 )}

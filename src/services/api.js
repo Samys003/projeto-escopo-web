@@ -306,11 +306,28 @@ export async function newRegister(id, registro) {
     return parseResponse(response);
 }
 
-export async function updateMeeting({ nome, id, linkReuniao }) {
+export async function updateLinkMeeting({ nome, id, linkReuniao }) {
     const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({ nome, linkReuniao }),
+    });
+    return parseResponse(response);
+}
+
+export async function updateMeeting(id, tituloReuniao) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tituloReuniao),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteMeeting(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
     });
     return parseResponse(response);
 }
