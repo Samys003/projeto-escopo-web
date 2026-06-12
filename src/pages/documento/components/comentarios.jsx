@@ -7,12 +7,16 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
 import {
-    API_URL,
     createDocumentComment,
     getDocumentComments,
     getRegisterById,
 } from '../../../services/api';
 import { limparMarkdownTexto } from '../../../utils/markdown-text';
+import {
+    carregarUsuarioAutenticadoAtualizado,
+    lerUsuarioAutenticado,
+    normalizarFotoPerfil,
+} from '../../../utils/user-profile';
 
 function pegar(objeto, campos, fallback = '') {
     for (const campo of campos) {
@@ -56,36 +60,6 @@ function textoDoValor(valor) {
     }
 
     return String(valor);
-}
-
-function normalizarFotoPerfil(foto) {
-    if (foto === undefined || foto === null) {
-        return '';
-    }
-
-    const valor = String(foto).trim();
-
-    if (!valor) {
-        return '';
-    }
-
-    if (/^(data:image\/|blob:|https?:\/\/)/i.test(valor)) {
-        return valor;
-    }
-
-    if (valor.startsWith('//')) {
-        return `${window.location.protocol}${valor}`;
-    }
-
-    if (/^[A-Za-z0-9+/]+=*$/.test(valor) && valor.length > 120) {
-        return `data:image/jpeg;base64,${valor}`;
-    }
-
-    if (valor.startsWith('/')) {
-        return `${API_URL}${valor}`;
-    }
-
-    return `${API_URL}/${valor.replace(/^\.?\//, '')}`;
 }
 
 function formatarDataHora(data) {
@@ -135,35 +109,31 @@ function iniciais(nome) {
 }
 
 function lerUsuarioAtual() {
-    try {
-        const usuario = JSON.parse(localStorage.getItem('authUser') || '{}');
+    const usuario = lerUsuarioAutenticado();
 
-        return {
-            id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
-            nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
-            cargo: textoDoValor(
-                pegar(
-                    usuario,
-                    [
-                        'cargo',
-                        'perfil',
-                        'papel',
-                        'funcao',
-                        'tipo_usuario',
-                        'tipoUsuario',
-                        'nivel_acesso',
-                        'nivel_acesso_nome',
-                    ],
-                    '',
-                ),
+    return {
+        id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
+        nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
+        cargo: textoDoValor(
+            pegar(
+                usuario,
+                [
+                    'cargo',
+                    'perfil',
+                    'papel',
+                    'funcao',
+                    'tipo_usuario',
+                    'tipoUsuario',
+                    'nivel_acesso',
+                    'nivel_acesso_nome',
+                ],
+                '',
             ),
-            foto: normalizarFotoPerfil(
-                pegar(usuario, ['foto_perfil', 'fotoPerfil', 'foto', 'avatar'], ''),
-            ),
-        };
-    } catch {
-        return { id: null, nome: 'Usuário', cargo: '', foto: '' };
-    }
+        ),
+        foto: normalizarFotoPerfil(
+            pegar(usuario, ['foto_perfil', 'fotoPerfil', 'foto', 'avatar'], ''),
+        ),
+    };
 }
 
 function idComentario(comentario) {
@@ -171,7 +141,13 @@ function idComentario(comentario) {
 }
 
 function autorIdComentario(comentario) {
-    return pegar(comentario, ['autor_id', 'criador_id', 'usuario_id', 'user_id'], null);
+    const usuario = pegarObjeto(comentario, ['usuario', 'criador', 'autor', 'user']);
+
+    return pegar(
+        comentario,
+        ['autor_id', 'autorId', 'criador_id', 'criadorId', 'usuario_id', 'usuarioId', 'user_id'],
+        pegar(usuario, ['id', 'usuario_id', 'usuarioId', 'user_id', 'userId'], null),
+    );
 }
 
 function parentIdComentario(comentario) {
@@ -798,6 +774,24 @@ function Comentarios({ documentoId, onFechar, onErro }) {
     const [texto, setTexto] = useState('');
     const [respostaPara, setRespostaPara] = useState(null);
     const [usuarioAtual, setUsuarioAtual] = useState(() => lerUsuarioAtual());
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarUsuarioCompleto() {
+            await carregarUsuarioAutenticadoAtualizado();
+
+            if (ativo) {
+                setUsuarioAtual(lerUsuarioAtual());
+            }
+        }
+
+        carregarUsuarioCompleto();
+
+        return () => {
+            ativo = false;
+        };
+    }, []);
 
     useEffect(() => {
         function atualizarUsuarioAtual() {

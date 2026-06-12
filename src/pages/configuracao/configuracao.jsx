@@ -7,7 +7,6 @@ import Planos from './components/planos.jsx';
 import { plans } from './components/planos-data.js';
 import FeedbackMessage from '../../components/FeedbackMessage.jsx';
 import {
-    API_URL,
     updateUserName,
     updateUserProfilePicture,
     deleteUserAccount,
@@ -15,6 +14,14 @@ import {
     getUserByEmail,
     getApiErrorMessage,
 } from '../../services/api.js';
+import {
+    carregarUsuarioAutenticadoAtualizado,
+    dadosUsuarioResposta,
+    extrairFotoPerfil,
+    lerUsuarioAutenticado,
+    normalizarFotoPerfil,
+    salvarUsuarioAutenticado,
+} from '../../utils/user-profile.js';
 import Title2 from '../../components/Typography/Title2.jsx';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium.jsx';
 
@@ -50,67 +57,6 @@ function getCurrentPlan(usuario) {
 
 function limitarValor(valor, minimo, maximo) {
     return Math.min(Math.max(valor, minimo), maximo);
-}
-
-function normalizarFotoPerfil(foto) {
-    if (foto === undefined || foto === null) {
-        return '';
-    }
-
-    const valor = String(foto).trim();
-
-    if (!valor) {
-        return '';
-    }
-
-    if (/^(data:image\/|blob:|https?:\/\/)/i.test(valor)) {
-        return valor;
-    }
-
-    if (valor.startsWith('//')) {
-        return `${window.location.protocol}${valor}`;
-    }
-
-    if (/^[A-Za-z0-9+/]+=*$/.test(valor) && valor.length > 120) {
-        return `data:image/jpeg;base64,${valor}`;
-    }
-
-    if (valor.startsWith('/')) {
-        return `${API_URL}${valor}`;
-    }
-
-    return `${API_URL}/${valor.replace(/^\.?\//, '')}`;
-}
-
-function extrairFotoPerfil(resposta, fallback) {
-    const candidatos = [
-        resposta?.foto_perfil,
-        resposta?.fotoPerfil,
-        resposta?.foto,
-        resposta?.avatar,
-        resposta?.usuario?.foto_perfil,
-        resposta?.usuario?.fotoPerfil,
-        resposta?.usuario?.foto,
-        resposta?.user?.foto_perfil,
-        resposta?.user?.fotoPerfil,
-        resposta?.user?.foto,
-        resposta?.data?.foto_perfil,
-        resposta?.data?.fotoPerfil,
-        resposta?.data?.foto,
-    ];
-    const foto = candidatos.find((valor) => valor !== undefined && valor !== null && valor !== '');
-
-    return normalizarFotoPerfil(foto || fallback);
-}
-
-function dadosUsuarioResposta(resposta) {
-    const candidatos = [resposta?.usuario, resposta?.user, resposta?.data, resposta];
-
-    return (
-        candidatos.find(
-            (valor) => valor && typeof valor === 'object' && !Array.isArray(valor),
-        ) || {}
-    );
 }
 
 function calcularDimensoesCorte(foto, zoom, tamanho) {
@@ -318,14 +264,19 @@ function Configuracao() {
                 setLoading(true);
                 const usuarioArmazenado = localStorage.getItem('authUser');
                 if (usuarioArmazenado) {
-                    const user = JSON.parse(usuarioArmazenado);
-                    setUsuario(user);
-                    setNomeTemp(user.nome || '');
-                    setFotoPreview(
-                        normalizarFotoPerfil(
-                            user.foto_perfil || user.fotoPerfil || user.foto || user.avatar,
-                        ) || null,
-                    );
+                    const aplicarUsuario = (user) => {
+                        setUsuario(user);
+                        setNomeTemp(user.nome || '');
+                        setFotoPreview(
+                            normalizarFotoPerfil(
+                                user.foto_perfil || user.fotoPerfil || user.foto || user.avatar,
+                            ) || null,
+                        );
+                    };
+                    const usuarioLocal = lerUsuarioAutenticado();
+
+                    aplicarUsuario(usuarioLocal);
+                    aplicarUsuario(await carregarUsuarioAutenticadoAtualizado());
                 } else {
                     setError(
                         'Não foi possível carregar os dados do usuário. Faça login novamente.',
@@ -415,10 +366,7 @@ function Configuracao() {
 
             const usuarioAtualizado = { ...usuario, nome: nomeTratado };
             setUsuario(usuarioAtualizado);
-            localStorage.setItem('authUser', JSON.stringify(usuarioAtualizado));
-            window.dispatchEvent(
-                new CustomEvent('authUserUpdated', { detail: usuarioAtualizado }),
-            );
+            salvarUsuarioAutenticado(usuarioAtualizado);
 
             setEditingNome(false);
             setSuccess('Nome atualizado com sucesso!');
@@ -603,13 +551,7 @@ function Configuracao() {
                 tamanhoAreaCorte,
             );
             const fotoSalva = extrairFotoPerfil(resposta, fotoPerfilSalva);
-            let usuarioArmazenado = {};
-
-            try {
-                usuarioArmazenado = JSON.parse(localStorage.getItem('authUser') || '{}');
-            } catch {
-                usuarioArmazenado = {};
-            }
+            const usuarioArmazenado = lerUsuarioAutenticado();
 
             const usuarioAtualizado = {
                 ...usuarioArmazenado,
@@ -621,10 +563,7 @@ function Configuracao() {
 
             setUsuario(usuarioAtualizado);
             setFotoPreview(fotoSalva);
-            localStorage.setItem('authUser', JSON.stringify(usuarioAtualizado));
-            window.dispatchEvent(
-                new CustomEvent('authUserUpdated', { detail: usuarioAtualizado }),
-            );
+            salvarUsuarioAutenticado(usuarioAtualizado);
             setFotoParaCortar(null);
             setSuccess('Foto de perfil atualizada com sucesso!');
             setTimeout(() => setSuccess(''), 3000);
