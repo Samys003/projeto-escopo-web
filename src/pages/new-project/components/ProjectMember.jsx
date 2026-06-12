@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
+import defaultPhoto from '../../../assets/user-default.jpg';
 
 function ProjectMember({
     integrante,
@@ -10,6 +11,7 @@ function ProjectMember({
     onClose,
     onNivelAcessoChange,
 }) {
+    console.log(integrante);
     return (
         <div>
             <div
@@ -27,8 +29,7 @@ function ProjectMember({
                 lg:gap-3"
                 >
                     <img
-                        // TODO: Incluir a verificação de integrante.foto e subsituir pela do assets se estiver vazia
-                        src="https://upload.wikimedia.org/wikipedia/commons/2/2f/No-photo-m.png"
+                        src={integrante.foto_perfil || defaultPhoto}
                         alt=""
                         className="w-8 h-8 rounded-full"
                     />

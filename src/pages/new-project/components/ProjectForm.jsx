@@ -256,7 +256,7 @@ function ProjectForm({
         <div className="flex flex-col gap-4">
             <FormInput
                 labelContent="Titulo do Projeto"
-                inputClassName="text-lg lg:text-xl"
+                inputClassName="lg:text-base font-normal"
                 placeholder="Novo Projeto"
                 register={register('titulo', { required: true })}
                 error={
