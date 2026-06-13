@@ -306,11 +306,11 @@ export async function newRegister(id, registro) {
     return parseResponse(response);
 }
 
-export async function updateLinkMeeting({ nome, id, linkReuniao }) {
+export async function updateLinkMeeting({ nome, id, url }) {
     const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ nome, linkReuniao }),
+        body: JSON.stringify({ nome, url }),
     });
     return parseResponse(response);
 }
@@ -327,6 +327,32 @@ export async function updateMeeting(id, tituloReuniao) {
 export async function deleteMeeting(id) {
     const response = await fetch(`${API_URL}/api/v1/reuniao/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newLinkMeeting(id, tipoLink, nome) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/link`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tipoLink, nome),
+    });
+    return parseResponse(response);
+}
+
+export async function newUserMeeting(id, usuario_id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/usuario`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ usuario_id }),
+    });
+    return parseResponse(response);
+}
+
+export async function getUserMeeting(email) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/email/${email}`, {
+        method: 'GET',
         headers: getAuthHeaders(),
     });
     return parseResponse(response);

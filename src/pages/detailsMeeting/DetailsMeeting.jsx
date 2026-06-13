@@ -3,7 +3,15 @@ import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { getDetailsMeetingById, updateMeeting } from '../../services/api';
+import {
+    deleteMeeting,
+    getDetailsMeetingById,
+    newLinkMeeting,
+    newUserMeeting,
+    getUserMeeting,
+    updateLinkMeeting,
+    updateMeeting,
+} from '../../services/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import Title2 from '../../components/Typography/Title2';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
@@ -12,19 +20,25 @@ import ParagraphSmall from '../../components/Typography/ParagraphSmall';
 import user_default from '../project-details/assets/user_default.svg';
 import PopUp from '../project-details/components/PopUp';
 import { getProjectById } from '../../services/api';
+import PopUpInputs from './components/PopUpInputs';
 
 function DetailsMeeting() {
     const { id } = useParams();
-
-    console.log(id);
 
     const [detalhesReuniao, setDetalhesReuniao] = useState({});
     const [erro, setErro] = useState('');
     const [openModalTitulo, setOpenModalTitulo] = useState(false);
     const [project, setProject] = useState(null);
-    const [reuniao, setNomeReuniao] = useState('');
+    const [nomeReuniao, setNomeReuniao] = useState('');
     const [openModelDeleteReuniao, setOpenDeleteReuniao] = useState(false);
     const [openDeleteLinkAdicional, setOpenDeleteLinkAdicional] = useState(false);
+    const [openModalLink, setOpenModalLink] = useState(false);
+    const [openModalRecording, setOpenModalRecording] = useState(false);
+    const [linkreuniao, setLinkReuniao] = useState('');
+    const [novoLinkNome, setNovoLinkNome] = useState('');
+    const [novoLinkUrl, setNovoLinkUrl] = useState('');
+    const [openModalNovoParticipante, setOpenModalNovoParticipante] = useState('');
+    const [novoParticipante, setNovoParticipante] = useState('');
 
     const navigate = useNavigate();
 
@@ -58,16 +72,125 @@ function DetailsMeeting() {
     }, [detalhesReuniao?.projeto_id]);
 
     async function atualizarTituloReuniao() {
-        console.log('bla bla', id);
+        if (!nomeReuniao.trim()) {
+            setErro('Esse campo não pode estar vazio! ');
+            return;
+        }
 
         const tituloReuniao = {
-            titulo: reuniao,
+            titulo: nomeReuniao,
         };
 
         try {
-            const data = await updateMeeting(id, tituloReuniao);
+            await updateMeeting(id, tituloReuniao);
 
-            setDetalhesReuniao(data);
+            setDetalhesReuniao((prev) => ({
+                ...prev,
+                titulo: nomeReuniao,
+            }));
+            setOpenModalTitulo(false);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function atualizarLinkReuniao() {
+        const linkAtual = detalhesReuniao.links?.find((link) => link.tipo_link === 'reuniao');
+
+        if (!linkreuniao.trim()) {
+            setErro('O link da gravação não pode ficar vazio.');
+            return;
+        }
+
+        if (linkAtual?.url === linkreuniao.trim()) {
+            setErro('O novo link é igual ao link atual.');
+            return;
+        }
+
+        try {
+            if (linkAtual) {
+                await updateLinkMeeting({
+                    id: linkAtual.id,
+                    nome: 'reuniao',
+                    url: linkreuniao,
+                });
+            } else {
+                await newLinkMeeting(id, { url: linkreuniao, tipo_link_id: 1, nome: 'reuniao' });
+            }
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+
+            setDetalhesReuniao(reuniaoAtualizada);
+            setOpenModalRecording(false);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function criarLinkAdicional() {
+        if (!novoLinkNome.trim() || !novoLinkUrl.trim()) {
+            setErro('Ambos os campos (Nome e Link) são obrigatórios.');
+            return;
+        }
+
+        try {
+            await newLinkMeeting(id, {
+                url: novoLinkUrl,
+                tipo_link_id: 2,
+                nome: novoLinkNome,
+            });
+
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+            setDetalhesReuniao(reuniaoAtualizada);
+
+            setNovoLinkNome('');
+            setNovoLinkUrl('');
+            setOpenModalLink(false);
+        } catch (error) {
+            console.error(error);
+            setErro('Ocorreu um erro ao adicionar o link.');
+        }
+    }
+
+    async function adicionarNovoParticipante() {
+        if (!novoParticipante.trim()) {
+            setErro('O campo de email não pode estar vazio');
+            return;
+        }
+
+        try {
+            setErro('');
+
+            const usuario = await getUserMeeting(novoParticipante);
+
+            if (!usuario || !usuario.id) {
+                setErro('Usuario não encontrado, verifique se o e-mail esta correto');
+                return;
+            }
+
+            const usuarioId = usuario.id;
+
+            await newUserMeeting(id, usuarioId);
+
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+            setDetalhesReuniao(reuniaoAtualizada);
+
+            setNovoParticipante('');
+            setOpenModalNovoParticipante(false);
+        } catch (error) {
+            console.error(error);
+            setErro('Participante Invalido');
+        }
+    }
+
+    async function deletarReuniao() {
+        try {
+            await deleteMeeting(id);
+
+            const dataDoc = await getProjectById(detalhesReuniao.projeto_id);
+
+            setProject(dataDoc);
+            navigate(-1);
+            setOpenDeleteReuniao(false);
         } catch (error) {
             console.error(error);
         }
@@ -120,7 +243,7 @@ function DetailsMeeting() {
                                         setNomeReuniao('');
                                         setErro('');
                                     }}
-                                    value={reuniao}
+                                    value={nomeReuniao}
                                     onChange={(e) => {
                                         setNomeReuniao(e.target.value);
                                         setErro('');
@@ -152,7 +275,7 @@ function DetailsMeeting() {
                             tituloNovo={'Deletando a Reunião'}
                             showInput={false}
                             tituloCategoria={`Tem certeza de que deseja excluir a Reunião ${detalhesReuniao.titulo}? `}
-                            onClick={() => ''}
+                            onClick={deletarReuniao}
                             onClose={() => setOpenDeleteReuniao(false)}
                             children={'Confirmar'}
                         ></PopUp>
@@ -166,7 +289,14 @@ function DetailsMeeting() {
                             </ParagraphMedium>
                             {(project?.nivel_acesso_id == 1 || project?.nivel_acesso_id == 2) && (
                                 <IconButton
-                                    onClick={''}
+                                    onClick={() => {
+                                        const linkAtual = detalhesReuniao.links?.find(
+                                            (link) => link.tipo_link === 'reuniao',
+                                        );
+
+                                        setLinkReuniao(linkAtual?.url || '');
+                                        setOpenModalRecording(true);
+                                    }}
                                     className="bg-transparent w-8 h-8 hover:bg-(--roxo-light)"
                                     icon={<Pencil className="text-black w-8 h-8" />}
                                 ></IconButton>
@@ -194,6 +324,27 @@ function DetailsMeeting() {
                                             </IconButton>
                                         </a>
                                     ))
+                            )}
+                            {openModalRecording && (
+                                <PopUp
+                                    onClose={() => {
+                                        setOpenModalRecording(false);
+                                        setLinkReuniao('');
+                                        setErro('');
+                                    }}
+                                    value={linkreuniao}
+                                    onChange={(e) => {
+                                        setLinkReuniao(e.target.value);
+                                        setErro('');
+                                    }}
+                                    onClick={atualizarLinkReuniao}
+                                    tituloNovo={'Atualizar Gravação'}
+                                    tituloCategoria={'Link da Gravação'}
+                                    placeholder={'Nova Gravação'}
+                                    showInput={true}
+                                    children={'Atualizar'}
+                                    erro={erro}
+                                ></PopUp>
                             )}
 
                             <button className="w-22">
@@ -229,6 +380,7 @@ function DetailsMeeting() {
                                             icon={<Trash2 className="text-black w-4 h-4 " />}
                                         ></IconButton>
                                     )}
+
                                     {openDeleteLinkAdicional && (
                                         <PopUp
                                             tituloNovo={'Deletando o Link Adicional'}
@@ -244,12 +396,44 @@ function DetailsMeeting() {
 
                         <div className="w-full flex items-center p-1 justify-center">
                             {(project?.nivel_acesso_id == 1 || project?.nivel_acesso_id == 2) && (
-                                <IconButton className="w-29 hover:bg-(--color-dark)">
+                                <IconButton
+                                    onClick={() => setOpenModalLink(true)}
+                                    className="w-29 hover:bg-(--color-dark)"
+                                >
                                     Adicionar link
                                 </IconButton>
                             )}
                         </div>
+                        {openModalLink && (
+                            <PopUpInputs
+                                tituloNovo={'Novo Link'}
+                                onClose={() => {
+                                    setOpenModalLink(false);
+                                    setNovoLinkNome('');
+                                    setNovoLinkUrl('');
+                                    setErro('');
+                                }}
+                                erro={erro}
+                                tituloCategoria={'Nome do Link:'}
+                                placeholder={'Titulo do Link'}
+                                value={novoLinkNome}
+                                onChange={(e) => {
+                                    setNovoLinkNome(e.target.value);
+                                    setErro('');
+                                }}
+                                segundoTitulo={'Link'}
+                                placeholder2={'Endereco do Link'}
+                                value2={novoLinkUrl}
+                                onChange2={(e) => {
+                                    setNovoLinkUrl(e.target.value);
+                                    setErro('');
+                                }}
+                                children={'Adicionar'}
+                                onClick={criarLinkAdicional}
+                            ></PopUpInputs>
+                        )}
                     </div>
+
                     <div className="p-2 mt-3 border border-(--cinza-300) rounded-2xl ">
                         <div>
                             <ParagraphSmall>Participantes</ParagraphSmall>
@@ -277,9 +461,7 @@ function DetailsMeeting() {
                                             project?.nivel_acesso_id == 2) && (
                                             <IconButton
                                                 className="bg-transparent flex hover:bg-(--roxo-light)"
-                                                icon={
-                                                    <EllipsisVertical className="text-black w-4" />
-                                                }
+                                                icon={<Trash2 className="text-black w-4" />}
                                             ></IconButton>
                                         )}
                                     </div>
@@ -288,12 +470,36 @@ function DetailsMeeting() {
                             <div className="w-full p-2 items-center justify-center flex">
                                 {(project?.nivel_acesso_id == 1 ||
                                     project?.nivel_acesso_id == 2) && (
-                                    <IconButton className="hover:bg-(--color-dark)">
+                                    <IconButton
+                                        onClick={() => setOpenModalNovoParticipante(true)}
+                                        className="hover:bg-(--color-dark)"
+                                    >
                                         Novo Participante
                                     </IconButton>
                                 )}
                             </div>
                         </div>
+                        {openModalNovoParticipante && (
+                            <PopUp
+                                onClose={() => {
+                                    setOpenModalNovoParticipante(false);
+                                    setNovoParticipante('');
+                                    setErro('');
+                                }}
+                                value={novoParticipante}
+                                onChange={(e) => {
+                                    setNovoParticipante(e.target.value);
+                                    setErro('');
+                                }}
+                                onClick={adicionarNovoParticipante}
+                                tituloNovo={'Novo Participante'}
+                                tituloCategoria={'Email'}
+                                placeholder={'email@example.com'}
+                                showInput={true}
+                                children={'Adicionar'}
+                                erro={erro}
+                            ></PopUp>
+                        )}
                     </div>
                     <div className="p-2 mt-3 border border-(--cinza-300) rounded-2xl ">
                         <ParagraphSmall>Convidados</ParagraphSmall>
@@ -315,7 +521,7 @@ function DetailsMeeting() {
                                         project?.nivel_acesso_id == 2) && (
                                         <IconButton
                                             className="bg-transparent flex hover:bg-(--roxo-light)"
-                                            icon={<EllipsisVertical className="text-black w-4" />}
+                                            icon={<Trash2 className="text-black w-4 " />}
                                         ></IconButton>
                                     )}
                                 </div>
