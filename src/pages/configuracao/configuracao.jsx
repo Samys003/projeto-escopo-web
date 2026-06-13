@@ -6,6 +6,7 @@ import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import Planos from './components/planos.jsx';
 import { plans } from './components/planos-data.js';
 import FeedbackMessage from '../../components/FeedbackMessage.jsx';
+import defaultPhoto from '../../assets/user-default.jpg';
 import {
     updateUserName,
     updateUserProfilePicture,
@@ -270,7 +271,7 @@ function Configuracao() {
                         setFotoPreview(
                             normalizarFotoPerfil(
                                 user.foto_perfil || user.fotoPerfil || user.foto || user.avatar,
-                            ) || null,
+                            ) || defaultPhoto,
                         );
                     };
                     const usuarioLocal = lerUsuarioAutenticado();
@@ -676,17 +677,11 @@ function Configuracao() {
                         <div className="order-1 flex flex-col items-center lg:order-2 lg:pt-16">
                             <div className="relative">
                                 <div className="flex aspect-square w-[clamp(180px,54vw,210px)] items-center justify-center overflow-hidden rounded-full border-[3px] border-[var(--color-base)] bg-[var(--cinza-200)] lg:w-[280px] lg:border-4 xl:w-[330px]">
-                                    {fotoPreview ? (
-                                        <img
-                                            src={fotoPreview}
-                                            alt="Foto de perfil"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <Title2 className="text-5xl font-semibold text-[var(--cinza-500)]">
-                                            {(usuario?.nome || 'U').charAt(0).toUpperCase()}
-                                        </Title2>
-                                    )}
+                                    <img
+                                        src={fotoPreview || defaultPhoto}
+                                        alt="Foto de perfil"
+                                        className="h-full w-full object-cover"
+                                    />
                                 </div>
                                 <label
                                     htmlFor="foto-input"

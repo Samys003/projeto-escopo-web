@@ -6,11 +6,8 @@ import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
-import {
-    createDocumentComment,
-    getDocumentComments,
-    getRegisterById,
-} from '../../../services/api';
+import defaultPhoto from '../../../assets/user-default.jpg';
+import { createDocumentComment, getDocumentComments, getRegisterById } from '../../../services/api';
 import { limparMarkdownTexto } from '../../../utils/markdown-text';
 import {
     carregarUsuarioAutenticadoAtualizado,
@@ -96,16 +93,6 @@ function ordenarComentarios(comentarios) {
 
         return (Number.isNaN(idB) ? 0 : idB) - (Number.isNaN(idA) ? 0 : idA);
     });
-}
-
-function iniciais(nome) {
-    return String(nome || 'U')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((parte) => parte[0])
-        .join('')
-        .toUpperCase();
 }
 
 function lerUsuarioAtual() {
@@ -422,7 +409,6 @@ function adaptarComentario(
         horario,
         ordem: timestampSeguro(criadoEm),
         texto: textoComentario(comentario),
-        avatar: iniciais(autor.nome),
         foto,
         resposta: referenciaComentario(comentarioPai) || referenciaRespostaDireta(comentario),
         referencia:
@@ -554,15 +540,13 @@ async function prepararComentariosComRegistros(comentariosApi, usuarioAtual) {
 function Avatar({ comentario, className = '' }) {
     return (
         <div
-            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-base)] bg-[var(--cinza-200)] ${className}`}
+            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-1 border-[var(--color-base)] bg-[var(--cinza-200)] ${className}`}
         >
-            {comentario.foto ? (
-                <img src={comentario.foto} alt="" className="h-full w-full object-cover" />
-            ) : (
-                <ParagraphMedium as="span" className="font-semibold text-[var(--color-base)]">
-                    {comentario.avatar}
-                </ParagraphMedium>
-            )}
+            <img
+                src={comentario.foto || defaultPhoto}
+                alt=""
+                className="h-full w-full object-cover"
+            />
         </div>
     );
 }
@@ -704,7 +688,6 @@ function CampoComentario({
             <div className="flex items-center gap-3">
                 <Avatar
                     comentario={{
-                        avatar: iniciais(usuarioAtual.nome),
                         foto: usuarioAtual.foto,
                     }}
                     className="h-12 w-12"
