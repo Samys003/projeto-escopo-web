@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronsLeft, Lightbulb, Save, Trash2, X } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';

@@ -340,3 +340,106 @@ export async function createDocumentComment({
     });
     return parseResponse(response);
 }
+
+export async function newDocument(id, documento) {
+    const response = await fetch(`${API_URL}/api/v1/categoria/${id}/documento`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(documento),
+    });
+    return parseResponse(response);
+}
+
+export async function newRegister(id, registro) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/registro`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(registro),
+    });
+    return parseResponse(response);
+}
+
+export async function updateLinkMeeting({ nome, id, url }) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ nome, url }),
+    });
+    return parseResponse(response);
+}
+
+export async function updateMeeting(id, tituloReuniao) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tituloReuniao),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteMeeting(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newLinkMeeting(id, tipoLink, nome) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/link`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tipoLink, nome),
+    });
+    return parseResponse(response);
+}
+
+export async function newUserMeeting(id, usuario_id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/usuario`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ usuario_id }),
+    });
+    return parseResponse(response);
+}
+
+export async function getUserMeeting(email) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/email/${email}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newUserGuest(id, nome, cargo) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/convidado`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(nome, cargo),
+    });
+    return parseResponse(response);
+}
+
+export async function deletelinkMeeting(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserMeeting(id, usuario_id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/usuario/${usuario_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserGuest(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/convidado/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
