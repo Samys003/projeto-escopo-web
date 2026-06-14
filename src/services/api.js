@@ -1,0 +1,445 @@
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+function formatValidationErrors(erros) {
+    return erros
+        .map((erro) => {
+            if (erro.campo && erro.mensagem) {
+                return `${erro.campo}: ${erro.mensagem.toLowerCase()}`;
+            }
+
+            return erro.mensagem || erro.message || 'valor inválido';
+        })
+        .join('; ');
+}
+
+function getStatusErrorMessage(response, data) {
+    if (data?.erros?.length) {
+        return `Revise os dados informados: ${formatValidationErrors(data.erros)}.`;
+    }
+
+    if (data?.mensagem) {
+        return data.mensagem;
+    }
+
+    if (data?.error) {
+        return data.error;
+    }
+
+    const messages = {
+        400: 'Não foi possível processar sua solicitação. Revise os dados e tente novamente.',
+        401: 'E-mail ou senha inválidos.',
+        403: 'Você não tem permissão para realizar esta ação.',
+        404: 'Não encontramos o recurso solicitado. Tente novamente mais tarde.',
+        409: 'Já existe um cadastro com essas informações.',
+        422: 'Revise os campos informados e tente novamente.',
+        500: 'Não foi possível concluir a solicitação agora. Tente novamente em alguns minutos.',
+        502: 'Não foi possível concluir a solicitação agora. Tente novamente em alguns minutos.',
+        503: 'Serviço temporariamente indisponível. Tente novamente em alguns minutos.',
+    };
+
+    return messages[response.status] || 'Não foi possível concluir a solicitação. Tente novamente.';
+}
+
+export function getApiErrorMessage(err, fallback = 'Erro na requisição. Tente novamente.') {
+    if (err?.name === 'TypeError' || err?.message === 'Failed to fetch') {
+        return 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
+    }
+
+    return err?.message || fallback;
+}
+
+// formatacao da resposta
+export async function parseResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await response.json() : null;
+
+    if (!response.ok) {
+        const error = new Error(getStatusErrorMessage(response, data));
+        error.status = response.status;
+        error.data = data;
+        throw error;
+    }
+
+    return data;
+}
+
+export async function login({ email, senha }) {
+    const response = await fetch(`${API_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, senha }),
+    });
+    return parseResponse(response);
+}
+
+export async function register({ nome, email, senha }) {
+    const response = await fetch(`${API_URL}/api/v1/auth/cadastrar`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nome, email, senha }),
+    });
+    return parseResponse(response);
+}
+
+// obter autenticacao
+export function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    return {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+    };
+}
+
+// atualizar o nome
+export async function updateUserName({ nome }) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/nome`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ nome }),
+    });
+    return parseResponse(response);
+}
+
+export async function updateUserProfilePicture({ foto_perfil }) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/foto-perfil`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ foto_perfil }),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserAccount() {
+    const response = await fetch(`${API_URL}/api/v1/usuario`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getUserByEmail(email) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/email/${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function updatePassword({ senha_atual, senha_nova }) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/senha`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ senha_atual, senha_nova }),
+    });
+    return parseResponse(response);
+}
+
+export async function getProjectById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getProjects() {
+    const response = await fetch(`${API_URL}/api/v1/projetos`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getProjectRegisters(projeto_id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registros`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getProjectDocumentById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/categorias/documentos`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createRegister({ projeto_id, titulo, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${projeto_id}/registro`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo, conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function getRegisterById(registro_id) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newCategoria(id, categoria) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/categoria`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(categoria),
+    });
+    return parseResponse(response);
+}
+
+export async function updateRegisterTitle({ registro_id, titulo }) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo }),
+    });
+    return parseResponse(response);
+}
+
+export async function updateRegisterContent({ registro_id, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}/conteudo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteRegister(registro_id) {
+    const response = await fetch(`${API_URL}/api/v1/registro/${registro_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteCategoria(idcategoria) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/categoria/${idcategoria}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function updateDocumentTitle({ documento_id, titulo }) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo }),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentById(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteDocument(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getRegisterId(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/registros`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function createDocumentVersion({ documento_id, conteudo }) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/conteudo`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ conteudo }),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentVersions(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/versoes`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getMeetingById(id) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/reunioes`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentVersionById(documento_versao_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/versao/${documento_versao_id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDetailsMeetingById(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function getDocumentComments(documento_id) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentarios`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newMeeting(id, reuniao) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/reuniao`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(reuniao),
+    });
+    return parseResponse(response);
+}
+
+export async function createDocumentComment({
+    documento_id,
+    conteudo,
+    parent_id = null,
+    registro_referencia_id = null,
+    comentario_tipo_id = 1,
+}) {
+    const response = await fetch(`${API_URL}/api/v1/documento/${documento_id}/comentario`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+            conteudo,
+            parent_id,
+            registro_referencia_id,
+            comentario_tipo_id,
+        }),
+    });
+    return parseResponse(response);
+}
+
+export async function newDocument(id, documento) {
+    const response = await fetch(`${API_URL}/api/v1/categoria/${id}/documento`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(documento),
+    });
+    return parseResponse(response);
+}
+
+export async function newRegister(id, registro) {
+    const response = await fetch(`${API_URL}/api/v1/projeto/${id}/registro`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(registro),
+    });
+    return parseResponse(response);
+}
+
+export async function updateLinkMeeting({ nome, id, url }) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ nome, url }),
+    });
+    return parseResponse(response);
+}
+
+export async function updateMeeting(id, tituloReuniao) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/titulo`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tituloReuniao),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteMeeting(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newLinkMeeting(id, tipoLink, nome) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/link`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tipoLink, nome),
+    });
+    return parseResponse(response);
+}
+
+export async function newUserMeeting(id, usuario_id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/usuario`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ usuario_id }),
+    });
+    return parseResponse(response);
+}
+
+export async function getUserMeeting(email) {
+    const response = await fetch(`${API_URL}/api/v1/usuario/email/${email}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function newUserGuest(id, nome, cargo) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/convidado`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(nome, cargo),
+    });
+    return parseResponse(response);
+}
+
+export async function deletelinkMeeting(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserMeeting(id, usuario_id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/usuario/${usuario_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserGuest(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/convidado/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
