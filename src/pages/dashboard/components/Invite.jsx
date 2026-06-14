@@ -32,7 +32,7 @@ function Invite(props) {
 
                     {/* X para rejeitar o convite (Id 2)*/}
                     <IconButtonOutlined
-                        icon={<X className="text-(--color-vermelho)" />}
+                        icon={<X className="text-(--color-alert)" />}
                         onClick={() => props.onAnswerInvite(convite.id, 2)}
                     />
                 </div>

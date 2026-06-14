@@ -17,13 +17,13 @@ function Documents({ documentos, project, setOpenModalDeleteCategoria, novoDocum
                         className="w-full flex flex-col gap-1 lg:mt-4 lg:gap-3  lg:w-170"
                     >
                         <div className="w-full flex justify-between">
-                            <Title2 className="p-0.5 text-(--cinza-600)">
+                            <Title2 className="p-0.5 text-(--cinza-600) cursor-pointer">
                                 {doc.nome?.charAt(0).toUpperCase() + doc.nome?.slice(1)}
                             </Title2>
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                                 <IconButton
                                     onClick={() => setOpenModalDeleteCategoria(doc)}
-                                    className="bg-transparent p-0.5 lg:border lg:border-black lg:w-50 lg:flex lg:gap-2 hover:bg-(--roxo-light)"
+                                    className="bg-transparent p-0.5 lg:border lg:border-black lg:w-50 lg:flex lg:gap-2 hover:bg-(--roxo-light) cursor-pointer"
                                     textClassName="lg:block hidden  lg:text-(--color-base)"
                                     icon={<Trash2 className="text-(--color-base)"></Trash2>}
                                 >
@@ -38,7 +38,7 @@ function Documents({ documentos, project, setOpenModalDeleteCategoria, novoDocum
                                     <div key={subdoc.id} className="flex items-center   w-full ">
                                         <button
                                             onClick={() => navigate(`/documento/${subdoc.id}`)}
-                                            className="flex w-full hover:bg-(--roxo-light) pt-2 pb-2 pl-1 pr-1 rounded-[10px] gap-3 justify-between"
+                                            className="flex w-full hover:bg-(--roxo-light) pt-2 pb-2 pl-1 pr-1 rounded-[10px] gap-3 justify-between cursor-pointer"
                                         >
                                             <div className="w-[50%] items-start flex flex-col text-start">
                                                 <ParagraphLarge className="line-clamp-2 lg:line-clamp-1 lg:text-ellipsis ">
@@ -71,7 +71,7 @@ function Documents({ documentos, project, setOpenModalDeleteCategoria, novoDocum
                             })}
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                                 <IconButton
-                                    className={`gap-2 lg:p-3 hover:bg-(--color-dark)`}
+                                    className={`gap-2 lg:p-3 hover:bg-(--color-dark) cursor-pointer`}
                                     icon={<FilePlus />}
                                     onClick={() => novoDocumento(doc.id)}
                                 >

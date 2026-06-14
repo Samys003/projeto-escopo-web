@@ -75,7 +75,7 @@ function ProjectForm({
                 id: usuario.id,
                 nome: usuario.nome,
                 email: usuario.email,
-                fotoPerfil: usuario.foto_perfil,
+                foto_perfil: usuario.foto_perfil,
                 isOwner: true,
                 nivel_acesso_id: 1,
             };

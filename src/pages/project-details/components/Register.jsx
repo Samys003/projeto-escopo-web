@@ -33,7 +33,7 @@ function Register({ formatRegistros, expandRegsister, setExpandRegister }) {
                                             <ChevronDown className="text-(--color-base)" />
                                         )
                                     }
-                                    className="bg-transparent "
+                                    className="bg-transparent cursor-pointer"
                                 ></IconButton>
                             </div>
                             {expandRegsister[mes] !== false &&
@@ -41,7 +41,7 @@ function Register({ formatRegistros, expandRegsister, setExpandRegister }) {
                                     <button
                                         onClick={() => navigate(`/registro/${registro.id}`)}
                                         key={registro.id}
-                                        className="flex border hover:bg-(--roxo-light) border-(--cinza-300) justify-between rounded-xl p-6"
+                                        className="flex border hover:bg-(--roxo-light) border-(--cinza-300) justify-between rounded-xl p-6 cursor-pointer"
                                     >
                                         <ParagraphMedium className="w-[33%] flex  justify-start truncate">
                                             {registro.titulo}

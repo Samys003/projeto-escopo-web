@@ -272,12 +272,14 @@ function ProjectDetails() {
             <MobileHeader />
             <div className="w-full p-4 ">
                 <DescriptionProjectMobile
+                    className="cursor-pointer"
                     project={project}
                     expand={expand}
                     setExpand={setExpand}
                     onClick={() => navigate(`/projeto/${id}/editar-projeto/`)}
                 />
                 <DescriptionProjectDesktop
+                    className="cursor-pointer"
                     project={project}
                     onClick={() => navigate(`/projeto/${id}/editar-projeto/`)}
                 />
@@ -307,7 +309,7 @@ function ProjectDetails() {
                                     </ParagraphSmall>
                                     <IconButton
                                         onClick={() => setOpenModalCategoria(true)}
-                                        className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex hover:bg-(--color-dark)"
+                                        className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex hover:bg-(--color-dark) cursor-pointer"
                                         icon={<FolderPlus />}
                                     >
                                         Nova Categoria
@@ -320,7 +322,7 @@ function ProjectDetails() {
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                                 <IconButton
                                     onClick={() => setOpenModalCategoria(true)}
-                                    className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex hover:bg-(--color-dark)"
+                                    className="w-40 gap-2 lg:p-2.5 lg:w-52 lg:flex hover:bg-(--color-dark) cursor-pointer"
                                     icon={<FolderPlus />}
                                 >
                                     Nova Categoria
@@ -390,7 +392,7 @@ function ProjectDetails() {
                                     </ParagraphSmall>
                                     <ButtonRegistrer
                                         onClick={novoRegistro}
-                                        className="lg:w-40 bg-(--color-base) text-white lg:h-10 lg:p-5 hover:bg-(--color-dark)"
+                                        className="lg:w-40 bg-(--color-base) text-white lg:h-10 lg:p-5 hover:bg-(--color-dark) cursor-pointer"
                                     >
                                         + Novo Registro
                                     </ButtonRegistrer>
@@ -402,7 +404,7 @@ function ProjectDetails() {
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                                 <ButtonRegistrer
                                     onClick={novoRegistro}
-                                    className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5 hover:bg-(--color-dark)"
+                                    className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5 hover:bg-(--color-dark) cursor-pointer"
                                 >
                                     + Novo Registro
                                 </ButtonRegistrer>
@@ -435,7 +437,7 @@ function ProjectDetails() {
                                         alinhamentos e próximos passos do projeto
                                     </ParagraphSmall>
                                     <ButtonRegistrer
-                                        className="lg:w-40 bg-(--color-base) text-white lg:h-10 lg:p-5 hover:bg-(--color-dark)"
+                                        className="lg:w-40 bg-(--color-base) text-white lg:h-10 lg:p-5 hover:bg-(--color-dark) cursor-pointer"
                                         onClick={() => setOpenModalReuniao(true)}
                                     >
                                         + Nova Reunião
@@ -447,7 +449,7 @@ function ProjectDetails() {
                         <div className="pt-4">
                             {(project?.nivel_acesso_id === 1 || project?.nivel_acesso_id === 2) && (
                                 <ButtonRegistrer
-                                    className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5 hover:bg-(--color-dark)"
+                                    className="lg:w-84 bg-(--color-base) text-white lg:h-15 lg:p-5 hover:bg-(--color-dark) cursor-pointer"
                                     onClick={() => setOpenModalReuniao(true)}
                                 >
                                     + Nova Reunião

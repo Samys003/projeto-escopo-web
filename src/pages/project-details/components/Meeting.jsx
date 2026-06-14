@@ -34,7 +34,7 @@ function Meeting({ formatReunioes, expandReuniao, setExpandReuniao }) {
                                             <ChevronDown className="text-(--color-base)" />
                                         )
                                     }
-                                    className="bg-transparent "
+                                    className="bg-transparent cursor-pointer"
                                 ></IconButton>
                             </div>
                             {expandReuniao[mes] !== false &&
@@ -42,7 +42,7 @@ function Meeting({ formatReunioes, expandReuniao, setExpandReuniao }) {
                                     <button
                                         key={reuniao.id}
                                         onClick={() => navigate(`/reuniao/${reuniao.id}`)}
-                                        className="flex hover:bg-(--roxo-light) border border-(--cinza-300) justify-between rounded-xl p-3 mb-3"
+                                        className="flex hover:bg-(--roxo-light) border border-(--cinza-300) justify-between rounded-xl p-3 mb-3 cursor-pointer"
                                     >
                                         <div className="lg:flex lg:gap-2 lg:items-center lg:justify-between  lg:w-[70%]">
                                             <ParagraphMedium className="truncate ">
