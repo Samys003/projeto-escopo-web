@@ -1,11 +1,37 @@
 import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import Title2 from '../../components/Typography/Title2';
-import Title3 from '../../components/Typography/Title3';
-import Title4 from '../../components/Typography/Title4';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Redefinir() {
+    const [senha, setSenha] = useState('');
+    const [senhaConfirm, setSenhaConfirm] = useState('');
+    const [error, setError] = useState('');
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        setError('');
+
+        if (!senha.trim()) {
+            setError('Informe a nova senha.');
+            return;
+        }
+
+        if (senha.length < 8) {
+            setError('A senha deve ter pelo menos 8 caracteres.');
+            return;
+        }
+
+        if (senha !== senhaConfirm) {
+            setError('As senhas não coincidem.');
+            return;
+        }
+
+        setError('Não foi possível alterar sua senha no momento. Tente novamente mais tarde.');
+    };
+
     return (
         <div
             className="flex min-h-screen flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-5 py-8 sm:px-6 lg:px-10 lg:py-12"
@@ -24,13 +50,18 @@ function Redefinir() {
                         Redefinir Senha
                     </Title2>
 
-                    <form className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
+                        <FeedbackMessage>{error}</FeedbackMessage>
+
                         <div>
                             <label className="block text-gray-800 font-medium mb-2">
                                 Nova senha
                             </label>
                             <input
+                                name="senha"
                                 type="password"
+                                value={senha}
+                                onChange={(event) => setSenha(event.target.value)}
                                 placeholder="Digite sua nova senha"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-base)] text-gray-700 placeholder-gray-400 transition"
                             />
@@ -41,7 +72,10 @@ function Redefinir() {
                                 Repita a senha
                             </label>
                             <input
+                                name="senhaConfirm"
                                 type="password"
+                                value={senhaConfirm}
+                                onChange={(event) => setSenhaConfirm(event.target.value)}
                                 placeholder="Digite sua nova senha novamente"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-base)] text-gray-700 placeholder-gray-400 transition"
                             />
@@ -56,13 +90,12 @@ function Redefinir() {
                                 <span>Voltar</span>
                                 <Undo2 size={20} strokeWidth={2.2} />
                             </Link>
-                            <Link
+                            <button
                                 type="submit"
-                                to="/Login"
                                 className="inline-flex h-11 items-center justify-center rounded-lg bg-[var(--color-base)] px-6 text-base font-semibold text-white transition hover:bg-[var(--color-dark)] sm:min-w-[5.375rem]"
                             >
                                 Alterar
-                            </Link>
+                            </button>
                         </div>
                     </form>
                 </div>

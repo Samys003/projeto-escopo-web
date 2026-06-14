@@ -3,31 +3,7 @@ import ParagraphMedium from '../../../components/Typography/ParagraphMedium.jsx'
 import Title2 from '../../../components/Typography/Title2.jsx';
 import Title3 from '../../../components/Typography/Title3.jsx';
 import Title4 from '../../../components/Typography/Title4.jsx';
-
-export const plans = [
-    {
-        name: 'Free',
-        price: '$0',
-        subtitle: 'Uso Acadêmico',
-        features: ['2 colaboradores', '2 clientes', 'Transcrição de reuniões'],
-    },
-    {
-        name: 'Standard',
-        price: '$50',
-        subtitle: 'Uso Comercial',
-        features: ['4 colaboradores', '4 clientes', 'Transcrição de reuniões'],
-    },
-    {
-        name: 'Premium',
-        price: '$75',
-        subtitle: 'Uso Comercial',
-        features: [
-            'Sem limite de colaboradores',
-            'Sem limite de clientes',
-            'Transcrição de reuniões',
-        ],
-    },
-];
+import { plans } from './planos-data.js';
 
 function InlinePlanCard({ plan, currentPlanName, index }) {
     const isCurrent = plan.name === currentPlanName;
@@ -135,14 +111,14 @@ function Planos({ onClose, currentPlanName = 'Free', variant = 'modal' }) {
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 rounded-full bg-[var(--cinza-100)] p-1 text-[var(--color-base)] transition-colors hover:bg-[var(--color-variant)]"
+                    className="absolute right-4 top-4 rounded-full bg-[var(--cinza-100)] px-2 py-0.5 text-2xl leading-none text-[var(--color-base)] transition-colors hover:bg-[var(--color-variant)]"
                     aria-label="Fechar"
                 >
                     ×
                 </button>
 
                 <div className="px-6 py-7">
-                    <div className="mb-6 text-center"></div>
+                    <div className="mb-6 text-center" />
                     <div className="space-y-6">
                         {plans.map((plan, index) => (
                             <ModalPlanCard

@@ -1,23 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronsLeft, Lightbulb, Save, Trash2 } from 'lucide-react';
+import { ChevronsLeft, Lightbulb, Save, Trash2, X } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import ParagraphLarge from '../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import Title2 from '../../components/Typography/Title2';
-import Title3 from '../../components/Typography/Title3';
-import Title4 from '../../components/Typography/Title4';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
 import {
     createRegister,
     createDocumentComment,
     deleteRegister,
+    getProjectDocumentById,
+    getProjectRegisters,
+    getProjects,
     getRegisterById,
+    getApiErrorMessage,
     updateRegisterContent,
     updateRegisterTitle,
 } from '../../services/api';
-import { getDashboard } from '../dashboard/services/dashboard-endpoints';
 import Sugestao from './components/sugestao';
+import { limparMarkdownTexto } from '../../utils/markdown-text';
 
 const registroPadrao = {
     titulo: 'Registro 01',
@@ -54,15 +57,43 @@ function primeiroValor(objeto, campos, fallback = '') {
     return fallback;
 }
 
-function linkSeguro(url) {
-    return /^(https?:|mailto:|\/)/i.test(url) ? url : '#';
-}
-
 function normalizarIdUrl(valor) {
     return String(valor || '').replace(/^:/, '');
 }
 
-function normalizarDocumentoDestino(documento) {
+function textoDoValor(valor) {
+    if (valor === undefined || valor === null || valor === '') {
+        return '';
+    }
+
+    if (typeof valor === 'object') {
+        return primeiroValor(valor, ['nome', 'titulo', 'descricao', 'label'], '');
+    }
+
+    return String(valor);
+}
+
+function projetoIdDoRegistro(registro) {
+    const idDireto = primeiroValor(
+        registro,
+        ['projeto_id', 'projetoId', 'id_projeto', 'project_id'],
+        '',
+    );
+
+    if (idDireto) {
+        return normalizarIdUrl(idDireto);
+    }
+
+    const projeto = primeiroValor(registro, ['projeto', 'project'], null);
+
+    if (projeto && typeof projeto === 'object') {
+        return normalizarIdUrl(primeiroValor(projeto, ['id', 'projeto_id', 'projetoId'], ''));
+    }
+
+    return '';
+}
+
+function normalizarDocumentoDestino(documento, categoria = {}) {
     const id = normalizarIdUrl(primeiroValor(documento, ['id', 'documento_id', 'documentoId'], ''));
 
     if (!id) {
@@ -71,17 +102,73 @@ function normalizarDocumentoDestino(documento) {
 
     return {
         id,
-        titulo: primeiroValor(
-            documento,
-            ['titulo', 'documento', 'nome', 'nome_documento'],
-            'Documento',
-        ),
-        setor: primeiroValor(
-            documento,
-            ['setor', 'setor_nome', 'nome_setor', 'categoria', 'categoria_nome'],
-            'Web',
-        ),
+        titulo:
+            textoDoValor(
+                primeiroValor(documento, ['titulo', 'documento', 'nome', 'nome_documento'], ''),
+            ) || 'Documento',
+        setor:
+            textoDoValor(
+                primeiroValor(
+                    documento,
+                    ['setor', 'setor_nome', 'nome_setor', 'categoria', 'categoria_nome'],
+                    primeiroValor(categoria, ['nome', 'titulo', 'categoria'], ''),
+                ),
+            ) || 'Web',
+        categoriaId: primeiroValor(categoria, ['id', 'categoria_id', 'categoriaId'], ''),
     };
+}
+
+function documentosDoProjeto(resposta) {
+    const categorias = resposta?.projeto?.categorias || resposta?.categorias || [];
+    const documentos = [];
+
+    if (Array.isArray(categorias) && categorias.length > 0) {
+        categorias.forEach((categoria) => {
+            (categoria?.documentos || []).forEach((documento) => {
+                const documentoNormalizado = normalizarDocumentoDestino(documento, categoria);
+
+                if (documentoNormalizado) {
+                    documentos.push(documentoNormalizado);
+                }
+            });
+        });
+    } else if (Array.isArray(resposta)) {
+        resposta.forEach((documento) => {
+            const documentoNormalizado = normalizarDocumentoDestino(documento);
+
+            if (documentoNormalizado) {
+                documentos.push(documentoNormalizado);
+            }
+        });
+    }
+
+    const documentosPorId = new Map();
+
+    documentos.forEach((documento) => {
+        documentosPorId.set(String(documento.id), documento);
+    });
+
+    return [...documentosPorId.values()];
+}
+
+function normalizarProjetos(resposta) {
+    const projetos = Array.isArray(resposta) ? resposta : resposta?.projetos || [];
+
+    return projetos
+        .map((projeto) => ({
+            ...projeto,
+            id: normalizarIdUrl(primeiroValor(projeto, ['id', 'projeto_id', 'projetoId'], '')),
+        }))
+        .filter((projeto) => projeto.id);
+}
+
+function registroEstaNaLista(registros, registroId) {
+    const idAtual = String(registroId);
+
+    return (Array.isArray(registros) ? registros : []).some(
+        (registro) =>
+            String(primeiroValor(registro, ['id', 'registro_id', 'registroId'], '')) === idAtual,
+    );
 }
 
 function textoSelecionadoDentro(elemento) {
@@ -101,215 +188,8 @@ function textoSelecionadoDentro(elemento) {
     return selecao.toString().trim().replace(/\s+/g, ' ');
 }
 
-function renderizarInline(texto, chaveBase) {
-    const partes = [];
-    const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
-    let ultimoIndice = 0;
-    let indice = 0;
-
-    for (const match of texto.matchAll(regex)) {
-        if (match.index > ultimoIndice) {
-            partes.push(texto.slice(ultimoIndice, match.index));
-        }
-
-        const trecho = match[0];
-        const chave = `${chaveBase}-${indice}`;
-
-        if (trecho.startsWith('**') && trecho.endsWith('**')) {
-            partes.push(
-                <strong key={chave} className="font-semibold">
-                    {trecho.slice(2, -2)}
-                </strong>,
-            );
-        } else if (trecho.startsWith('*') && trecho.endsWith('*')) {
-            partes.push(
-                <em key={chave} className="italic">
-                    {trecho.slice(1, -1)}
-                </em>,
-            );
-        } else if (trecho.startsWith('`') && trecho.endsWith('`')) {
-            partes.push(
-                <code
-                    key={chave}
-                    className="rounded bg-[var(--cinza-200)] px-1 py-0.5 font-mono text-[13px]"
-                >
-                    {trecho.slice(1, -1)}
-                </code>,
-            );
-        } else {
-            const [, textoLink, url] = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/) || [];
-
-            partes.push(
-                <a
-                    key={chave}
-                    href={linkSeguro(url || '')}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[var(--color-base)] underline underline-offset-2"
-                >
-                    {textoLink || trecho}
-                </a>,
-            );
-        }
-
-        ultimoIndice = match.index + trecho.length;
-        indice += 1;
-    }
-
-    if (ultimoIndice < texto.length) {
-        partes.push(texto.slice(ultimoIndice));
-    }
-
-    return partes;
-}
-
 function MarkdownPreview({ valor }) {
-    const elementos = [];
-    const linhas = String(valor || '').split('\n');
-    let listaAtual = null;
-    let paragrafoAtual = [];
-
-    function fecharParagrafo() {
-        if (paragrafoAtual.length === 0) {
-            return;
-        }
-
-        const texto = paragrafoAtual.join('\n');
-
-        elementos.push(
-            <ParagraphLarge
-                key={`p-${elementos.length}`}
-                className="mb-3 whitespace-pre-wrap break-words leading-7 text-black [overflow-wrap:anywhere]"
-            >
-                {renderizarInline(texto, `p-${elementos.length}`)}
-            </ParagraphLarge>,
-        );
-        paragrafoAtual = [];
-    }
-
-    function fecharLista() {
-        if (!listaAtual) {
-            return;
-        }
-
-        const Component = listaAtual.tipo === 'ol' ? 'ol' : 'ul';
-        const classeLista =
-            listaAtual.tipo === 'ol'
-                ? 'mb-4 list-decimal space-y-1 pl-6'
-                : 'mb-4 list-disc space-y-1 pl-6';
-
-        elementos.push(
-            <Component key={`lista-${elementos.length}`} className={classeLista}>
-                {listaAtual.itens.map((item, index) => (
-                    <ParagraphMedium
-                        as="li"
-                        key={`${listaAtual.tipo}-${index}`}
-                        className="break-words text-[16px] leading-7 text-black [overflow-wrap:anywhere]"
-                    >
-                        {renderizarInline(item, `${listaAtual.tipo}-${index}`)}
-                    </ParagraphMedium>
-                ))}
-            </Component>,
-        );
-        listaAtual = null;
-    }
-
-    linhas.forEach((linha, index) => {
-        const textoLimpo = linha.trim();
-
-        if (!textoLimpo) {
-            fecharParagrafo();
-            fecharLista();
-            return;
-        }
-
-        const titulo = textoLimpo.match(/^(#{1,3})\s+(.+)$/);
-        const itemLista = textoLimpo.match(/^[-*]\s+(.+)$/);
-        const itemOrdenado = textoLimpo.match(/^\d+\.\s+(.+)$/);
-        const citacao = textoLimpo.match(/^>\s+(.+)$/);
-
-        if (titulo) {
-            fecharParagrafo();
-            fecharLista();
-
-            const nivel = titulo[1].length;
-            const conteudo = renderizarInline(titulo[2], `titulo-${index}`);
-
-            if (nivel === 1) {
-                elementos.push(
-                    <Title2
-                        key={`titulo-${index}`}
-                        className="mb-3 break-words text-[28px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title2>,
-                );
-            } else if (nivel === 2) {
-                elementos.push(
-                    <Title3
-                        key={`titulo-${index}`}
-                        className="mb-3 break-words text-[22px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title3>,
-                );
-            } else {
-                elementos.push(
-                    <Title4
-                        key={`titulo-${index}`}
-                        className="mb-2 break-words text-[18px] leading-tight text-black [overflow-wrap:anywhere]"
-                    >
-                        {conteudo}
-                    </Title4>,
-                );
-            }
-            return;
-        }
-
-        if (itemLista || itemOrdenado) {
-            fecharParagrafo();
-
-            const tipo = itemOrdenado ? 'ol' : 'ul';
-
-            if (listaAtual?.tipo !== tipo) {
-                fecharLista();
-                listaAtual = { tipo, itens: [] };
-            }
-
-            listaAtual.itens.push(itemOrdenado?.[1] || itemLista?.[1]);
-            return;
-        }
-
-        if (citacao) {
-            fecharParagrafo();
-            fecharLista();
-            elementos.push(
-                <ParagraphLarge
-                    key={`quote-${index}`}
-                    className="mb-4 border-l-4 border-[var(--color-base)] bg-[var(--cinza-100)] py-2 pl-4 text-[var(--cinza-700)]"
-                >
-                    {renderizarInline(citacao[1], `quote-${index}`)}
-                </ParagraphLarge>,
-            );
-            return;
-        }
-
-        fecharLista();
-        paragrafoAtual.push(textoLimpo);
-    });
-
-    fecharParagrafo();
-    fecharLista();
-
-    if (elementos.length === 0) {
-        return (
-            <ParagraphMedium className="text-[var(--cinza-500)]">
-                Clique para começar o registro.
-            </ParagraphMedium>
-        );
-    }
-
-    return <div className="max-w-none">{elementos}</div>;
+    return <MarkdownRenderer valor={valor} emptyMessage="Clique para começar o registro." />;
 }
 
 function EditorMarkdown({ valor, onChange, onBlur, onContextMenu }) {
@@ -409,6 +289,10 @@ function Registro() {
     const [sugestaoAberta, setSugestaoAberta] = useState(false);
     const [trechoSelecionado, setTrechoSelecionado] = useState('');
     const [gatilhoSugestao, setGatilhoSugestao] = useState(null);
+    const [confirmacaoExcluirAberta, setConfirmacaoExcluirAberta] = useState(false);
+    const [nomeConfirmacaoExcluir, setNomeConfirmacaoExcluir] = useState('');
+    const [erroConfirmacaoExcluir, setErroConfirmacaoExcluir] = useState('');
+    const [projetoInferidoId, setProjetoInferidoId] = useState('');
 
     const registroNovo = !registroId && Boolean(projetoId);
     const temAlteracao = registroNovo || titulo !== tituloOriginal || conteudo !== conteudoOriginal;
@@ -423,10 +307,16 @@ function Registro() {
         ['data_criacao', 'criado_em', 'created_at', 'criacao'],
         registroPadrao.data_criacao,
     );
+    const projetoAtualId = useMemo(
+        () => normalizarIdUrl(projetoId || projetoIdDoRegistro(registro) || projetoInferidoId),
+        [projetoId, projetoInferidoId, registro],
+    );
     const documentosDisponiveis = useMemo(() => documentosDestino, [documentosDestino]);
 
     useEffect(() => {
         async function carregarRegistro() {
+            setProjetoInferidoId('');
+
             if (!registroId) {
                 setRegistro(registroPadrao);
                 setTitulo(registroPadrao.titulo);
@@ -455,7 +345,7 @@ function Registro() {
                 setConteudoOriginal(proximoConteudo);
                 setEditandoConteudo(false);
             } catch (error) {
-                setErro(error.message || 'Erro ao carregar registro.');
+                setErro(getApiErrorMessage(error, 'Erro ao carregar registro.'));
             } finally {
                 setCarregando(false);
             }
@@ -467,19 +357,77 @@ function Registro() {
     useEffect(() => {
         let ativo = true;
 
-        async function carregarDocumentos() {
-            try {
-                const dashboard = await getDashboard();
-                const documentos = (dashboard?.documentos || [])
-                    .map(normalizarDocumentoDestino)
-                    .filter(Boolean);
+        async function localizarProjetoDoRegistro() {
+            if (projetoAtualId || !registroId) {
+                return;
+            }
 
-                if (ativo && documentos.length > 0) {
+            try {
+                const projetos = normalizarProjetos(await getProjects());
+
+                for (const projeto of projetos) {
+                    try {
+                        const registrosProjeto = await getProjectRegisters(projeto.id);
+
+                        if (registroEstaNaLista(registrosProjeto, registroId)) {
+                            if (ativo) {
+                                setProjetoInferidoId(projeto.id);
+                            }
+
+                            return;
+                        }
+                    } catch {
+                        // Projeto sem acesso aos registros ou indisponível não deve bloquear a busca.
+                    }
+                }
+
+                if (ativo) {
+                    setProjetoInferidoId('');
+                }
+            } catch (error) {
+                if (ativo) {
+                    setErro(
+                        getApiErrorMessage(
+                            error,
+                            'Não foi possível carregar os projetos disponíveis.',
+                        ),
+                    );
+                }
+            }
+        }
+
+        localizarProjetoDoRegistro();
+
+        return () => {
+            ativo = false;
+        };
+    }, [projetoAtualId, registroId]);
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarDocumentos() {
+            if (!projetoAtualId) {
+                setDocumentosDestino([]);
+                return;
+            }
+
+            try {
+                const documentosProjeto = await getProjectDocumentById(projetoAtualId);
+                const documentos = documentosDoProjeto(documentosProjeto);
+
+                if (ativo) {
                     setDocumentosDestino(documentos);
                 }
-            } catch {
+            } catch (error) {
                 if (ativo) {
                     setDocumentosDestino([]);
+                    setErro(
+                        getApiErrorMessage(
+                            error,
+                            'Não foi possível carregar os documentos deste projeto.',
+                        ),
+                    );
                 }
             }
         }
@@ -489,7 +437,7 @@ function Registro() {
         return () => {
             ativo = false;
         };
-    }, []);
+    }, [projetoAtualId]);
 
     useEffect(() => {
         if (!gatilhoSugestao) {
@@ -535,6 +483,18 @@ function Registro() {
             return;
         }
 
+        if (!projetoAtualId) {
+            setGatilhoSugestao(null);
+            setErro('Não foi possível identificar o projeto deste registro.');
+            return;
+        }
+
+        if (documentosDisponiveis.length === 0) {
+            setGatilhoSugestao(null);
+            setErro('Nenhum documento deste projeto está disponível para receber a sugestão.');
+            return;
+        }
+
         setGatilhoSugestao(null);
         setSugestaoAberta(true);
     }
@@ -569,7 +529,7 @@ function Registro() {
         }
 
         const registroReferenciaId = Number(registroId);
-        const conteudoSugestao = trechoSelecionado.trim();
+        const conteudoSugestao = limparMarkdownTexto(trechoSelecionado);
 
         await Promise.all(
             destinos.map((destino) =>
@@ -594,6 +554,18 @@ function Registro() {
     }
 
     async function salvarRegistro() {
+        const tituloTratado = titulo.trim();
+
+        if (!tituloTratado) {
+            setErro('Informe o título do registro.');
+            return;
+        }
+
+        if (tituloTratado.length > 150) {
+            setErro('O título do registro deve ter no máximo 150 caracteres.');
+            return;
+        }
+
         if (!registroId) {
             if (!projetoId) {
                 setErro('Informe o ID do registro ou o ID do projeto na URL.');
@@ -605,13 +577,13 @@ function Registro() {
                 setErro('');
                 const novoRegistro = await createRegister({
                     projeto_id: projetoId,
-                    titulo,
+                    titulo: tituloTratado,
                     conteudo,
                 });
 
-                navigate(`/registro/${novoRegistro.id}`);
+                navigate(`/registro/${novoRegistro.id}?projetoId=${projetoId}`);
             } catch (error) {
-                setErro(error.message || 'Erro ao criar registro.');
+                setErro(getApiErrorMessage(error, 'Erro ao criar registro.'));
             } finally {
                 setSalvando(false);
             }
@@ -622,8 +594,8 @@ function Registro() {
             setSalvando(true);
             setErro('');
 
-            if (titulo !== tituloOriginal) {
-                await updateRegisterTitle({ registro_id: registroId, titulo });
+            if (tituloTratado !== tituloOriginal) {
+                await updateRegisterTitle({ registro_id: registroId, titulo: tituloTratado });
             }
 
             if (conteudo !== conteudoOriginal) {
@@ -631,7 +603,7 @@ function Registro() {
             }
 
             const registroAtualizado = await getRegisterById(registroId);
-            const proximoTitulo = registroAtualizado?.titulo || titulo;
+            const proximoTitulo = registroAtualizado?.titulo || tituloTratado;
             const proximoConteudo = registroAtualizado?.conteudo || '';
 
             setRegistro(registroAtualizado);
@@ -641,13 +613,36 @@ function Registro() {
             setConteudoOriginal(proximoConteudo);
             setEditandoConteudo(false);
         } catch (error) {
-            setErro(error.message || 'Erro ao salvar registro.');
+            setErro(getApiErrorMessage(error, 'Erro ao salvar registro.'));
         } finally {
             setSalvando(false);
         }
     }
 
-    async function excluirRegistro() {
+    function abrirConfirmacaoExcluirRegistro() {
+        if (!registroId) {
+            setErro('Informe o ID do registro na URL.');
+            return;
+        }
+
+        setNomeConfirmacaoExcluir('');
+        setErroConfirmacaoExcluir('');
+        setConfirmacaoExcluirAberta(true);
+    }
+
+    function fecharConfirmacaoExcluirRegistro() {
+        if (excluindo) {
+            return;
+        }
+
+        setConfirmacaoExcluirAberta(false);
+        setNomeConfirmacaoExcluir('');
+        setErroConfirmacaoExcluir('');
+    }
+
+    async function excluirRegistro(event) {
+        event?.preventDefault();
+
         if (!registroId || excluindo) {
             if (!registroId) {
                 setErro('Informe o ID do registro na URL.');
@@ -655,23 +650,47 @@ function Registro() {
             return;
         }
 
-        const confirmar = window.confirm('Tem certeza que deseja excluir este registro?');
+        const nomeEsperado = (titulo || tituloOriginal || '').trim();
+        const nomeDigitado = nomeConfirmacaoExcluir.trim();
 
-        if (!confirmar) {
+        if (
+            !nomeEsperado ||
+            nomeDigitado.toLocaleLowerCase('pt-BR') !== nomeEsperado.toLocaleLowerCase('pt-BR')
+        ) {
+            setErroConfirmacaoExcluir('Digite o nome do registro para confirmar a exclusão.');
             return;
         }
 
         try {
             setExcluindo(true);
             setErro('');
+            setErroConfirmacaoExcluir('');
             await deleteRegister(registroId);
-            navigate(-1);
+            voltarTelaAnterior();
         } catch (error) {
-            setErro(error.message || 'Erro ao excluir registro.');
+            const mensagem =
+                error.status === 500
+                    ? 'Não foi possível excluir este registro agora. Ele pode estar vinculado a comentários ou outro conteúdo.'
+                    : getApiErrorMessage(error, 'Erro ao excluir registro.');
+
+            setErroConfirmacaoExcluir(mensagem);
         } finally {
             setExcluindo(false);
         }
     }
+
+    useEffect(() => {
+        if (!confirmacaoExcluirAberta) {
+            return undefined;
+        }
+
+        const overflowOriginal = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflowOriginal;
+        };
+    }, [confirmacaoExcluirAberta]);
 
     function voltarTelaAnterior() {
         if (window.history.length > 1) {
@@ -776,7 +795,7 @@ function Registro() {
                             <button
                                 className="mt-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-[var(--color-base)] text-white shadow-[var(--external-shadow)] transition-colors hover:bg-[var(--color-dark)] disabled:opacity-60"
                                 type="button"
-                                onClick={excluirRegistro}
+                                onClick={abrirConfirmacaoExcluirRegistro}
                                 disabled={excluindo}
                                 aria-label="Excluir registro"
                             >
@@ -883,6 +902,66 @@ function Registro() {
                     onFechar={() => setSugestaoAberta(false)}
                     onEnviar={enviarSugestao}
                 />
+            )}
+
+            {confirmacaoExcluirAberta && (
+                <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/25 px-4 py-6">
+                    <form
+                        onSubmit={excluirRegistro}
+                        className="relative w-full max-w-[calc(100vw-24px)] rounded-[34px] bg-white px-8 py-11 shadow-[var(--external-shadow)] sm:px-10 lg:max-w-[900px] lg:rounded-[28px] lg:px-16 lg:py-10"
+                    >
+                        <button
+                            type="button"
+                            onClick={fecharConfirmacaoExcluirRegistro}
+                            disabled={excluindo}
+                            className="absolute right-5 top-5 text-[var(--color-base)] transition-colors hover:text-[var(--color-dark)] disabled:opacity-50 lg:right-9 lg:top-9"
+                            aria-label="Fechar confirmação"
+                        >
+                            <X className="h-5 w-5 lg:h-7 lg:w-7" strokeWidth={3.4} />
+                        </button>
+
+                        <Title2 className="pr-7 text-left text-[30px] leading-tight text-black lg:pr-8 lg:text-center lg:text-[28px]">
+                            Tem certeza que deseja deletar este registro?
+                        </Title2>
+
+                        <div className="mx-auto mt-9 w-full lg:mt-14 lg:max-w-[520px]">
+                            <ParagraphMedium className="mb-2 text-center text-xl font-semibold text-[var(--color-dark)] lg:text-xl">
+                                Para prosseguir digite o nome do registro
+                            </ParagraphMedium>
+                            <ParagraphMedium className="mb-4 break-words text-center font-semibold text-[var(--cinza-700)] [overflow-wrap:anywhere]">
+                                {titulo || tituloOriginal || 'Registro'}
+                            </ParagraphMedium>
+
+                            <input
+                                type="text"
+                                value={nomeConfirmacaoExcluir}
+                                onChange={(event) => {
+                                    setNomeConfirmacaoExcluir(event.target.value);
+                                    setErroConfirmacaoExcluir('');
+                                }}
+                                disabled={excluindo}
+                                className="h-12 w-full rounded-xl border-2 border-[var(--cinza-500)] bg-white px-4 text-lg text-[var(--cinza-700)] opacity-100 outline-none focus:border-[var(--color-base)] lg:h-11 lg:border-black lg:text-base"
+                                placeholder="Digite o nome do registro"
+                            />
+
+                            {erroConfirmacaoExcluir && (
+                                <ParagraphMedium className="mt-3 text-center text-[var(--color-base)]">
+                                    {erroConfirmacaoExcluir}
+                                </ParagraphMedium>
+                            )}
+                        </div>
+
+                        <div className="mx-auto mt-16 flex w-full justify-end lg:mt-9 lg:max-w-[620px]">
+                            <button
+                                type="submit"
+                                disabled={excluindo}
+                                className="rounded-lg bg-[var(--color-base)] px-10 py-3 text-lg font-medium text-white transition-colors hover:bg-[var(--color-dark)] disabled:opacity-50 lg:px-8 lg:py-2 lg:text-base"
+                            >
+                                {excluindo ? 'Excluindo...' : 'Prosseguir'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             )}
         </div>
     );

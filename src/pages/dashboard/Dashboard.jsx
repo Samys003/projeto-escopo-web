@@ -1,5 +1,5 @@
 import MobileHeader from '../../components/MobileHeader.jsx';
-import DesktopSidebar from '../../components/DesktopSideBar.jsx';
+import DesktopSidebar from '../../components/DesktopSidebar.jsx';
 import { getDashboard, answerInvite } from './services/dashboard-endpoints.js';
 import { useEffect, useState } from 'react';
 
@@ -76,7 +76,7 @@ function Dashboard() {
 
                 <div
                     className="overflow-x-auto border-b border-(--cinza-500) pb-3
-                lg:pb-4"
+                lg:pb-2.5"
                 >
                     <div className="flex gap-[10px] w-max">
                         {documentos?.length > 0 ? (

@@ -10,7 +10,13 @@ function formatarData(data) {
         return '';
     }
 
-    return new Date(data).toLocaleDateString('pt-BR');
+    const dataFormatada = new Date(data);
+
+    if (Number.isNaN(dataFormatada.getTime())) {
+        return '';
+    }
+
+    return dataFormatada.toLocaleDateString('pt-BR');
 }
 
 function nomeDaVersao(index, total) {
@@ -30,94 +36,78 @@ function ordenarVersoesPorData(versoesParaOrdenar) {
     return [...versoesParaOrdenar].sort((a, b) => timestampDaVersao(b) - timestampDaVersao(a));
 }
 
-function caracteresDoConteudo(conteudo) {
-    return Array.from(String(conteudo || ''));
+function linhasDoConteudo(conteudo) {
+    const texto = String(conteudo || '');
+
+    if (!texto) {
+        return [];
+    }
+
+    return texto.split(/\r?\n/);
 }
 
-function adicionarParte(partes, texto, tipo) {
-    if (!texto) {
-        return;
-    }
-
-    const ultimaParte = partes[partes.length - 1];
-
-    if (ultimaParte?.tipo === tipo) {
-        ultimaParte.texto += texto;
-        return;
-    }
-
+function adicionarLinha(partes, texto, tipo) {
     partes.push({ texto, tipo });
 }
 
-function adicionarCaracteres(partes, caracteres, tipo) {
-    adicionarParte(partes, caracteres.join(''), tipo);
-}
-
 function compararConteudos(conteudoAntigo, conteudoNovo) {
-    const antigas = caracteresDoConteudo(conteudoAntigo);
-    const novas = caracteresDoConteudo(conteudoNovo);
+    const antigas = linhasDoConteudo(conteudoAntigo);
+    const novas = linhasDoConteudo(conteudoNovo);
+    const matriz = Array.from({ length: antigas.length + 1 }, () =>
+        Array(novas.length + 1).fill(0),
+    );
     const antigo = [];
     const novo = [];
 
-    let inicioIgual = 0;
-    const menorTamanho = Math.min(antigas.length, novas.length);
-
-    while (
-        inicioIgual < menorTamanho &&
-        antigas[inicioIgual] === novas[inicioIgual]
-    ) {
-        inicioIgual += 1;
-    }
-
-    let fimAntigo = antigas.length - 1;
-    let fimNovo = novas.length - 1;
-
-    while (
-        fimAntigo >= inicioIgual &&
-        fimNovo >= inicioIgual &&
-        antigas[fimAntigo] === novas[fimNovo]
-    ) {
-        fimAntigo -= 1;
-        fimNovo -= 1;
-    }
-
-    adicionarCaracteres(antigo, antigas.slice(0, inicioIgual), 'igual');
-    adicionarCaracteres(novo, novas.slice(0, inicioIgual), 'igual');
-
-    const meioAntigo = antigas.slice(inicioIgual, fimAntigo + 1);
-    const meioNovo = novas.slice(inicioIgual, fimNovo + 1);
-    const maiorMeio = Math.max(meioAntigo.length, meioNovo.length);
-
-    for (let index = 0; index < maiorMeio; index += 1) {
-        const caractereAntigo = meioAntigo[index];
-        const caractereNovo = meioNovo[index];
-
-        if (
-            caractereAntigo !== undefined &&
-            caractereNovo !== undefined &&
-            caractereAntigo === caractereNovo
-        ) {
-            adicionarParte(antigo, caractereAntigo, 'igual');
-            adicionarParte(novo, caractereNovo, 'igual');
-        } else {
-            adicionarParte(antigo, caractereAntigo, 'removido');
-            adicionarParte(novo, caractereNovo, 'novo');
+    for (let linhaAntiga = antigas.length - 1; linhaAntiga >= 0; linhaAntiga -= 1) {
+        for (let linhaNova = novas.length - 1; linhaNova >= 0; linhaNova -= 1) {
+            if (antigas[linhaAntiga] === novas[linhaNova]) {
+                matriz[linhaAntiga][linhaNova] = matriz[linhaAntiga + 1][linhaNova + 1] + 1;
+            } else {
+                matriz[linhaAntiga][linhaNova] = Math.max(
+                    matriz[linhaAntiga + 1][linhaNova],
+                    matriz[linhaAntiga][linhaNova + 1],
+                );
+            }
         }
     }
 
-    adicionarCaracteres(antigo, antigas.slice(fimAntigo + 1), 'igual');
-    adicionarCaracteres(novo, novas.slice(fimNovo + 1), 'igual');
+    let linhaAntiga = 0;
+    let linhaNova = 0;
+
+    while (linhaAntiga < antigas.length || linhaNova < novas.length) {
+        if (
+            linhaAntiga < antigas.length &&
+            linhaNova < novas.length &&
+            antigas[linhaAntiga] === novas[linhaNova]
+        ) {
+            adicionarLinha(antigo, antigas[linhaAntiga], 'igual');
+            adicionarLinha(novo, novas[linhaNova], 'igual');
+            linhaAntiga += 1;
+            linhaNova += 1;
+        } else if (
+            linhaNova >= novas.length ||
+            (linhaAntiga < antigas.length &&
+                matriz[linhaAntiga + 1][linhaNova] >= matriz[linhaAntiga][linhaNova + 1])
+        ) {
+            adicionarLinha(antigo, antigas[linhaAntiga], 'removido');
+            linhaAntiga += 1;
+        } else {
+            adicionarLinha(novo, novas[linhaNova], 'novo');
+            linhaNova += 1;
+        }
+    }
 
     return { antigo, novo };
 }
 
 function classeDaLinhaDiff(tipo) {
     if (tipo === 'novo') {
-        return 'text-[var(--color-verde)]';
+        return 'bg-[#e8f7ee] text-[var(--color-verde)]';
     }
 
     if (tipo === 'removido') {
-        return 'text-[var(--color-alert)]';
+        return 'bg-[#ffe8e8] text-[var(--color-alert)]';
     }
 
     return 'text-black';
@@ -125,14 +115,14 @@ function classeDaLinhaDiff(tipo) {
 
 function TextoDiff({ partes }) {
     return (
-        <div className="min-h-5 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+        <div className="min-h-5 space-y-1">
             {partes.map((parte, index) => (
                 <ParagraphLarge
-                    as="span"
-                    className={`text-[13px] leading-4 lg:text-[16px] lg:leading-6 ${classeDaLinhaDiff(parte.tipo)}`}
+                    as="div"
+                    className={`min-h-5 whitespace-pre-wrap rounded px-2 py-0.5 text-[13px] leading-4 break-words [overflow-wrap:anywhere] lg:text-[16px] lg:leading-6 ${classeDaLinhaDiff(parte.tipo)}`}
                     key={`${parte.tipo}-${index}`}
                 >
-                    {parte.texto}
+                    {parte.texto || ' '}
                 </ParagraphLarge>
             ))}
         </div>

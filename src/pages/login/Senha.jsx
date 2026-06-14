@@ -1,11 +1,79 @@
 import LogoImg from '../../assets/logotipo-desktop.svg';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import Title2 from '../../components/Typography/Title2';
-import Title3 from '../../components/Typography/Title3';
-import Title4 from '../../components/Typography/Title4';
+import FeedbackMessage from '../../components/FeedbackMessage';
 
 function Senha() {
+    const [email, setEmail] = useState('');
+    const [codigo, setCodigo] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+
+    const validarEmail = () => {
+        if (!email.trim()) {
+            setError('Informe seu e-mail.');
+            return false;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+            setError('Informe um e-mail válido, como nome@dominio.com.');
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleEnviarCodigo = () => {
+        setError('');
+        setSuccess('');
+
+        if (!validarEmail()) {
+            return;
+        }
+
+        setError(
+            'A recuperação de senha está temporariamente indisponível. Tente novamente mais tarde.',
+        );
+    };
+
+    const handleReenviarCodigo = () => {
+        setError('');
+        setSuccess('');
+
+        if (!validarEmail()) {
+            return;
+        }
+
+        setError('Não foi possível reenviar o código no momento. Tente novamente mais tarde.');
+    };
+
+    const handleCodigoChange = (event, index) => {
+        const valor = event.target.value.replace(/\D/g, '').slice(-1);
+        const novoCodigo = Array.from({ length: 5 }, (_, codigoIndex) => codigo[codigoIndex] || '');
+
+        novoCodigo[index] = valor;
+        setCodigo(novoCodigo.join('').slice(0, 5));
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        setError('');
+        setSuccess('');
+
+        if (!validarEmail()) {
+            return;
+        }
+
+        if (codigo.length < 5) {
+            setError('Informe o código completo.');
+            return;
+        }
+
+        setError('Não foi possível validar o código no momento. Tente novamente mais tarde.');
+    };
+
     return (
         <div
             className="flex min-h-screen flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-5 py-8 sm:px-6 lg:px-10 lg:py-12"
@@ -29,11 +97,17 @@ function Senha() {
                         Você receberá um código de verificação em seu e-mail
                     </p>
 
-                    <form className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
+                        <FeedbackMessage>{error}</FeedbackMessage>
+                        <FeedbackMessage type="success">{success}</FeedbackMessage>
+
                         <div>
                             <label className="mb-2 block font-medium text-gray-800"></label>
                             <input
+                                name="email"
                                 type="email"
+                                value={email}
+                                onChange={(event) => setEmail(event.target.value)}
                                 placeholder="Digite seu e-mail"
                                 className="w-full rounded-lg border-2 border-[var(--cinza-300)] px-4 py-3 text-[var(--cinza-700)] transition placeholder:text-gray-400 focus:border-[var(--color-base)] focus:outline-none"
                             />
@@ -42,12 +116,14 @@ function Senha() {
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(8.5rem,1fr)_minmax(6.25rem,0.75fr)]">
                             <button
                                 type="button"
+                                onClick={handleEnviarCodigo}
                                 className="h-11 rounded-lg bg-[var(--color-base)] px-4 font-semibold text-white transition hover:bg-[var(--color-dark)]"
                             >
                                 Enviar Código
                             </button>
                             <button
                                 type="button"
+                                onClick={handleReenviarCodigo}
                                 className="h-11 rounded-lg bg-[var(--color-variant)] px-4 font-semibold text-white transition hover:bg-[#7645d787]"
                             >
                                 Reenviar
@@ -59,7 +135,10 @@ function Senha() {
                                 <input
                                     key={index}
                                     type="text"
+                                    inputMode="numeric"
                                     maxLength="1"
+                                    value={codigo[index] || ''}
+                                    onChange={(event) => handleCodigoChange(event, index)}
                                     className="h-10 w-10 rounded-none border border-black text-center text-xl font-semibold text-black focus:border-[#552ba9] focus:outline-none"
                                 />
                             ))}
@@ -74,13 +153,12 @@ function Senha() {
                                 <span>Voltar</span>
                                 <Undo2 size={20} strokeWidth={2.2} />
                             </Link>
-                            <Link
+                            <button
                                 type="submit"
-                                to="/Redefinir"
                                 className="inline-flex h-11 items-center justify-center rounded-lg bg-[#552ba9] px-6 text-base font-semibold text-white transition hover:bg-[#42257c] sm:min-w-[6.75rem]"
                             >
                                 Confirmar
-                            </Link>
+                            </button>
                         </div>
                     </form>
                 </div>

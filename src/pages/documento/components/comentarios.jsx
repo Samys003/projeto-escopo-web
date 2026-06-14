@@ -1,12 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronsLeft, Menu, Send, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronsLeft, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logotipoMobile from '../../../assets/logotipo-mobile.svg';
+import MobileHeader from '../../../components/MobileHeader';
 import ParagraphLarge from '../../../components/Typography/ParagraphLarge';
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import ParagraphSmall from '../../../components/Typography/ParagraphSmall';
 import Title2 from '../../../components/Typography/Title2';
-import { createDocumentComment, getDocumentComments } from '../../../services/api';
+import defaultPhoto from '../../../assets/user-default.jpg';
+import { createDocumentComment, getDocumentComments, getRegisterById } from '../../../services/api';
+import { limparMarkdownTexto } from '../../../utils/markdown-text';
+import {
+    carregarUsuarioAutenticadoAtualizado,
+    lerUsuarioAutenticado,
+    normalizarFotoPerfil,
+} from '../../../utils/user-profile';
 
 function pegar(objeto, campos, fallback = '') {
     for (const campo of campos) {
@@ -68,44 +75,52 @@ function formatarDataHora(data) {
     };
 }
 
-function iniciais(nome) {
-    return String(nome || 'U')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((parte) => parte[0])
-        .join('')
-        .toUpperCase();
+function timestampSeguro(data) {
+    const timestamp = new Date(data || '').getTime();
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function ordenarComentarios(comentarios) {
+    return [...comentarios].sort((a, b) => {
+        const diferencaData = b.ordem - a.ordem;
+        const idA = Number(a.id || 0);
+        const idB = Number(b.id || 0);
+
+        if (diferencaData !== 0) {
+            return diferencaData;
+        }
+
+        return (Number.isNaN(idB) ? 0 : idB) - (Number.isNaN(idA) ? 0 : idA);
+    });
 }
 
 function lerUsuarioAtual() {
-    try {
-        const usuario = JSON.parse(localStorage.getItem('authUser') || '{}');
+    const usuario = lerUsuarioAutenticado();
 
-        return {
-            id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
-            nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
-            cargo: textoDoValor(
-                pegar(
-                    usuario,
-                    [
-                        'cargo',
-                        'perfil',
-                        'papel',
-                        'funcao',
-                        'tipo_usuario',
-                        'tipoUsuario',
-                        'nivel_acesso',
-                        'nivel_acesso_nome',
-                    ],
-                    '',
-                ),
+    return {
+        id: pegar(usuario, ['id', 'usuario_id', 'usuarioId'], null),
+        nome: pegar(usuario, ['nome', 'name', 'email'], 'Usuário'),
+        cargo: textoDoValor(
+            pegar(
+                usuario,
+                [
+                    'cargo',
+                    'perfil',
+                    'papel',
+                    'funcao',
+                    'tipo_usuario',
+                    'tipoUsuario',
+                    'nivel_acesso',
+                    'nivel_acesso_nome',
+                ],
+                '',
             ),
-            foto: pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
-        };
-    } catch {
-        return { id: null, nome: 'Usuário', cargo: '', foto: '' };
-    }
+        ),
+        foto: normalizarFotoPerfil(
+            pegar(usuario, ['foto_perfil', 'fotoPerfil', 'foto', 'avatar'], ''),
+        ),
+    };
 }
 
 function idComentario(comentario) {
@@ -113,7 +128,13 @@ function idComentario(comentario) {
 }
 
 function autorIdComentario(comentario) {
-    return pegar(comentario, ['autor_id', 'criador_id', 'usuario_id', 'user_id'], null);
+    const usuario = pegarObjeto(comentario, ['usuario', 'criador', 'autor', 'user']);
+
+    return pegar(
+        comentario,
+        ['autor_id', 'autorId', 'criador_id', 'criadorId', 'usuario_id', 'usuarioId', 'user_id'],
+        pegar(usuario, ['id', 'usuario_id', 'usuarioId', 'user_id', 'userId'], null),
+    );
 }
 
 function parentIdComentario(comentario) {
@@ -195,12 +216,48 @@ function autorComentario(comentario) {
             ),
         );
 
+    const foto =
+        pegar(
+            comentario,
+            [
+                'foto_perfil',
+                'fotoPerfil',
+                'foto',
+                'avatar',
+                'foto_usuario',
+                'fotoUsuario',
+                'usuario_foto',
+                'usuarioFoto',
+                'autor_foto',
+                'autorFoto',
+                'autor_foto_perfil',
+                'autorFotoPerfil',
+                'criador_foto',
+                'criadorFoto',
+                'criador_foto_perfil',
+                'criadorFotoPerfil',
+            ],
+            '',
+        ) ||
+        pegar(
+            usuario,
+            [
+                'foto_perfil',
+                'fotoPerfil',
+                'foto',
+                'avatar',
+                'foto_usuario',
+                'fotoUsuario',
+                'profile_picture',
+                'profilePicture',
+            ],
+            '',
+        );
+
     return {
         nome,
         cargo,
-        foto:
-            pegar(comentario, ['foto_perfil', 'foto', 'avatar'], '') ||
-            pegar(usuario, ['foto_perfil', 'foto', 'avatar'], ''),
+        foto: normalizarFotoPerfil(foto),
     };
 }
 
@@ -304,9 +361,15 @@ function adaptarComentario(
     const tipoId = Number(
         pegar(comentario, ['comentario_tipo_id', 'tipo_comentario_id', 'tipoId'], 1),
     );
+    const comentarioDoUsuarioAtual =
+        autorId !== null &&
+        autorId !== undefined &&
+        usuarioAtual?.id !== null &&
+        usuarioAtual?.id !== undefined &&
+        String(autorId) === String(usuarioAtual.id);
     const registroReferenciaId = pegar(
         comentario,
-        ['registro_referencia_id', 'registroReferenciaId', 'registro_id'],
+        ['registro_referencia_id', 'registroReferenciaId', 'registro_referencia', 'registro_id'],
         null,
     );
     const registro = pegarObjeto(comentario, ['registro']);
@@ -314,9 +377,21 @@ function adaptarComentario(
         autor.cargo ||
         cargosPorComentarioId.get(String(id)) ||
         cargosPorAutorId.get(String(autorId)) ||
-        (String(autorId) === String(usuarioAtual?.id) ? usuarioAtual?.cargo : '') ||
+        (comentarioDoUsuarioAtual ? usuarioAtual?.cargo : '') ||
         (tipoId === 3 ? 'Registro' : '');
-    const tituloRegistro = textoDoValor(pegar(registro, ['registro_titulo', 'titulo', 'nome'], ''));
+    const foto =
+        (comentarioDoUsuarioAtual ? normalizarFotoPerfil(usuarioAtual?.foto) : '') || autor.foto;
+    const tituloRegistro = textoDoValor(
+        pegar(
+            registro,
+            ['registro_titulo', 'titulo', 'nome'],
+            pegar(
+                comentario,
+                ['registro_titulo', 'registroTitulo', 'titulo_registro', 'registro_nome'],
+                '',
+            ),
+        ),
+    );
     const registroLinkId = pegar(
         registro,
         ['id', 'registro_id', 'registroId'],
@@ -332,17 +407,19 @@ function adaptarComentario(
         cargo,
         data,
         horario,
+        ordem: timestampSeguro(criadoEm),
         texto: textoComentario(comentario),
-        avatar: iniciais(autor.nome),
-        foto: autor.foto,
+        foto,
         resposta: referenciaComentario(comentarioPai) || referenciaRespostaDireta(comentario),
         referencia:
             tipoId === 3 || registroReferenciaId || registro?.registro_id
                 ? {
                       autor: 'Sugestão de Requisito',
-                      cargo: tituloRegistro || 'deletado',
+                      cargo: tituloRegistro || 'Registro apagado',
                       texto: '',
-                      href: registroLinkId ? `/registro/${registroLinkId}` : null,
+                      registroId: registroLinkId || null,
+                      registroApagado: !tituloRegistro,
+                      href: registroLinkId && tituloRegistro ? `/registro/${registroLinkId}` : null,
                   }
                 : null,
     };
@@ -373,29 +450,103 @@ function prepararComentarios(comentariosApi, usuarioAtual) {
         }
     });
 
-    return comentarios.map((comentario) =>
-        adaptarComentario(
-            comentario,
-            comentariosPorId,
-            usuarioAtual,
-            cargosPorComentarioId,
-            cargosPorAutorId,
+    return ordenarComentarios(
+        comentarios.map((comentario) =>
+            adaptarComentario(
+                comentario,
+                comentariosPorId,
+                usuarioAtual,
+                cargosPorComentarioId,
+                cargosPorAutorId,
+            ),
         ),
     );
+}
+
+async function prepararComentariosComRegistros(comentariosApi, usuarioAtual) {
+    const comentarios = prepararComentarios(comentariosApi, usuarioAtual);
+    const registrosIds = [
+        ...new Set(
+            comentarios
+                .map((comentario) => comentario.referencia?.registroId)
+                .filter(Boolean)
+                .map(String),
+        ),
+    ];
+
+    if (registrosIds.length === 0) {
+        return comentarios;
+    }
+
+    const registros = await Promise.all(
+        registrosIds.map(async (registroId) => {
+            try {
+                const registro = await getRegisterById(registroId);
+                const titulo = textoDoValor(
+                    pegar(registro, ['titulo', 'nome', 'registro_titulo'], ''),
+                );
+
+                return [registroId, { apagado: false, titulo }];
+            } catch (error) {
+                if (error.status === 404) {
+                    return [registroId, { apagado: true, titulo: '' }];
+                }
+
+                return [registroId, null];
+            }
+        }),
+    );
+    const registrosPorId = new Map(registros);
+
+    return comentarios.map((comentario) => {
+        const referencia = comentario.referencia;
+
+        if (!referencia?.registroId) {
+            return comentario;
+        }
+
+        const registro = registrosPorId.get(String(referencia.registroId));
+
+        if (!registro) {
+            return comentario;
+        }
+
+        if (registro.apagado) {
+            return {
+                ...comentario,
+                referencia: {
+                    ...referencia,
+                    cargo: 'Registro apagado',
+                    href: null,
+                    registroApagado: true,
+                },
+            };
+        }
+
+        const titulo = registro.titulo || referencia.cargo || 'Registro';
+
+        return {
+            ...comentario,
+            referencia: {
+                ...referencia,
+                cargo: titulo,
+                href: `/registro/${referencia.registroId}`,
+                registroApagado: false,
+            },
+        };
+    });
 }
 
 function Avatar({ comentario, className = '' }) {
     return (
         <div
-            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-base)] bg-[var(--cinza-200)] ${className}`}
+            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-1 border-[var(--color-base)] bg-[var(--cinza-200)] ${className}`}
         >
-            {comentario.foto ? (
-                <img src={comentario.foto} alt="" className="h-full w-full object-cover" />
-            ) : (
-                <ParagraphMedium as="span" className="font-semibold text-[var(--color-base)]">
-                    {comentario.avatar}
-                </ParagraphMedium>
-            )}
+            <img
+                src={comentario.foto || defaultPhoto}
+                alt=""
+                className="h-full w-full object-cover"
+            />
         </div>
     );
 }
@@ -441,50 +592,6 @@ function ReferenciaComentario({ referencia }) {
     }
 
     return <div className={className}>{conteudo}</div>;
-}
-
-function renderizarTextoComentario(texto) {
-    const valor = String(texto || '');
-    const partes = [];
-    const regex = /(\[[^\]]+\]\(([^)]+)\)|https?:\/\/[^\s]+)/g;
-    let ultimoIndice = 0;
-    let indice = 0;
-
-    for (const match of valor.matchAll(regex)) {
-        if (match.index > ultimoIndice) {
-            partes.push(valor.slice(ultimoIndice, match.index));
-        }
-
-        const trecho = match[0];
-        const chave = `comentario-link-${indice}`;
-        const markdown = trecho.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        const rotulo = markdown?.[1] || trecho;
-        const url = markdown?.[2] || trecho;
-        const className = 'text-[var(--color-base)] underline underline-offset-2';
-
-        if (url.startsWith('/')) {
-            partes.push(
-                <Link key={chave} to={url} className={className}>
-                    {rotulo}
-                </Link>,
-            );
-        } else {
-            partes.push(
-                <a key={chave} href={url} target="_blank" rel="noreferrer" className={className}>
-                    {rotulo}
-                </a>,
-            );
-        }
-
-        ultimoIndice = match.index + trecho.length;
-        indice += 1;
-    }
-
-    if (ultimoIndice < valor.length) {
-        partes.push(valor.slice(ultimoIndice));
-    }
-
-    return partes;
 }
 
 function ComentarioCard({ comentario, mobile = false, onResponder }) {
@@ -533,7 +640,7 @@ function ComentarioCard({ comentario, mobile = false, onResponder }) {
                     {referencia && <ReferenciaComentario referencia={referencia} />}
 
                     <ParagraphLarge className="whitespace-pre-wrap break-words leading-6 [overflow-wrap:anywhere]">
-                        {renderizarTextoComentario(comentario.texto)}
+                        {limparMarkdownTexto(comentario.texto)}
                     </ParagraphLarge>
                 </div>
 
@@ -581,7 +688,6 @@ function CampoComentario({
             <div className="flex items-center gap-3">
                 <Avatar
                     comentario={{
-                        avatar: iniciais(usuarioAtual.nome),
                         foto: usuarioAtual.foto,
                     }}
                     className="h-12 w-12"
@@ -630,7 +736,7 @@ function ListaComentarios({ comentarios, carregando, onResponder, mobile }) {
     }
 
     return (
-        <div className={`flex flex-col ${mobile ? 'gap-5' : 'gap-8'}`}>
+        <div className={`flex flex-col-reverse ${mobile ? 'gap-5' : 'gap-8'}`}>
             {comentarios.map((comentario) => (
                 <ComentarioCard
                     key={comentario.id}
@@ -650,7 +756,39 @@ function Comentarios({ documentoId, onFechar, onErro }) {
     const [erro, setErro] = useState('');
     const [texto, setTexto] = useState('');
     const [respostaPara, setRespostaPara] = useState(null);
-    const usuarioAtual = useMemo(() => lerUsuarioAtual(), []);
+    const [usuarioAtual, setUsuarioAtual] = useState(() => lerUsuarioAtual());
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarUsuarioCompleto() {
+            await carregarUsuarioAutenticadoAtualizado();
+
+            if (ativo) {
+                setUsuarioAtual(lerUsuarioAtual());
+            }
+        }
+
+        carregarUsuarioCompleto();
+
+        return () => {
+            ativo = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        function atualizarUsuarioAtual() {
+            setUsuarioAtual(lerUsuarioAtual());
+        }
+
+        window.addEventListener('storage', atualizarUsuarioAtual);
+        window.addEventListener('authUserUpdated', atualizarUsuarioAtual);
+
+        return () => {
+            window.removeEventListener('storage', atualizarUsuarioAtual);
+            window.removeEventListener('authUserUpdated', atualizarUsuarioAtual);
+        };
+    }, []);
 
     async function carregarComentarios() {
         if (!documentoId) {
@@ -663,8 +801,12 @@ function Comentarios({ documentoId, onFechar, onErro }) {
             setCarregando(true);
             setErro('');
             const comentariosApi = await getDocumentComments(documentoId);
+            const comentariosPreparados = await prepararComentariosComRegistros(
+                comentariosApi,
+                usuarioAtual,
+            );
 
-            setComentarios(prepararComentarios(comentariosApi, usuarioAtual));
+            setComentarios(comentariosPreparados);
         } catch (error) {
             const mensagem = error.message || 'Erro ao carregar comentários.';
             setErro(mensagem);
@@ -690,9 +832,13 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                 setCarregando(true);
                 setErro('');
                 const comentariosApi = await getDocumentComments(documentoId);
+                const comentariosPreparados = await prepararComentariosComRegistros(
+                    comentariosApi,
+                    usuarioAtual,
+                );
 
                 if (ativo) {
-                    setComentarios(prepararComentarios(comentariosApi, usuarioAtual));
+                    setComentarios(comentariosPreparados);
                 }
             } catch (error) {
                 const mensagem = error.message || 'Erro ao carregar comentários.';
@@ -788,15 +934,10 @@ function Comentarios({ documentoId, onFechar, onErro }) {
                 </footer>
             </aside>
 
-            <section className="fixed inset-0 z-50 flex flex-col bg-white lg:hidden">
-                <header className="flex h-[50px] items-center justify-between bg-[var(--color-base)] px-4">
-                    <img src={logotipoMobile} alt="Escopo" className="h-auto w-40" />
-                    <button type="button" onClick={onFechar} aria-label="Fechar comentários">
-                        <Menu className="text-white" />
-                    </button>
-                </header>
+            <section className="fixed inset-0 z-[1001] flex flex-col bg-white lg:hidden">
+                <MobileHeader />
 
-                <div className="flex items-center gap-1 px-5 py-3">
+                <div className="flex min-h-[58px] items-center gap-1 border-b border-[var(--cinza-200)] px-5 py-3">
                     <button
                         type="button"
                         onClick={onFechar}
