@@ -34,7 +34,7 @@ function PopUp({
                             {tituloNovo}
                         </Title4>
 
-                        <button onClick={onClose} className="">
+                        <button onClick={onClose} className="cursor-pointer">
                             <X className="text-black hover:text-(--roxo-dark) cursor-pointer" />
                         </button>
                     </div>

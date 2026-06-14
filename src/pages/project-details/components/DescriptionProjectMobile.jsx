@@ -11,7 +11,7 @@ function DescriptionProjectMobile({ project, expand, setExpand, onClick }) {
                 <IconButton
                     onClick={onClick}
                     icon={<SquarePen />}
-                    className={`hover:bg-(--color-dark) ${project?.nivel_acesso_id === 1 ? '' : 'hidden'}`}
+                    className={`hover:bg-(--color-dark) ${project?.nivel_acesso_id === 1 ? '' : 'hidden'} cursor-pointer`}
                 ></IconButton>
             </div>
             <div className="w-full flex flex-col  gap-2">
@@ -44,7 +44,7 @@ function DescriptionProjectMobile({ project, expand, setExpand, onClick }) {
                                 </ParagraphMedium>
                             </div>
                             <button
-                                className="text-(--color-base)"
+                                className="text-(--color-base) cursor-pointer"
                                 onClick={() => setExpand(false)}
                             >
                                 <ChevronUp />
@@ -52,7 +52,10 @@ function DescriptionProjectMobile({ project, expand, setExpand, onClick }) {
                         </div>
                     )}
                     {!expand && (
-                        <button className="text-(--color-base)" onClick={() => setExpand(true)}>
+                        <button
+                            className="text-(--color-base) cursor-pointer"
+                            onClick={() => setExpand(true)}
+                        >
                             <ChevronDown />
                         </button>
                     )}

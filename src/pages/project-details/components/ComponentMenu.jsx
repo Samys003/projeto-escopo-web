@@ -7,7 +7,7 @@ function ComponentMenu({ tabs, currentTab, setCurrentTab }) {
                 <button
                     key={tab}
                     onClick={() => setCurrentTab(tab)}
-                    className={`pl-3 pr-3 pb-1 pt-1 rounded-[18px] lg:p-1 lg:pl-2 lg:pr-3 lg:min-w-30 lg:items-center justify-center ${currentTab === tab ? 'bg-(--roxo-light) text-(--roxo-dark)' : 'bg-(--cinza-200) text-(--cinza-700)'} hover:bg-(--roxo-light)`}
+                    className={`pl-3 pr-3 pb-1 pt-1 rounded-[18px] lg:p-1 lg:pl-2 lg:pr-3 lg:min-w-30 lg:items-center justify-center ${currentTab === tab ? 'bg-(--roxo-light) text-(--roxo-dark)' : 'bg-(--cinza-200) text-(--cinza-700)'} hover:bg-(--roxo-light) cursor-pointer`}
                 >
                     <ParagraphMedium>{tab}</ParagraphMedium>
                 </button>
