@@ -1,6 +1,6 @@
 import ParagraphMedium from '../../../components/Typography/ParagraphMedium';
 import Title2 from '../../../components/Typography/Title2';
-import user_default from '../../../../src/pages/project-details/assets/user_default.svg';
+import user_default from '../../../../src/pages/project-details/assets/user-default.jpg';
 import { useNavigate } from 'react-router-dom';
 import IconButton from '../../../components/IconButton';
 import { ChevronRight, ChevronDown } from 'lucide-react';

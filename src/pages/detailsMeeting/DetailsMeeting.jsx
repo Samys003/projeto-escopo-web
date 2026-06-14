@@ -1,4 +1,4 @@
-import { ChevronsLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { ChevronsLeft, Pencil, Trash2 } from 'lucide-react';
 import DesktopSidebar from '../../components/DesktopSidebar';
 import MobileHeader from '../../components/MobileHeader';
 import { useEffect } from 'react';
@@ -11,16 +11,21 @@ import {
     getUserMeeting,
     updateLinkMeeting,
     updateMeeting,
+    newUserGuest,
+    deletelinkMeeting,
+    deleteUserMeeting,
+    deleteUserGuest,
 } from '../../services/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import Title2 from '../../components/Typography/Title2';
 import ParagraphMedium from '../../components/Typography/ParagraphMedium';
 import IconButton from '../../components/IconButton';
 import ParagraphSmall from '../../components/Typography/ParagraphSmall';
-import user_default from '../project-details/assets/user_default.svg';
+import user_default from '../project-details/assets/user-default.jpg';
 import PopUp from '../project-details/components/PopUp';
 import { getProjectById } from '../../services/api';
 import PopUpInputs from './components/PopUpInputs';
+import PopUpTranscicao from './components/PopUpTranscicao';
 
 function DetailsMeeting() {
     const { id } = useParams();
@@ -31,7 +36,7 @@ function DetailsMeeting() {
     const [project, setProject] = useState(null);
     const [nomeReuniao, setNomeReuniao] = useState('');
     const [openModelDeleteReuniao, setOpenDeleteReuniao] = useState(false);
-    const [openDeleteLinkAdicional, setOpenDeleteLinkAdicional] = useState(false);
+    const [openDeleteLinkAdicional, setOpenDeleteLinkAdicional] = useState(null);
     const [openModalLink, setOpenModalLink] = useState(false);
     const [openModalRecording, setOpenModalRecording] = useState(false);
     const [linkreuniao, setLinkReuniao] = useState('');
@@ -39,6 +44,12 @@ function DetailsMeeting() {
     const [novoLinkUrl, setNovoLinkUrl] = useState('');
     const [openModalNovoParticipante, setOpenModalNovoParticipante] = useState('');
     const [novoParticipante, setNovoParticipante] = useState('');
+    const [novoConvidado, setNovoConvidado] = useState('');
+    const [openModalConvidado, setOpenModalConvidado] = useState(false);
+    const [novoConvidadoCargo, setNovoConvidadoCargo] = useState('');
+    const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
+    const [openModalDeleteGuest, setOpenModalDeleteGuest] = useState(null);
+    const [openModalTranscricao, setOpenModalTranscricao] = useState(false);
 
     const navigate = useNavigate();
 
@@ -151,6 +162,18 @@ function DetailsMeeting() {
         }
     }
 
+    async function deletarLinkAdicional(link_id) {
+        try {
+            await deletelinkMeeting(link_id);
+
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+            setDetalhesReuniao(reuniaoAtualizada);
+            setOpenDeleteLinkAdicional(null);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     async function adicionarNovoParticipante() {
         if (!novoParticipante.trim()) {
             setErro('O campo de email não pode estar vazio');
@@ -179,6 +202,50 @@ function DetailsMeeting() {
         } catch (error) {
             console.error(error);
             setErro('Participante Invalido');
+        }
+    }
+
+    async function deletarUsuarioReuniao(id_usuario) {
+        try {
+            await deleteUserMeeting(id, id_usuario);
+
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+            setDetalhesReuniao(reuniaoAtualizada);
+            setUsuarioSelecionado(null);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function adicionarNovoConvidado() {
+        if (!novoConvidado.trim()) {
+            setErro('O campo de Convidado não pode estar vazio');
+            return;
+        }
+
+        try {
+            await newUserGuest(id, { nome: novoConvidado, cargo: novoConvidadoCargo });
+
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+            setDetalhesReuniao(reuniaoAtualizada);
+
+            setNovoConvidado('');
+            setNovoConvidadoCargo('');
+            setOpenModalConvidado(false);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function deletarConvidado(id_convidado) {
+        try {
+            await deleteUserGuest(id_convidado);
+
+            const reuniaoAtualizada = await getDetailsMeetingById(id);
+            setDetalhesReuniao(reuniaoAtualizada);
+            setOpenModalDeleteGuest(null);
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -347,11 +414,16 @@ function DetailsMeeting() {
                                 ></PopUp>
                             )}
 
-                            <button className="w-22">
+                            <button onClick={() => setOpenModalTranscricao(true)} className="w-22">
                                 <ParagraphSmall className="text-(--color-base) underline hover:bg-(--roxo-light)">
                                     Transcrição
                                 </ParagraphSmall>
                             </button>
+                            {openModalTranscricao && (
+                                <PopUpTranscicao
+                                    onClose={() => setOpenModalTranscricao(false)}
+                                ></PopUpTranscicao>
+                            )}
                         </div>
                     </div>
                     <div className="w-full flex flex-col border mt-3 rounded-2xl border-(--cinza-300) p-2">
@@ -375,25 +447,23 @@ function DetailsMeeting() {
                                     {(project?.nivel_acesso_id == 1 ||
                                         project?.nivel_acesso_id == 2) && (
                                         <IconButton
-                                            onClick={() => setOpenDeleteLinkAdicional(true)}
+                                            onClick={() => setOpenDeleteLinkAdicional(link)}
                                             className="bg-transparent hover:bg-(--roxo-light) "
                                             icon={<Trash2 className="text-black w-4 h-4 " />}
                                         ></IconButton>
                                     )}
-
-                                    {openDeleteLinkAdicional && (
-                                        <PopUp
-                                            tituloNovo={'Deletando o Link Adicional'}
-                                            showInput={false}
-                                            tituloCategoria={`Tem certeza de que deseja excluir o Link: ${link.nome}? `}
-                                            onClick={() => ''}
-                                            onClose={() => setOpenDeleteLinkAdicional(false)}
-                                            children={'Confirmar'}
-                                        ></PopUp>
-                                    )}
                                 </div>
                             ))}
-
+                        {openDeleteLinkAdicional && (
+                            <PopUp
+                                tituloNovo={'Deletando o Link Adicional'}
+                                showInput={false}
+                                tituloCategoria={`Tem certeza de que deseja excluir o Link: ${openDeleteLinkAdicional.nome}? `}
+                                onClick={() => deletarLinkAdicional(openDeleteLinkAdicional.id)}
+                                onClose={() => setOpenDeleteLinkAdicional(null)}
+                                children={'Confirmar'}
+                            ></PopUp>
+                        )}
                         <div className="w-full flex items-center p-1 justify-center">
                             {(project?.nivel_acesso_id == 1 || project?.nivel_acesso_id == 2) && (
                                 <IconButton
@@ -460,11 +530,24 @@ function DetailsMeeting() {
                                         {(project?.nivel_acesso_id == 1 ||
                                             project?.nivel_acesso_id == 2) && (
                                             <IconButton
+                                                onClick={() => setUsuarioSelecionado(usuario)}
                                                 className="bg-transparent flex hover:bg-(--roxo-light)"
                                                 icon={<Trash2 className="text-black w-4" />}
                                             ></IconButton>
                                         )}
                                     </div>
+                                    {usuarioSelecionado && (
+                                        <PopUp
+                                            tituloNovo={'Deletando Participante'}
+                                            showInput={false}
+                                            tituloCategoria={`Tem certeza de que deseja excluir o participante: ${usuarioSelecionado.nome}? `}
+                                            onClick={() =>
+                                                deletarUsuarioReuniao(usuarioSelecionado.id)
+                                            }
+                                            onClose={() => setUsuarioSelecionado(null)}
+                                            children={'Confirmar'}
+                                        ></PopUp>
+                                    )}
                                 </div>
                             ))}
                             <div className="w-full p-2 items-center justify-center flex">
@@ -520,6 +603,7 @@ function DetailsMeeting() {
                                     {(project?.nivel_acesso_id == 1 ||
                                         project?.nivel_acesso_id == 2) && (
                                         <IconButton
+                                            onClick={() => setOpenModalDeleteGuest(convidado)}
                                             className="bg-transparent flex hover:bg-(--roxo-light)"
                                             icon={<Trash2 className="text-black w-4 " />}
                                         ></IconButton>
@@ -527,15 +611,55 @@ function DetailsMeeting() {
                                 </div>
                             </div>
                         ))}
+                        {openModalDeleteGuest && (
+                            <PopUp
+                                tituloNovo={'Deletando Convidado'}
+                                showInput={false}
+                                tituloCategoria={`Tem certeza de que deseja excluir o convidado: ${openModalDeleteGuest.nome}? `}
+                                onClick={() => deletarConvidado(openModalDeleteGuest.id)}
+                                onClose={() => setOpenModalDeleteGuest(null)}
+                                children={'Confirmar'}
+                            ></PopUp>
+                        )}
                         <div className="w-full p-2 items-center justify-center flex">
                             {(project?.nivel_acesso_id == 1 || project?.nivel_acesso_id == 2) && (
-                                <IconButton className="hover:bg-(--color-dark)">
+                                <IconButton
+                                    onClick={() => setOpenModalConvidado(true)}
+                                    className="hover:bg-(--color-dark)"
+                                >
                                     Novo Convidado
                                 </IconButton>
                             )}
                         </div>
+                        {openModalConvidado && (
+                            <PopUpInputs
+                                tituloNovo={'Novo Convidado'}
+                                onClose={() => {
+                                    setOpenModalConvidado(false);
+                                    setNovoConvidado('');
+                                    setNovoConvidadoCargo('');
+                                    setErro('');
+                                }}
+                                erro={erro}
+                                tituloCategoria={'Nome do Convidado:'}
+                                placeholder={'Ex: João Silva'}
+                                value={novoConvidado}
+                                onChange={(e) => {
+                                    setNovoConvidado(e.target.value);
+                                    setErro('');
+                                }}
+                                segundoTitulo={'Cargo (Opcional)'}
+                                placeholder2={'Ex: Desenvolvedor'}
+                                value2={novoConvidadoCargo}
+                                onChange2={(e) => {
+                                    setNovoConvidadoCargo(e.target.value);
+                                    setErro('');
+                                }}
+                                children={'Adicionar'}
+                                onClick={adicionarNovoConvidado}
+                            ></PopUpInputs>
+                        )}
                     </div>
-                    <div className="flex items-center w-full justify-center p-2"></div>
                 </div>
             </div>
         </div>

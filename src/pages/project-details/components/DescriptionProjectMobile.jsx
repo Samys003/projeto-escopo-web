@@ -35,7 +35,9 @@ function DescriptionProjectMobile({ project, expand, setExpand, onClick }) {
                                 </ParagraphMedium>
                                 <ParagraphMedium>
                                     Ultima Alteração:{' '}
-                                    {new Date(project?.ultima_atualizacao).toLocaleDateString()}
+                                    {new Date(
+                                        project?.ultima_atualizacao || project?.data_criacao,
+                                    ).toLocaleDateString()}
                                 </ParagraphMedium>
                                 <ParagraphMedium>
                                     Responsavel: {project?.nome_responsavel}

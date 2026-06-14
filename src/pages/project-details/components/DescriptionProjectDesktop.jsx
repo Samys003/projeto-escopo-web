@@ -29,7 +29,10 @@ function DescriptionProjectDesktop({ project, onClick }) {
                     Data de Criação: {new Date(project?.data_criacao).toLocaleDateString()}
                 </ParagraphMedium>
                 <ParagraphMedium className="text-(--cinza-700)">
-                    Ultima Alteração: {new Date(project?.ultima_atualizacao).toLocaleDateString()}
+                    Ultima Alteração:{' '}
+                    {new Date(
+                        project?.ultima_atualizacao || project?.data_criacao,
+                    ).toLocaleDateString()}
                 </ParagraphMedium>
                 <ParagraphMedium className="text-(--cinza-700)">
                     Responsavel: {project?.nome_responsavel}

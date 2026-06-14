@@ -357,3 +357,36 @@ export async function getUserMeeting(email) {
     });
     return parseResponse(response);
 }
+
+export async function newUserGuest(id, nome, cargo) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/convidado`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(nome, cargo),
+    });
+    return parseResponse(response);
+}
+
+export async function deletelinkMeeting(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/link/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserMeeting(id, usuario_id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/${id}/usuario/${usuario_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteUserGuest(id) {
+    const response = await fetch(`${API_URL}/api/v1/reuniao/convidado/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return parseResponse(response);
+}
