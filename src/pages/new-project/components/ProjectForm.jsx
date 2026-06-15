@@ -69,7 +69,7 @@ function ProjectForm({
     //Realiza busca de usuário para inserir como participante em novoProjeto
     async function inserirProprietario() {
         try {
-            //TODO: Se colocar o fotoPerfil no authUser dá pra remover essa requisição, puxa tudo do authUser mesmo
+            //TODO: Se colocar o foto_perfil no authUser dá pra remover essa requisição, puxa tudo do authUser mesmo
             const usuario = await getUserByEmail(userEmail);
             const novoIntegrante = {
                 id: usuario.id,
@@ -171,7 +171,7 @@ function ProjectForm({
                 id: usuario.id,
                 nome: usuario.nome,
                 email: usuario.email,
-                fotoPerfil: usuario.foto_perfil,
+                foto_perfil: usuario.foto_perfil,
                 nivel_acesso_id: 4, // Por padrão são adicionados como nivel de acesso 4 (cliente)
             };
 
